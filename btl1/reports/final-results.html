@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng kết quả cuối | CO3133</title>
+  <meta name="description" content="Tổng hợp kết quả thực nghiệm cuối cùng cho Bài tập lớn số 1 môn CO3133.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header compact">
+      <div class="header-copy">
+        <a href="../../assignments/assignment-1.html" class="breadcrumb-link">Bài tập lớn 1</a>
+        <p class="eyebrow">Kết quả cuối</p>
+        <h1>Bảng kết quả cuối</h1>
+        <p class="lede">
+          Trang này tổng hợp các kết quả chính của hai nhánh thực nghiệm trong Bài tập lớn số 1:
+          văn bản với Jigsaw Toxic Comment và đa phương thức với CrisisMMD.
+        </p>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel hero-panel">
+        <div class="detail-grid">
+          <div>
+            <p class="section-kicker">Tổng quan</p>
+            <h2>Kết quả nổi bật</h2>
+            <p class="body-copy">
+              Ở nhánh văn bản, BERT vượt LSTM trên toàn bộ chỉ số chính. Ở nhánh đa phương thức,
+              CLIP vượt VisualBERT trên cả accuracy lẫn macro F1. Các biểu đồ dưới đây đều được dựng từ tệp kết quả thực tế.
+            </p>
+          </div>
+          <div class="info-card">
+            <h3>Kết luận nhanh</h3>
+            <p class="body-copy">
+              Hai mô hình đang dẫn đầu trong BTL1 là <strong>BERT</strong> cho nhánh văn bản và <strong>CLIP</strong>
+              cho nhánh đa phương thức. Cả hai đều có trang báo cáo chi tiết, biểu đồ tương tác và trình xem notebook riêng.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Điểm nhấn</p>
+          <h2>Điểm nhấn theo nhánh</h2>
+        </div>
+        <div class="result-spotlight-grid">
+          <article class="result-spotlight-card">
+            <p class="section-kicker">Văn bản</p>
+            <h3>BERT vượt LSTM</h3>
+            <p class="result-metric">0.8030</p>
+            <p class="result-caption">Micro F1 của BERT, cao hơn rõ rệt so với LSTM trên cùng tập test.</p>
+          </article>
+          <article class="result-spotlight-card">
+            <p class="section-kicker">Đa phương thức</p>
+            <h3>CLIP vượt VisualBERT</h3>
+            <p class="result-metric">0.8806</p>
+            <p class="result-caption">Accuracy của CLIP, cao hơn VisualBERT trên cùng split CrisisMMD.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Bảng kết quả</p>
+          <h2>So sánh mô hình</h2>
+        </div>
+        <div class="callout-grid">
+          <article class="callout-card">
+            <h3>Jigsaw Toxic Comment</h3>
+            <div class="table-wrap">
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th>Mô hình</th>
+                    <th>Exact-match accuracy</th>
+                    <th>Micro F1</th>
+                    <th>Macro F1</th>
+                    <th>Nhận xét</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>BERT</strong></td>
+                    <td>0.9306</td>
+                    <td>0.8030</td>
+                    <td>0.6765</td>
+                    <td>Mô hình mạnh nhất của nhánh văn bản.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>LSTM</strong></td>
+                    <td>0.9224</td>
+                    <td>0.7386</td>
+                    <td>0.5489</td>
+                    <td>Baseline tuần tự, thấp hơn BERT trên cả ba chỉ số chính.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+          <article class="callout-card">
+            <h3>CrisisMMD Humanitarian Categories</h3>
+            <div class="table-wrap">
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th>Mô hình</th>
+                    <th>Accuracy</th>
+                    <th>Macro F1</th>
+                    <th>Nhận xét</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>CLIP</strong></td>
+                    <td>0.8806</td>
+                    <td>0.7965</td>
+                    <td>Mô hình mạnh nhất của nhánh đa phương thức.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>VisualBERT</strong></td>
+                    <td>0.8115</td>
+                    <td>0.7290</td>
+                    <td>Baseline hợp lý nhưng kém hơn CLIP trên cùng tập test.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Biểu đồ</p>
+          <h2>So sánh trực quan</h2>
+        </div>
+        <div class="chart-canvas-grid">
+          <article class="chart-card">
+            <h3>Metric chính của nhánh văn bản</h3>
+            <p class="chart-copy">
+              Biểu đồ cột tổng hợp exact-match accuracy, micro F1 và macro F1 của BERT và LSTM.
+            </p>
+            <div class="chart-shell">
+              <canvas id="final-text-metrics-chart"></canvas>
+            </div>
+          </article>
+          <article class="chart-card">
+            <h3>Metric chính của nhánh đa phương thức</h3>
+            <p class="chart-copy">
+              Biểu đồ cột tổng hợp accuracy và macro F1 của CLIP và VisualBERT trên CrisisMMD.
+            </p>
+            <div class="chart-shell">
+              <canvas id="final-mm-metrics-chart"></canvas>
+            </div>
+          </article>
+          <article class="chart-card wide">
+            <h3>Loss khi fine-tune của nhánh văn bản</h3>
+            <p class="chart-copy">
+              Biểu đồ loss của nhánh văn bản, gộp train loss và validation loss của BERT và LSTM để người xem thấy tốc độ hội tụ ngay từ trang tổng hợp.
+            </p>
+            <div class="chart-shell">
+              <canvas id="final-text-loss-chart"></canvas>
+            </div>
+          </article>
+          <article class="chart-card wide">
+            <h3>Loss khi fine-tune của nhánh đa phương thức</h3>
+            <p class="chart-copy">
+              Biểu đồ loss của nhánh đa phương thức, gộp CLIP và VisualBERT trong cùng một khung để đối chiếu độ ổn định khi fine-tune.
+            </p>
+            <div class="chart-shell">
+              <canvas id="final-mm-loss-chart"></canvas>
+            </div>
+          </article>
+        </div>
+        <p class="results-note" style="margin-top: 1rem;">
+          Các biểu đồ tương tác ở đây dùng dữ liệu thực từ tệp kết quả sau khi chạy notebook. Gallery Matplotlib chi tiết
+          và confusion matrix vẫn được giữ ở từng báo cáo nhánh.
+        </p>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Chi tiết</p>
+          <h2>Xem theo từng nhánh</h2>
+        </div>
+        <div class="callout-grid">
+          <article class="callout-card">
+            <h3>Nhánh văn bản</h3>
+            <p>
+              Trang trình bày riêng cho Jigsaw Toxic Comment: các chỉ số chính, đường cong huấn luyện,
+              F1 theo từng nhãn và phần đọc mã nguồn trực tiếp trên web.
+            </p>
+            <div class="branch-link-row" style="margin-top: 0.9rem;">
+              <a class="button-link" href="./text-report.html">Mở báo cáo văn bản</a>
+              <a class="button-link button-secondary" href="./text-notebook-viewer.html">Mở trình xem notebook</a>
+            </div>
+          </article>
+          <article class="callout-card">
+            <h3>Nhánh đa phương thức</h3>
+            <p>
+              Trang trình bày riêng cho CrisisMMD: bảng kết quả, hình minh họa, confusion matrix tách riêng
+              cho từng mô hình và phần đọc mã nguồn để người xem không phải tải notebook mới đọc được.
+            </p>
+            <div class="branch-link-row" style="margin-top: 0.9rem;">
+              <a class="button-link" href="./multimodal-report.html">Mở báo cáo đa phương thức</a>
+              <a class="button-link button-secondary" href="./multimodal-notebook-viewer.html">Mở trình xem notebook</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Tài nguyên</p>
+          <h2>Chọn tài nguyên theo mục đích</h2>
+        </div>
+        <div class="callout-grid">
+          <article class="callout-card">
+            <h3>Xem báo cáo theo nhánh</h3>
+            <p>
+              Đây là hướng phù hợp nhất cho người xem công khai. Mỗi trang đều đã được tổ chức lại theo dạng báo cáo web,
+              có số liệu, hình minh họa, confusion matrix và mã nguồn hiển thị trực tiếp.
+            </p>
+            <div class="branch-link-row" style="margin-top: 0.9rem;">
+              <a class="button-link" href="./text-report.html">Báo cáo văn bản</a>
+              <a class="button-link button-secondary" href="./multimodal-report.html">Báo cáo đa phương thức</a>
+            </div>
+          </article>
+          <article class="callout-card">
+            <h3>Dùng cho slide hoặc tóm tắt</h3>
+            <p>
+              Phần này dành cho việc trích nhanh kết quả cuối vào slide báo cáo mà không cần mở lại toàn bộ notebook
+              hoặc tệp kết quả.
+            </p>
+            <div class="branch-link-row" style="margin-top: 0.9rem;">
+              <a class="button-link" href="./final-results-summary.md">Mở bản tóm tắt Markdown</a>
+            </div>
+          </article>
+          <article class="callout-card">
+            <h3>Phụ lục kỹ thuật</h3>
+            <p>
+              Trình xem notebook theo giao diện trình soạn thảo chỉ đọc được giữ riêng cho người muốn đọc mã nguồn trực tiếp trên web,
+              còn file gốc chỉ để đối chiếu khi thực sự cần.
+            </p>
+            <div class="branch-link-row" style="margin-top: 0.9rem;">
+              <a class="button-link" href="./text-notebook-viewer.html">Trình xem notebook văn bản</a>
+              <a class="button-link button-secondary" href="./multimodal-notebook-viewer.html">Trình xem notebook đa phương thức</a>
+              <a class="button-link button-secondary" href="../artifacts/final_results_overview.csv">Bảng số liệu tổng hợp</a>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="../../assets/js/report-visual-data.js"></script>
+  <script src="../../assets/js/report-charts.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CO3133 | Landing Page Nhóm</title>
+  <meta name="description" content="Landing page công khai cho các bài tập lớn môn CO3133 - Học sâu và ứng dụng.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="home" data-root=".">
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="crest-mark" aria-hidden="true">
+        <span>CO</span>
+        <span>3133</span>
+      </div>
+      <div class="header-copy">
+        <p class="eyebrow">Landing page học thuật</p>
+        <h1 id="site-title">CO3133</h1>
+        <p id="site-subtitle" class="lede">Landing page công khai cho các bài tập lớn của nhóm.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel hero-panel">
+        <div class="hero-grid">
+          <div>
+            <p class="section-kicker">Giới thiệu</p>
+            <h2 id="course-heading">CO3133 · Học sâu và ứng dụng</h2>
+            <p id="course-summary" class="body-copy"></p>
+          </div>
+          <div class="info-card">
+            <h3>Thông tin môn học</h3>
+            <dl id="course-meta" class="meta-list"></dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Tổng quan</p>
+          <h2 id="home-overview-title">Tổng quan landing page</h2>
+        </div>
+        <div class="overview-grid">
+          <article class="overview-card">
+            <h3 id="overview-title"></h3>
+            <p id="overview-copy" class="body-copy"></p>
+          </article>
+          <article class="overview-card">
+            <h3>Cách sử dụng</h3>
+            <ul id="overview-points" class="overview-list"></ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Nhóm thực hiện</p>
+          <h2>Thành viên và giảng viên</h2>
+        </div>
+        <div class="two-column-grid">
+          <article class="info-card">
+            <h3>Tên nhóm</h3>
+            <p id="group-name" class="feature-copy"></p>
+            <p id="group-summary" class="body-copy"></p>
+          </article>
+          <article class="info-card">
+            <h3>Giảng viên hướng dẫn</h3>
+            <p id="instructor-name" class="feature-copy"></p>
+            <p class="body-copy">Trang được tổ chức theo hướng công khai, rõ ràng và dễ truy cập để người xem có thể theo dõi từng bài tập lớn một cách thuận tiện.</p>
+          </article>
+        </div>
+        <div id="members-grid" class="member-grid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Bài tập lớn</p>
+          <h2>Các bài tập lớn</h2>
+        </div>
+        <div id="assignment-grid" class="assignment-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="assets/js/site-data.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

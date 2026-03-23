@@ -1,0 +1,6 @@
+label,clip_f1,visualbert_f1
+affected_individuals,0.5,0.47619047619047616
+infrastructure_and_utility_damage,0.8765432098765432,0.7560975609756098
+rescue_volunteering_or_donation_effort,0.828125,0.7857142857142857
+other_relevant_information,0.8774193548387097,0.772823779193206
+not_humanitarian,0.9004926108374385,0.8542094455852156

@@ -1,0 +1,5 @@
+branch,dataset,model,exact_match_accuracy,accuracy,micro_f1,macro_f1,notes
+text,Jigsaw Toxic Comment Classification Challenge,BERT,0.9306304048126331,,0.8029761053083416,0.6764643489662164,Best result on the text branch
+text,Jigsaw Toxic Comment Classification Challenge,LSTM,0.9223586915653591,,0.7386150966936993,0.5489344217823646,Baseline sequence model on the text branch
+multimodal,CrisisMMD v2.0 Humanitarian Categories,CLIP,,0.8806282722513089,,0.7965160351105383,Best result on the multimodal branch
+multimodal,CrisisMMD v2.0 Humanitarian Categories,VisualBERT,,0.8115183246073299,,0.7290071095317586,Transformer multimodal baseline on the multimodal branch
