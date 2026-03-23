@@ -1,0 +1,16 @@
+split,label,count
+dev,affected_individuals,9
+dev,infrastructure_and_utility_damage,80
+dev,not_humanitarian,521
+dev,other_relevant_information,239
+dev,rescue_volunteering_or_donation_effort,149
+test,affected_individuals,9
+test,infrastructure_and_utility_damage,81
+test,not_humanitarian,504
+test,other_relevant_information,235
+test,rescue_volunteering_or_donation_effort,126
+train,affected_individuals,71
+train,infrastructure_and_utility_damage,612
+train,not_humanitarian,3252
+train,other_relevant_information,1279
+train,rescue_volunteering_or_donation_effort,912
