@@ -103,7 +103,7 @@
       { label: "Trường", value: data.course.university },
       { label: "Khoa", value: data.course.faculty },
       { label: "Giảng viên", value: data.course.instructor },
-      { label: "Học kỳ", value: data.course.term }
+      { label: "Học kỳ", value: data.course.term },
     ]);
 
     const overviewPoints = document.getElementById("overview-points");
@@ -115,7 +115,13 @@
     const membersGrid = document.getElementById("members-grid");
     membersGrid.innerHTML = "";
     if (data.group.members.length === 0) {
-      membersGrid.appendChild(createElement("p", "empty-state", "Danh sách thành viên sẽ được cập nhật khi nhóm hoàn thiện thông tin công khai."));
+      membersGrid.appendChild(
+        createElement(
+          "p",
+          "empty-state",
+          "Danh sách thành viên sẽ được cập nhật khi nhóm hoàn thiện thông tin công khai."
+        )
+      );
     } else {
       data.group.members.forEach((member) => {
         const card = createElement("article", "member-card");
@@ -161,16 +167,25 @@
 
     renderMetaList(document.getElementById("assignment-meta"), [
       { label: "Tên bài", value: assignment.numberLabel },
-      { label: "Thành viên", value: data.group.members.length ? data.group.members.map((member) => member.name).join(", ") : "Thông tin thành viên sẽ được cập nhật" },
+      {
+        label: "Thành viên",
+        value: data.group.members.length
+          ? data.group.members.map((member) => member.name).join(", ")
+          : "Thông tin thành viên sẽ được cập nhật",
+      },
       { label: "Giảng viên", value: data.course.instructor },
-      { label: "Môn học", value: `${data.course.code} · ${data.course.name}` }
+      { label: "Môn học", value: `${data.course.code} · ${data.course.name}` },
     ]);
 
     const resourceGrid = document.getElementById("resource-grid");
     const resourceEmpty = document.getElementById("resource-empty");
-    const resources = Array.isArray(assignment.resources) ? assignment.resources.filter((item) => item.url) : [];
+    const resources = Array.isArray(assignment.resources)
+      ? assignment.resources.filter((item) => item.url)
+      : [];
     const resourceGroups = Array.isArray(assignment.resourceGroups)
-      ? assignment.resourceGroups.filter((group) => Array.isArray(group.items) && group.items.some((item) => item.url))
+      ? assignment.resourceGroups.filter(
+          (group) => Array.isArray(group.items) && group.items.some((item) => item.url)
+        )
       : [];
 
     resourceGrid.innerHTML = "";
@@ -185,14 +200,20 @@
         const card = createElement("article", "resource-card");
         const actions = createElement("div", "resource-actions");
         actions.appendChild(createResourceLink(resource, index === 0));
-        card.append(createElement("h3", "", resource.title || resource.label), createElement("p", "", resource.note || ""), actions);
+        card.append(
+          createElement("h3", "", resource.title || resource.label),
+          createElement("p", "", resource.note || ""),
+          actions
+        );
         resourceGrid.appendChild(card);
       });
     }
 
     const sectionsPanel = document.getElementById("sections-panel");
     const sectionsGrid = document.getElementById("sections-grid");
-    const sections = Array.isArray(assignment.sections) ? assignment.sections.filter((item) => item.title && item.copy) : [];
+    const sections = Array.isArray(assignment.sections)
+      ? assignment.sections.filter((item) => item.title && item.copy)
+      : [];
 
     sectionsGrid.innerHTML = "";
     if (sections.length === 0) {

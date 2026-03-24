@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Báo cáo nhánh đa phương thức | CO3133</title>
-  <meta name="description" content="Trang trình bày kết quả thực nghiệm cho nhánh đa phương thức của bài tập lớn số 1 môn CO3133.">
+  <meta name="description" content="Trang trình bày kết quả thực nghiệm cho nhánh đa phương thức của Bài tập lớn 1 với dataset N24News.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,10 +16,12 @@
       <div class="header-copy">
         <a href="./final-results.html" class="breadcrumb-link">Bảng kết quả cuối</a>
         <p class="eyebrow">Nhánh đa phương thức</p>
-        <h1>CrisisMMD Humanitarian Categories</h1>
+        <h1>N24News</h1>
         <p class="lede">
-          Trang này trình bày nhánh phân loại văn bản - hình ảnh của bài tập lớn số 1: mô tả dữ liệu, kết quả thực nghiệm,
-          biểu đồ huấn luyện, heatmap confusion matrix tương tác và các ô mã quan trọng được lấy trực tiếp từ notebook triển khai.
+          Trang này trình bày nhánh <strong>text-image classification</strong> của Bài tập lớn số 1.
+          Mỗi mẫu đầu vào gồm <strong>ảnh bài báo + văn bản bài báo</strong>, đầu ra là
+          <strong>nhãn chuyên mục tin tức</strong> trong 24 lớp của N24News.
+          Hai mô hình được so sánh là <strong>CLIP</strong> và <strong>VisualBERT</strong>.
         </p>
       </div>
     </header>
@@ -29,24 +31,26 @@
         <div class="detail-grid">
           <div>
             <p class="section-kicker">Tổng quan</p>
-            <h2>CLIP vượt VisualBERT</h2>
+            <h2>VisualBERT vượt CLIP</h2>
             <p class="body-copy">
-              Bài toán được triển khai dưới dạng phân loại đa phương thức 5 lớp trên CrisisMMD humanitarian categories.
-              Hai mô hình được so sánh là CLIP và VisualBERT, cùng train và eval trong notebook
+              Trên tập test của N24News, VisualBERT đạt accuracy <strong>0.8751</strong> và macro F1
+              <strong>0.8575</strong>, cao hơn CLIP ở cả ba chỉ số chính.
+              Toàn bộ pipeline được triển khai trong notebook
               <a class="muted-link" href="../notebooks/text_image_classification.ipynb">text_image_classification.ipynb</a>.
             </p>
             <ul class="pill-list" style="margin-top: 1rem;">
-              <li class="pill">Dataset: CrisisMMD v2.0</li>
-              <li class="pill">Bài toán: Phân loại văn bản - hình ảnh 5 lớp</li>
-              <li class="pill">Split: Agreed-label</li>
-              <li class="pill">Thiết bị chạy: GPU RTX 4060 Laptop</li>
+              <li class="pill">Dataset: N24News</li>
+              <li class="pill">Bài toán: Image + news text → category</li>
+              <li class="pill">24 lớp chuyên mục</li>
+              <li class="pill">Split official: train / dev / test</li>
             </ul>
           </div>
           <div class="info-card">
             <h3>Kết luận nhanh</h3>
             <p class="body-copy">
-              CLIP là mô hình tốt nhất ở nhánh đa phương thức trong repo hiện tại, vượt VisualBERT trên cả accuracy
-              và macro F1. Chênh lệch rõ nhất nằm ở các lớp khó và mất cân bằng, thể hiện qua bảng per-label F1 và confusion matrix.
+              VisualBERT là mô hình tốt nhất của nhánh đa phương thức trong repo hiện tại.
+              Kết quả này cho thấy việc kết hợp backbone thị giác với lớp fusion kiểu VisualBERT
+              phù hợp hơn CLIP classifier trên bài toán phân loại chuyên mục tin tức của N24News.
             </p>
           </div>
         </div>
@@ -55,67 +59,46 @@
       <section class="panel">
         <div class="section-heading">
           <p class="section-kicker">Mô tả dữ liệu</p>
-          <h2>Mô tả dữ liệu</h2>
+          <h2>Dataset Description</h2>
         </div>
         <div class="callout-grid">
           <article class="callout-card">
             <h3>Nguồn và bài toán</h3>
             <p>
-              Theo trang chính thức của CrisisMMD, bộ dữ liệu gồm các tweet và hình ảnh được gán nhãn thủ công trong
-              7 thảm họa tự nhiên lớn năm 2017. Ở version 2.0, nhãn được làm sạch và hợp nhất để phù hợp hơn
-              cho bài toán humanitarian categories. Báo cáo này dùng agreed-label split và 5 lớp cuối cùng
-              cho bài toán phân loại đa phương thức.
+              N24News là một dataset phân loại tin tức đa phương thức, trong đó mỗi mẫu gồm
+              ảnh đại diện bài báo, tiêu đề, abstract, body và nhãn chuyên mục.
+              Trong bài làm này, nhóm dùng cặp <code>image + news text</code> để dự đoán
+              <code>news category</code>. Nguồn chính thức được lấy từ repo của tác giả và bài báo LREC.
             </p>
             <div class="branch-link-row" style="margin-top: 0.9rem;">
-              <a class="button-link button-secondary" href="https://crisisnlp.qcri.org/crisismmd" target="_blank" rel="noreferrer">Nguồn chính thức</a>
-              <a class="button-link button-secondary" href="https://arxiv.org/abs/1805.00713" target="_blank" rel="noreferrer">Bài báo gốc</a>
+              <a class="button-link button-secondary" href="https://github.com/billywzh717/N24News" target="_blank" rel="noreferrer">Official repo</a>
+              <a class="button-link button-secondary" href="https://aclanthology.org/2022.lrec-1.729/" target="_blank" rel="noreferrer">Paper</a>
+              <a class="button-link button-secondary" href="https://drive.google.com/file/d/1OS1fXwZ1Vsj70lEQajccyssxQRYp5X9D/view?usp=share_link" target="_blank" rel="noreferrer">Google Drive</a>
             </div>
           </article>
           <article class="callout-card">
             <h3>Đặc trưng dữ liệu thực tế</h3>
             <p>
-              Trang nguồn chính thức ghi rõ version 2.0 có 16,058 tweet texts và 18,082 images. Tuy nhiên để tạo baseline
-              ổn định cho học đa phương thức, thử nghiệm hiện tại dùng agreed-label split đã gộp lớp, còn 8,079 mẫu.
-              Phân bố lớp rất lệch, trong đó <code>affected_individuals</code> chỉ có 89 mẫu.
+              Bộ dữ liệu local dùng đúng split official trong package N24News: 48,988 mẫu train,
+              6,123 mẫu dev và 6,124 mẫu test, tổng cộng <strong>61,235</strong> cặp ảnh-văn bản.
+              Tập lớp gồm 24 chuyên mục, tương đối rộng và phù hợp cho bài toán classification nhiều lớp.
             </p>
             <div class="dataset-stat-grid">
-              <div class="dataset-stat"><strong>16,058</strong><span>tweet text trong v2.0</span></div>
-              <div class="dataset-stat"><strong>18,082</strong><span>ảnh trong v2.0</span></div>
-              <div class="dataset-stat"><strong>8,079</strong><span>mẫu dùng trong split hiện tại</span></div>
-              <div class="dataset-stat"><strong>5</strong><span>lớp mục tiêu</span></div>
+              <div class="dataset-stat"><strong>61,235</strong><span>mẫu tổng cộng</span></div>
+              <div class="dataset-stat"><strong>48,988</strong><span>train</span></div>
+              <div class="dataset-stat"><strong>6,123</strong><span>dev</span></div>
+              <div class="dataset-stat"><strong>6,124</strong><span>test</span></div>
             </div>
             <div class="dataset-label-list">
-              <div class="dataset-label-item"><span>not_humanitarian</span><strong>4,277</strong></div>
-              <div class="dataset-label-item"><span>other_relevant_information</span><strong>1,753</strong></div>
-              <div class="dataset-label-item"><span>rescue_volunteering_or_donation_effort</span><strong>1,187</strong></div>
-              <div class="dataset-label-item"><span>infrastructure_and_utility_damage</span><strong>773</strong></div>
-              <div class="dataset-label-item"><span>affected_individuals</span><strong>89</strong></div>
+              <div class="dataset-label-item"><span>Opinion</span><strong>2,437 train</strong></div>
+              <div class="dataset-label-item"><span>Art &amp; Design</span><strong>2,431 train</strong></div>
+              <div class="dataset-label-item"><span>Technology</span><strong>2,376 train</strong></div>
+              <div class="dataset-label-item"><span>Your Money</span><strong>1,020 train</strong></div>
+              <div class="dataset-label-item"><span>Education</span><strong>672 train</strong></div>
+              <div class="dataset-label-item"><span>Well</span><strong>529 train</strong></div>
             </div>
           </article>
         </div>
-      </section>
-
-      <section class="panel">
-        <div class="section-heading">
-          <p class="section-kicker">Preview mẫu</p>
-          <h2>Mẫu dữ liệu minh họa</h2>
-        </div>
-        <p class="results-note">
-          Để phù hợp với GitHub Pages, trang công khai này chỉ giữ một tập preview nhỏ gồm 10 ảnh đại diện, tương ứng 2 mẫu cho mỗi lớp.
-          Toàn bộ ảnh raw của CrisisMMD vẫn được giữ trong pipeline local. Trong ngữ cảnh này, <code>humanitarian categories</code>
-          là 5 nhóm thông tin liên quan đến cứu trợ và thiệt hại; còn <code>agreed-label split</code> là tập con official chỉ giữ
-          những mẫu mà annotator đã đồng thuận nhãn và đã có sẵn train, dev, test.
-        </p>
-        <div class="sample-toolbar">
-          <div id="multimodal-preview-filters" class="sample-filter-group"></div>
-          <p id="multimodal-preview-count" class="sample-count">Đang tải preview mẫu...</p>
-        </div>
-        <div id="multimodal-preview-root" class="sample-grid" style="margin-top: 1rem;"></div>
-        <p class="sample-note">
-          Nếu cần xem toàn bộ ảnh của dataset, bạn có thể tra cứu trực tiếp trong thư mục local
-          <code>btl1/data/multimodal/crisismmd/raw/CrisisMMD_v2.0/data_image</code>. Phần preview trên web chỉ nhằm minh họa
-          cấu trúc dữ liệu và trải nghiệm xem mẫu khi triển khai bằng GitHub Pages.
-        </p>
       </section>
 
       <section class="panel">
@@ -126,23 +109,23 @@
         <div class="mini-stat-grid">
           <article class="mini-stat">
             <h3>Mô hình tốt nhất</h3>
-            <p class="mini-stat-value">CLIP</p>
-            <p>Hiệu năng cao nhất trong nhánh đa phương thức.</p>
+            <p class="mini-stat-value">VisualBERT</p>
+            <p>Hiệu năng cao nhất trên tập test.</p>
           </article>
           <article class="mini-stat">
             <h3>Accuracy</h3>
-            <p class="mini-stat-value">0.8806</p>
-            <p>Kết quả test của CLIP.</p>
+            <p class="mini-stat-value">0.8751</p>
+            <p>Kết quả test của VisualBERT.</p>
           </article>
           <article class="mini-stat">
             <h3>Macro F1</h3>
-            <p class="mini-stat-value">0.7965</p>
-            <p>Chỉ số chính để so sánh chất lượng phân loại giữa các lớp.</p>
+            <p class="mini-stat-value">0.8575</p>
+            <p>Chỉ số chính để so sánh hai mô hình.</p>
           </article>
           <article class="mini-stat">
-            <h3>Tập test</h3>
-            <p class="mini-stat-value">955</p>
-            <p>Số mẫu trong split đánh giá cuối.</p>
+            <h3>Delta macro F1</h3>
+            <p class="mini-stat-value">0.0511</p>
+            <p>VisualBERT cao hơn CLIP trên cùng tập test.</p>
           </article>
         </div>
       </section>
@@ -159,21 +142,27 @@
                 <th>Mô hình</th>
                 <th>Accuracy</th>
                 <th>Macro F1</th>
+                <th>Weighted F1</th>
+                <th>Loss</th>
                 <th>Nhận xét</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><strong>CLIP</strong></td>
-                <td>0.8806</td>
-                <td>0.7965</td>
-                <td>Hiệu năng tốt nhất, ổn định hơn trên phần lớn lớp mục tiêu.</td>
+                <td><strong>VisualBERT</strong></td>
+                <td>0.8751</td>
+                <td>0.8575</td>
+                <td>0.8732</td>
+                <td>0.3978</td>
+                <td>Mô hình tốt nhất trên nhánh đa phương thức hiện tại.</td>
               </tr>
               <tr>
-                <td><strong>VisualBERT</strong></td>
-                <td>0.8115</td>
-                <td>0.7290</td>
-                <td>Baseline hợp lý nhưng thấp hơn CLIP ở cả accuracy và macro F1.</td>
+                <td><strong>CLIP</strong></td>
+                <td>0.8488</td>
+                <td>0.8064</td>
+                <td>0.8346</td>
+                <td>1.9987</td>
+                <td>Baseline mạnh, nhưng thấp hơn VisualBERT trên cả ba chỉ số chính.</td>
               </tr>
             </tbody>
           </table>
@@ -189,8 +178,8 @@
           <article class="chart-card">
             <h3>So sánh metric chính</h3>
             <p class="chart-copy">
-              Biểu đồ cột dùng số liệu thật từ <code>crisismmd_model_comparison.csv</code>, giúp nhìn rõ khoảng cách giữa
-              CLIP và VisualBERT trên hai chỉ số chính.
+              Biểu đồ cột dùng dữ liệu thật từ <code>n24news_model_comparison.csv</code>,
+              cho thấy VisualBERT vượt CLIP trên accuracy, macro F1 và weighted F1.
             </p>
             <div class="chart-shell">
               <canvas id="mm-metrics-chart"></canvas>
@@ -199,17 +188,18 @@
           <article class="chart-card">
             <h3>F1 theo từng lớp</h3>
             <p class="chart-copy">
-              Biểu đồ sử dụng trực tiếp file <code>crisismmd_per_label_f1.csv</code>, cho thấy CLIP giữ lợi thế ở hầu hết lớp humanitarian.
+              Biểu đồ này được dựng từ <code>n24news_per_label_f1.csv</code>, giúp nhìn ra
+              lớp nào hai mô hình bám sát nhau và lớp nào VisualBERT vượt rõ rệt.
             </p>
             <div class="chart-shell">
               <canvas id="mm-per-label-chart"></canvas>
             </div>
           </article>
           <article class="chart-card wide">
-            <h3>Lịch sử validation macro F1</h3>
+            <h3>Lịch sử validation</h3>
             <p class="chart-copy">
-              Dữ liệu được lấy từ <code>crisismmd_clip_history.csv</code> và <code>crisismmd_visualbert_history.csv</code>.
-              CLIP hội tụ tốt hơn và sớm chạm mức validation macro F1 cao nhất.
+              Đường cong validation accuracy và macro F1 theo epoch của CLIP và VisualBERT.
+              VisualBERT tăng nhanh hơn và giữ ổn định tốt hơn trên tập dev.
             </p>
             <div class="chart-shell">
               <canvas id="mm-history-chart"></canvas>
@@ -218,8 +208,8 @@
           <article class="chart-card wide">
             <h3>Biểu đồ loss khi fine-tune</h3>
             <p class="chart-copy">
-              Biểu đồ này hiển thị cả train loss và validation loss của hai mô hình trong quá trình fine-tune,
-              giúp đối chiếu tốc độ hội tụ và độ ổn định của từng pipeline huấn luyện.
+              Train loss và dev loss của hai mô hình trong quá trình fine-tune.
+              Đây là cơ sở trực quan để đối chiếu mức hội tụ và độ ổn định khi huấn luyện.
             </p>
             <div class="chart-shell">
               <canvas id="mm-loss-chart"></canvas>
@@ -227,78 +217,132 @@
           </article>
         </div>
         <p class="results-note" style="margin-top: 1rem;">
-          Các biểu đồ bên trên dùng dữ liệu thật từ tệp kết quả sau khi chạy notebook. Confusion matrix Matplotlib vẫn
-          được giữ ở phần dưới như một lựa chọn xem tham chiếu, bên cạnh heatmap HTML/JS dựng từ ma trận số đếm thật.
+          Các biểu đồ trên dùng số liệu thật lấy từ artifact sau khi chạy notebook. Phần hình Matplotlib phía dưới
+          vẫn được giữ lại như lớp tham chiếu cho người xem muốn đối chiếu lại figure gốc.
         </p>
       </section>
 
       <section class="panel">
         <div class="section-heading">
-          <p class="section-kicker">Confusion matrix</p>
-          <h2>Heatmap tương tác</h2>
+          <p class="section-kicker">Mẫu dữ liệu</p>
+          <h2>Một số mẫu preview từ N24News</h2>
         </div>
-        <div id="interactive-confusion-root" class="error-analysis-stack">
-          <p class="empty-state">Đang tải heatmap confusion matrix từ tệp kết quả thực nghiệm.</p>
+        <div class="figure-grid">
+          <article class="figure-card">
+            <h3>Travel</h3>
+            <p>Afropunk, Huichica and More: 8 Music Festivals to Hit This Year</p>
+            <img src="./media/n24news-preview/01-travel.jpg" alt="Mẫu N24News lớp Travel">
+            <div class="figure-meta">
+              <span>Category: Travel</span>
+              <span>Official split</span>
+            </div>
+          </article>
+          <article class="figure-card">
+            <h3>Style</h3>
+            <p>The Repurposing of a Vogue Editor</p>
+            <img src="./media/n24news-preview/02-style.jpg" alt="Mẫu N24News lớp Style">
+            <div class="figure-meta">
+              <span>Category: Style</span>
+              <span>Official split</span>
+            </div>
+          </article>
+          <article class="figure-card">
+            <h3>Real Estate</h3>
+            <p>Sites for Aviation Buffs</p>
+            <img src="./media/n24news-preview/03-real-estate.jpg" alt="Mẫu N24News lớp Real Estate">
+            <div class="figure-meta">
+              <span>Category: Real Estate</span>
+              <span>Official split</span>
+            </div>
+          </article>
+          <article class="figure-card">
+            <h3>Television</h3>
+            <p>What's on TV Monday: 'Amy Schumer Learns to Cook' and 'Jawbreaker'</p>
+            <img src="./media/n24news-preview/04-television.jpg" alt="Mẫu N24News lớp Television">
+            <div class="figure-meta">
+              <span>Category: Television</span>
+              <span>Official split</span>
+            </div>
+          </article>
+          <article class="figure-card">
+            <h3>Economy</h3>
+            <p>Argentina Raises Key Rate to 40%, Bringing Economic Uncertainty</p>
+            <img src="./media/n24news-preview/05-economy.jpg" alt="Mẫu N24News lớp Economy">
+            <div class="figure-meta">
+              <span>Category: Economy</span>
+              <span>Official split</span>
+            </div>
+          </article>
+          <article class="figure-card">
+            <h3>Opinion</h3>
+            <p>Repurposing Drugs to Fight Cancer</p>
+            <img src="./media/n24news-preview/06-opinion.jpg" alt="Mẫu N24News lớp Opinion">
+            <div class="figure-meta">
+              <span>Category: Opinion</span>
+              <span>Official split</span>
+            </div>
+          </article>
         </div>
       </section>
 
       <section class="panel">
         <div class="section-heading">
           <p class="section-kicker">Matplotlib</p>
-          <h2>Hình tham chiếu và confusion matrix</h2>
+          <h2>Hình tham chiếu</h2>
         </div>
         <div class="figure-grid">
           <article class="figure-card">
-            <h3>EDA của CrisisMMD</h3>
-            <p>Biểu đồ phân bố lớp theo split và phân bố độ dài tweet trên toàn bộ task humanitarian.</p>
-            <img src="../artifacts/multimodal/crisismmd_eda_overview.png" alt="EDA của CrisisMMD humanitarian categories">
+            <h3>EDA của N24News</h3>
+            <p>Tổng quan số mẫu theo lớp và đặc trưng độ dài văn bản trên split official của bộ dữ liệu.</p>
+            <img src="../artifacts/multimodal/n24news_eda_overview.png" alt="EDA của N24News">
             <div class="figure-meta">
-              <span>Train: 6126</span>
-              <span>Dev: 998</span>
-              <span>Test: 955</span>
+              <span>61,235 mẫu</span>
+              <span>24 lớp</span>
             </div>
           </article>
           <article class="figure-card">
             <h3>Đường cong huấn luyện của CLIP</h3>
-            <p>CLIP đạt validation macro F1 tốt nhất và được giữ làm mô hình mạnh nhất của nhánh này.</p>
-            <img src="../artifacts/multimodal/crisismmd_clip_history.png" alt="Đường cong huấn luyện của CLIP trên CrisisMMD">
+            <p>CLIP hội tụ nhanh nhưng dev macro F1 vẫn thấp hơn VisualBERT trên cùng protocol.</p>
+            <img src="../artifacts/multimodal/n24news_clip_history.png" alt="Đường cong huấn luyện của CLIP trên N24News">
             <div class="figure-meta">
-              <span>Accuracy test: 0.8806</span>
-              <span>Macro F1: 0.7965</span>
+              <span>Accuracy test: 0.8488</span>
+              <span>Macro F1: 0.8064</span>
             </div>
           </article>
           <article class="figure-card">
             <h3>Đường cong huấn luyện của VisualBERT</h3>
-            <p>VisualBERT học được baseline hợp lý nhưng dừng ở mức thấp hơn CLIP trên validation và test.</p>
-            <img src="../artifacts/multimodal/crisismmd_visualbert_history.png" alt="Đường cong huấn luyện của VisualBERT trên CrisisMMD">
+            <p>VisualBERT đạt validation tốt hơn và tạo lợi thế rõ trên test split.</p>
+            <img src="../artifacts/multimodal/n24news_visualbert_history.png" alt="Đường cong huấn luyện của VisualBERT trên N24News">
             <div class="figure-meta">
-              <span>Accuracy test: 0.8115</span>
-              <span>Macro F1: 0.7290</span>
+              <span>Accuracy test: 0.8751</span>
+              <span>Macro F1: 0.8575</span>
             </div>
           </article>
           <article class="figure-card">
             <h3>F1 theo từng lớp</h3>
-            <p>Biểu đồ F1 theo lớp cho thấy CLIP giữ lợi thế ở hầu hết nhóm humanitarian chính.</p>
-            <img src="../artifacts/multimodal/crisismmd_per_label_f1.png" alt="Biểu đồ F1 theo từng lớp của CLIP và VisualBERT">
+            <p>Biểu đồ tổng hợp per-class F1 của CLIP và VisualBERT trên toàn bộ 24 lớp của N24News.</p>
+            <img src="../artifacts/multimodal/n24news_per_label_f1.png" alt="Biểu đồ per-class F1 trên N24News">
             <div class="figure-meta">
-              <span>Per-label F1</span>
-              <span>CLIP &gt; VisualBERT</span>
+              <span>CLIP vs VisualBERT</span>
+              <span>Per-class F1</span>
             </div>
           </article>
           <article class="figure-card">
-            <h3>CLIP Confusion Matrix</h3>
-            <p>Confusion matrix được tách riêng để người xem dễ đối chiếu hành vi của từng mô hình.</p>
-            <img src="../artifacts/multimodal/crisismmd_confusion_clip.png" alt="Confusion matrix của CLIP">
+            <h3>CLIP confusion matrix</h3>
+            <p>Phân bố nhầm lẫn của CLIP trên tập test của N24News.</p>
+            <img src="../artifacts/multimodal/n24news_clip_confusion_matrix.png" alt="CLIP confusion matrix trên N24News">
             <div class="figure-meta">
-              <span>Model: CLIP</span>
+              <span>Mô hình: CLIP</span>
+              <span>24 lớp</span>
             </div>
           </article>
           <article class="figure-card">
-            <h3>VisualBERT Confusion Matrix</h3>
-            <p>Phiên bản tách riêng cho VisualBERT, tránh buộc người xem phải zoom một hình ghép lớn.</p>
-            <img src="../artifacts/multimodal/crisismmd_confusion_visualbert.png" alt="Confusion matrix của VisualBERT">
+            <h3>VisualBERT confusion matrix</h3>
+            <p>Phân bố nhầm lẫn của VisualBERT trên tập test. Đây là mô hình tốt nhất của nhánh đa phương thức.</p>
+            <img src="../artifacts/multimodal/n24news_visualbert_confusion_matrix.png" alt="VisualBERT confusion matrix trên N24News">
             <div class="figure-meta">
-              <span>Model: VisualBERT</span>
+              <span>Mô hình: VisualBERT</span>
+              <span>24 lớp</span>
             </div>
           </article>
         </div>
@@ -306,26 +350,24 @@
 
       <section class="panel">
         <div class="section-heading">
-          <p class="section-kicker">Mã nguồn</p>
-          <h2>Xem mã nguồn trực tiếp</h2>
+          <p class="section-kicker">Notebook</p>
+          <h2>Mã nguồn và notebook</h2>
         </div>
-        <div data-code-viewer="multimodal"></div>
-        <div class="branch-link-row" style="margin-top: 1rem;">
+        <p class="results-note">
+          Notebook multimodal hiện đã chạy xong đầy đủ từ bước chuẩn bị dữ liệu, fine-tune cho đến export artifact.
+          Người xem có thể đọc notebook theo giao diện web hoặc mở trực tiếp tệp <code>.ipynb</code>.
+        </p>
+        <div class="branch-link-row" style="margin-top: 0.9rem;">
           <a class="button-link" href="./multimodal-notebook-viewer.html">Mở trình xem notebook</a>
           <a class="button-link button-secondary" href="../notebooks/text_image_classification.ipynb">Tệp notebook gốc (.ipynb)</a>
-          <a class="button-link button-secondary" href="../artifacts/multimodal/crisismmd_model_comparison.csv">Bảng số liệu so sánh</a>
-          <a class="button-link button-secondary" href="../artifacts/multimodal/crisismmd_metrics_summary.json">Tệp chỉ số (.json)</a>
+          <a class="button-link button-secondary" href="../artifacts/multimodal/n24news_model_comparison.csv">Bảng số liệu so sánh</a>
+          <a class="button-link button-secondary" href="../artifacts/multimodal/n24news_metrics_summary.json">Tóm tắt metric (JSON)</a>
         </div>
       </section>
     </main>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-  <script src="../../assets/js/multimodal-preview-data.js"></script>
-  <script src="../../assets/js/multimodal-preview.js"></script>
   <script src="../../assets/js/report-visual-data.js"></script>
   <script src="../../assets/js/report-charts.js"></script>
-  <script src="../../assets/js/report-heatmaps.js"></script>
-  <script src="../../assets/js/report-code-data.js"></script>
-  <script src="../../assets/js/code-viewer.js"></script>
 </body>
 </html>

@@ -1,0 +1,55 @@
+{
+  "dataset": "N24News",
+  "task": "image + news text -> category classification",
+  "split_sizes": {
+    "train": 48988,
+    "dev": 6123,
+    "test": 6124
+  },
+  "num_classes": 24,
+  "label_names": [
+    "Theater",
+    "Books",
+    "Health",
+    "Real Estate",
+    "Fashion & Style",
+    "Science",
+    "Technology",
+    "Dance",
+    "Television",
+    "Movies",
+    "Food",
+    "Opinion",
+    "Music",
+    "Media",
+    "Travel",
+    "Art & Design",
+    "Sports",
+    "Style",
+    "Automobiles",
+    "Economy",
+    "Your Money",
+    "Global Business",
+    "Education",
+    "Well"
+  ],
+  "models": {
+    "CLIP": {
+      "accuracy": 0.848791639451339,
+      "macro_f1": 0.8063637712893706,
+      "weighted_f1": 0.8346101567155595,
+      "loss": 1.9986581727619035
+    },
+    "VisualBERT": {
+      "accuracy": 0.8750816459830176,
+      "macro_f1": 0.8574857709215573,
+      "weighted_f1": 0.8732028740467108,
+      "loss": 0.3977566836103748
+    }
+  },
+  "sources": {
+    "official_repo": "https://github.com/billywzh717/N24News",
+    "paper": "https://aclanthology.org/2022.lrec-1.729/",
+    "drive": "https://drive.google.com/file/d/1OS1fXwZ1Vsj70lEQajccyssxQRYp5X9D/view?usp=share_link"
+  }
+}

@@ -1,26 +1,25 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import os
 import re
 import warnings
-from collections import Counter
 from functools import lru_cache
 from pathlib import Path
-from typing import Iterable
 
 import gradio as gr
-import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 from PIL import Image
 from transformers import (
+    AutoImageProcessor,
     AutoModelForSequenceClassification,
     AutoProcessor,
     AutoTokenizer,
     CLIPModel,
     CLIPVisionModel,
+    VisualBertConfig,
     VisualBertModel,
 )
 from transformers.utils import logging as hf_logging
@@ -31,6 +30,142 @@ warnings.filterwarnings(
     category=FutureWarning,
 )
 hf_logging.set_verbosity_error()
+
+
+TEXT_LABELS = [
+    "toxic",
+    "severe_toxic",
+    "obscene",
+    "threat",
+    "insult",
+    "identity_hate",
+]
+
+TEXT_LABEL_TITLES = {
+    "toxic": "Độc hại",
+    "severe_toxic": "Độc hại nghiêm trọng",
+    "obscene": "Tục tĩu",
+    "threat": "Đe dọa",
+    "insult": "Xúc phạm",
+    "identity_hate": "Thù ghét danh tính",
+}
+
+TEXT_LABEL_DESCRIPTIONS = {
+    "toxic": "Bình luận độc hại hoặc công kích nói chung.",
+    "severe_toxic": "Ngôn ngữ độc hại ở mức nghiêm trọng hơn.",
+    "obscene": "Câu chữ tục tĩu hoặc phản cảm.",
+    "threat": "Nội dung mang tính đe dọa hoặc bạo lực.",
+    "insult": "Lời lẽ xúc phạm trực tiếp cá nhân hoặc nhóm.",
+    "identity_hate": "Ngôn từ thù ghét nhắm vào đặc điểm danh tính.",
+}
+
+TEXT_EXAMPLES = [
+    ["You are such a disgusting person and nobody wants to hear your nonsense.", "Một mô hình", "BERT"],
+    ["I will find you and make you pay for this.", "So sánh hai mô hình", "BERT"],
+    ["This is the dumbest thing I have ever read.", "Một mô hình", "LSTM"],
+]
+
+token_pattern = re.compile(r"[a-z']+")
+
+DEMO_CSS = """
+.demo-shell {max-width: 1220px; margin: 0 auto;}
+.demo-hero {
+  padding: 24px 26px;
+  border-radius: 26px;
+  border: 1px solid rgba(19, 54, 95, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(208,175,103,0.16), transparent 28%),
+    linear-gradient(135deg, rgba(12,37,66,0.98), rgba(20,54,95,0.94));
+  color: #fffdfa;
+  margin-bottom: 18px;
+  box-shadow: 0 24px 48px rgba(19,54,95,0.16);
+}
+.demo-hero h1 {margin: 0 0 10px; color: #fffdfa; letter-spacing: -0.03em;}
+.demo-hero p, .demo-hero strong, .demo-hero code, .demo-hero a {color: #fffdfa !important;}
+.demo-hero code {
+  background: rgba(255,253,250,0.14);
+  border: 1px solid rgba(255,253,250,0.16);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+.demo-chip-row {display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;}
+.demo-chip {
+  display: inline-flex; align-items: center; min-height: 30px;
+  padding: 0 12px; border-radius: 999px; background: rgba(255,253,250,0.12);
+  color: #fffdfa; font-size: 13px; font-weight: 700;
+}
+.demo-card, .result-card {
+  border-radius: 22px;
+  border: 1px solid rgba(19, 54, 95, 0.12);
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(249,245,237,0.92));
+  padding: 20px;
+}
+.section-eyebrow {
+  display: inline-flex;
+  margin-bottom: 8px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #866526;
+  font-weight: 800;
+}
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.metric-tile {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(19,54,95,0.10);
+  background: rgba(255,255,255,0.82);
+}
+.metric-value {font-size: 1.5rem; font-weight: 800; color: #14365f;}
+.metric-label {margin-top: 6px; font-size: 12px; color: #6b7788; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800;}
+.compare-card {
+  border-radius: 20px;
+  border: 1px solid rgba(19,54,95,0.12);
+  background: linear-gradient(180deg, rgba(245,248,252,0.96), rgba(255,255,255,0.96));
+  padding: 18px;
+}
+.compare-row {display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px;}
+.compare-model {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(19,54,95,0.10);
+  background: rgba(255,255,255,0.84);
+}
+.compare-model h4 {margin: 0 0 8px; color: #14365f;}
+.winner-chip {
+  display:inline-flex; align-items:center; min-height:34px; padding:0 12px; border-radius:999px;
+  background: rgba(182,146,71,0.18); color:#7a5a14; font-size:12px; font-weight:800;
+}
+.demo-shell .tab-nav {
+  background: rgba(245,247,250,0.96);
+  border: 1px solid rgba(19,54,95,0.10);
+  border-radius: 999px;
+  padding: 6px;
+  gap: 8px;
+}
+.demo-shell .tab-nav button {
+  border-radius: 999px !important;
+  border: 0 !important;
+  min-height: 42px;
+  padding: 0 18px !important;
+  font-weight: 700;
+  color: #425469 !important;
+}
+.demo-shell .tab-nav button.selected {
+  background: linear-gradient(135deg, #14365f, #1d4d88) !important;
+  color: #fffdfa !important;
+  box-shadow: 0 12px 24px rgba(20,54,95,0.18);
+}
+.demo-shell .tabitem {
+  border-top: 0 !important;
+  padding-top: 18px !important;
+}
+"""
 
 
 def find_btl1_root() -> Path:
@@ -46,344 +181,28 @@ def find_btl1_root() -> Path:
 BTL1_ROOT = find_btl1_root()
 REPO_ROOT = BTL1_ROOT.parent
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 TEXT_ARTIFACT_DIR = BTL1_ROOT / "artifacts" / "text"
 MM_ARTIFACT_DIR = BTL1_ROOT / "artifacts" / "multimodal"
-PREVIEW_DIR = BTL1_ROOT / "reports" / "media" / "crisismmd-preview"
+N24_PROCESSED_DIR = BTL1_ROOT / "data" / "multimodal" / "n24news" / "processed"
+DEMO_PORT = int(os.getenv("DEMO_PORT", "43881"))
 
-TEXT_LABELS = [
-    "toxic",
-    "severe_toxic",
-    "obscene",
-    "threat",
-    "insult",
-    "identity_hate",
-]
 
-TEXT_LABEL_DESCRIPTIONS = {
-    "toxic": "Bình luận độc hại hoặc công kích nói chung.",
-    "severe_toxic": "Ngôn ngữ độc hại ở mức nghiêm trọng hơn.",
-    "obscene": "Câu chữ tục tĩu hoặc phản cảm.",
-    "threat": "Nội dung mang tính đe dọa hoặc bạo lực.",
-    "insult": "Lời lẽ xúc phạm trực tiếp cá nhân hoặc nhóm.",
-    "identity_hate": "Ngôn từ thù ghét nhắm vào đặc điểm danh tính.",
-}
-
-MM_LABELS = [
-    "affected_individuals",
-    "infrastructure_and_utility_damage",
-    "rescue_volunteering_or_donation_effort",
-    "other_relevant_information",
-    "not_humanitarian",
-]
-
-MM_LABEL_TITLES = {
-    "affected_individuals": "Người bị ảnh hưởng trực tiếp",
-    "infrastructure_and_utility_damage": "Hư hại hạ tầng và tiện ích",
-    "rescue_volunteering_or_donation_effort": "Quyên góp và cứu trợ",
-    "other_relevant_information": "Thông tin liên quan khác",
-    "not_humanitarian": "Không thuộc nhóm humanitarian",
-}
-
-TEXT_EXAMPLES = [
-    ["You are such a disgusting person and nobody wants to hear your nonsense.", "Single model", "BERT"],
-    ["I will find you and make you pay for this.", "Compare both models", "BERT"],
-    ["This is the dumbest thing I have ever read.", "Single model", "LSTM"],
-]
-
-MULTIMODAL_EXAMPLES = [
-    [
-        str(PREVIEW_DIR / "rescue_volunteering_or_donation_effort.jpg"),
-        ".@Lendio has a great event tomorrow for both #BYU and #Utah fans to support Hurricane Harvey relief.",
-        "Single model",
-        "CLIP",
-    ],
-    [
-        str(PREVIEW_DIR / "infrastructure_and_utility_damage.jpg"),
-        "Guaynabo resident Efrain Diaz stands by a bridge washed out by rains carrying debris from Hurricane Maria.",
-        "Compare both models",
-        "CLIP",
-    ],
-    [
-        str(PREVIEW_DIR / "affected_individuals_2.jpg"),
-        "Iran's Mullah regime imposes new measures to quell earthquake victims.",
-        "Single model",
-        "VisualBERT",
-    ],
-]
-
-DEMO_CSS = """
-.demo-shell {max-width: 1240px; margin: 0 auto;}
-.demo-hero {
-  padding: 24px 26px;
-  border-radius: 26px;
-  border: 1px solid rgba(19, 54, 95, 0.14);
-  background:
-    radial-gradient(circle at top right, rgba(208,175,103,0.16), transparent 28%),
-    linear-gradient(135deg, rgba(12,37,66,0.98), rgba(20,54,95,0.94));
-  color: #fffdfa;
-  margin-bottom: 18px;
-  box-shadow: 0 24px 48px rgba(19,54,95,0.16);
-}
-.demo-hero h1, .demo-hero h2 {margin: 0 0 10px; color: #fffdfa; letter-spacing: -0.03em;}
-.demo-hero p {margin: 0; color: rgba(255,253,250,0.88); line-height: 1.7; max-width: 980px;}
-.demo-hero p,
-.demo-hero span,
-.demo-hero strong,
-.demo-hero b,
-.demo-hero a,
-.demo-hero code,
-.demo-hero li {
-  color: #fffdfa !important;
-}
-.demo-hero a {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.demo-hero code {
-  background: rgba(255,253,250,0.14);
-  border: 1px solid rgba(255,253,250,0.16);
-  padding: 2px 6px;
-  border-radius: 8px;
-}
-.demo-chip-row {display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;}
-.demo-chip {
-  display: inline-flex; align-items: center; min-height: 30px;
-  padding: 0 12px; border-radius: 999px; background: rgba(255,253,250,0.12);
-  color: #fffdfa; font-size: 13px; font-weight: 700;
-}
-.demo-card {
-  border-radius: 22px;
-  border: 1px solid rgba(19, 54, 95, 0.12);
-  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(249,245,237,0.92));
-  padding: 20px;
-}
-.result-card {
-  border-radius: 20px;
-  border: 1px solid rgba(19, 54, 95, 0.12);
-  background: linear-gradient(180deg, rgba(245,248,252,0.96), rgba(255,255,255,0.96));
-  padding: 18px;
-}
-.result-card h3 {margin: 0 0 8px; color: #14365f;}
-.result-card p {margin: 0; line-height: 1.7; color: #304256;}
-.section-eyebrow {
-  display: inline-flex;
-  margin-bottom: 8px;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #866526;
-  font-weight: 800;
-}
-.summary-title-row,
-.compare-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-.summary-title-row h3,
-.compare-panel-header h3 {
-  margin-bottom: 6px;
-}
-.prediction-tags {display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;}
-.prediction-tag {
-  display: inline-flex; align-items: center; min-height: 34px; padding: 0 12px;
-  border-radius: 999px; background: rgba(182,146,71,0.14); color: #14365f; font-weight: 700;
-}
-.prediction-subtle {margin-top: 10px; font-size: 13px; color: #5d6776;}
-.model-chip,
-.winner-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 0 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-}
-.model-chip {
-  background: rgba(19,54,95,0.08);
-  color: #14365f;
-}
-.winner-chip {
-  background: rgba(182,146,71,0.18);
-  color: #7a5a14;
-}
-.compare-header {display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px;}
-.compare-delta {display:inline-flex; align-items:center; min-height:32px; padding:0 12px; border-radius:999px; background:rgba(19,54,95,0.08); color:#14365f; font-weight:700;}
-.compare-delta.is-positive {background: rgba(182,146,71,0.18);}
-.benchmark-grid,
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
-}
-.benchmark-tile,
-.stat-tile {
-  padding: 14px 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(19,54,95,0.10);
-  background: rgba(255,255,255,0.82);
-}
-.benchmark-value,
-.stat-value {
-  font-size: 1.55rem;
-  line-height: 1.1;
-  font-weight: 800;
-  color: #14365f;
-}
-.benchmark-label,
-.stat-label {
-  margin-top: 6px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b7788;
-  font-weight: 800;
-}
-.benchmark-meta,
-.stat-meta {
-  margin-top: 6px;
-  color: #425469;
-  font-size: 13px;
-}
-.compare-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 14px;
-}
-.compare-model-card {
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(19,54,95,0.10);
-  background: rgba(255,255,255,0.84);
-}
-.compare-model-card.is-winner {
-  border-color: rgba(182,146,71,0.45);
-  box-shadow: 0 18px 32px rgba(182,146,71,0.12);
-  background: linear-gradient(180deg, rgba(255,250,240,0.96), rgba(255,255,255,0.92));
-}
-.compare-model-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.compare-model-head h4 {
-  margin: 0;
-  color: #14365f;
-  font-size: 1.05rem;
-}
-.compare-model-subtle {
-  color: #59687b;
-  font-size: 13px;
-}
-.compare-kpi-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
-}
-.mini-table {width:100%; margin-top:12px; border-collapse:collapse;}
-.mini-table th, .mini-table td {padding:8px 0; text-align:left; border-bottom:1px solid rgba(19,54,95,0.08); color:#304256;}
-.mini-table th {color:#14365f; font-size:0.88rem;}
-.task-note {margin-top:12px; padding:12px 14px; border-radius:16px; background:rgba(19,54,95,0.06); color:#425469; line-height:1.7;}
-.task-tabs {margin-top: 12px;}
-.gradio-container .task-tabs [role="tablist"],
-.gradio-container .task-tabs .tab-nav,
-.gradio-container button[role="tab"] {
-  font-family: inherit;
-}
-.gradio-container .task-tabs [role="tablist"],
-.gradio-container .task-tabs .tab-nav {
-  display: flex;
-  gap: 10px;
-  padding: 8px;
-  border-radius: 20px;
-  border: 1px solid rgba(19,54,95,0.12);
-  background: linear-gradient(180deg, rgba(245,248,252,0.98), rgba(255,255,255,0.94));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 16px 30px rgba(19,54,95,0.05);
-  margin: 4px 0 20px;
-}
-.gradio-container .task-tabs button[role="tab"],
-.gradio-container .task-tabs .tab-nav button,
-.gradio-container button[role="tab"] {
-  min-height: 52px !important;
-  padding: 0 22px !important;
-  border-radius: 16px !important;
-  border: 1px solid transparent !important;
-  background: transparent !important;
-  color: #425469 !important;
-  font-weight: 800 !important;
-  font-size: 15px !important;
-  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, transform 0.18s ease;
-}
-.gradio-container .task-tabs button[role="tab"] *,
-.gradio-container .task-tabs .tab-nav button *,
-.gradio-container button[role="tab"] * {
-  color: inherit !important;
-}
-.gradio-container .task-tabs button[role="tab"]:hover,
-.gradio-container .task-tabs .tab-nav button:hover,
-.gradio-container button[role="tab"]:hover {
-  background: rgba(19,54,95,0.06);
-  color: #14365f !important;
-  transform: translateY(-1px);
-}
-.gradio-container .task-tabs button[role="tab"][aria-selected="true"],
-.gradio-container .task-tabs button[role="tab"].selected,
-.gradio-container .task-tabs .tab-nav button[aria-selected="true"],
-.gradio-container .task-tabs .tab-nav button.selected,
-.gradio-container button[role="tab"][aria-selected="true"],
-.gradio-container button[role="tab"].selected {
-  background: linear-gradient(135deg, rgba(19,54,95,0.98), rgba(38,76,121,0.96)) !important;
-  border-color: rgba(182,146,71,0.55) !important;
-  color: #fffdfa !important;
-  box-shadow: 0 14px 28px rgba(19,54,95,0.18), inset 0 1px 0 rgba(255,255,255,0.08);
-  transform: translateY(-1px);
-}
-.gradio-container .task-tabs button[role="tab"][aria-selected="true"] *,
-.gradio-container .task-tabs button[role="tab"].selected *,
-.gradio-container .task-tabs .tab-nav button[aria-selected="true"] *,
-.gradio-container .task-tabs .tab-nav button.selected *,
-.gradio-container button[role="tab"][aria-selected="true"] *,
-.gradio-container button[role="tab"].selected * {
-  color: #fffdfa !important;
-}
-@media (max-width: 980px) {
-  .benchmark-grid,
-  .stat-grid,
-  .compare-kpi-row,
-  .compare-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-@media (max-width: 720px) {
-  .benchmark-grid,
-  .stat-grid,
-  .compare-kpi-row,
-  .compare-grid {
-    grid-template-columns: 1fr;
-  }
-  .summary-title-row,
-  .compare-panel-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-"""
+def ensure_file(path: Path) -> Path:
+    if not path.exists():
+        raise FileNotFoundError(path)
+    return path
 
 
 class LSTMClassifier(nn.Module):
-    def __init__(self, vocab_size: int, embed_dim: int, hidden_dim: int, num_labels: int, dropout: float) -> None:
+    def __init__(self, vocab_size: int, embed_dim: int, hidden_dim: int, num_labels: int, dropout: float):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0)
-        self.encoder = nn.LSTM(embed_dim, hidden_dim, batch_first=True, bidirectional=True)
+        self.encoder = nn.LSTM(
+            input_size=embed_dim,
+            hidden_size=hidden_dim,
+            batch_first=True,
+            bidirectional=True,
+        )
         self.dropout = nn.Dropout(dropout)
         self.classifier = nn.Linear(hidden_dim * 2, num_labels)
 
@@ -402,53 +221,49 @@ class LSTMClassifier(nn.Module):
         return self.classifier(self.dropout(pooled))
 
 
-class ClipClassifier(nn.Module):
-    def __init__(self, model_name: str, num_classes: int) -> None:
+class CLIPClassifier(nn.Module):
+    def __init__(self, backbone: str, num_labels: int, dropout: float):
         super().__init__()
-        self.backbone = CLIPModel.from_pretrained(model_name)
-        dim = self.backbone.config.projection_dim
-        self.classifier = nn.Linear(dim * 2, num_classes)
+        self.backbone = CLIPModel.from_pretrained(backbone)
+        hidden_size = self.backbone.config.projection_dim
+        self.dropout = nn.Dropout(dropout)
+        self.classifier = nn.Linear(hidden_size * 2, num_labels)
 
-    def forward(
-        self,
-        input_ids: torch.Tensor,
-        attention_mask: torch.Tensor,
-        pixel_values: torch.Tensor,
-    ) -> torch.Tensor:
-        outputs = self.backbone(
+    def forward(self, input_ids, attention_mask, pixel_values):
+        image_features = self.backbone.get_image_features(pixel_values=pixel_values)
+        text_features = self.backbone.get_text_features(
             input_ids=input_ids,
             attention_mask=attention_mask,
-            pixel_values=pixel_values,
         )
-        features = torch.cat([outputs.image_embeds, outputs.text_embeds], dim=1)
-        return self.classifier(features)
+        image_features = nn.functional.normalize(image_features, dim=-1)
+        text_features = nn.functional.normalize(text_features, dim=-1)
+        fused = torch.cat([image_features, text_features], dim=-1)
+        return self.classifier(self.dropout(fused))
 
 
-class VisualBertClassifier(nn.Module):
-    def __init__(self, model_name: str, vision_name: str, num_classes: int) -> None:
+class VisualBERTClassifier(nn.Module):
+    def __init__(self, visualbert_backbone: str, vision_backbone: str, num_labels: int, dropout: float, max_visual_tokens: int):
         super().__init__()
-        self.vision_encoder = CLIPVisionModel.from_pretrained(vision_name)
-        self.visualbert = VisualBertModel.from_pretrained(model_name)
-        clip_dim = self.vision_encoder.config.hidden_size
-        visual_dim = self.visualbert.config.visual_embedding_dim
-        hidden_dim = self.visualbert.config.hidden_size
-        self.visual_projection = nn.Linear(clip_dim, visual_dim)
-        self.classifier = nn.Linear(hidden_dim, num_classes)
-
-    def forward(
-        self,
-        input_ids: torch.Tensor,
-        attention_mask: torch.Tensor,
-        pixel_values: torch.Tensor,
-        token_type_ids: torch.Tensor,
-    ) -> torch.Tensor:
-        vision_outputs = self.vision_encoder(pixel_values=pixel_values)
-        visual_embeds = self.visual_projection(vision_outputs.last_hidden_state)
-        visual_attention_mask = torch.ones(
-            visual_embeds.shape[:2], dtype=torch.long, device=visual_embeds.device
+        self.vision_encoder = CLIPVisionModel.from_pretrained(vision_backbone)
+        config = VisualBertConfig.from_pretrained(visualbert_backbone)
+        config.visual_embedding_dim = self.vision_encoder.config.hidden_size
+        self.backbone = VisualBertModel.from_pretrained(
+            visualbert_backbone,
+            config=config,
+            ignore_mismatched_sizes=True,
         )
-        visual_token_type_ids = torch.ones_like(visual_attention_mask)
-        outputs = self.visualbert(
+        self.dropout = nn.Dropout(dropout)
+        self.classifier = nn.Linear(config.hidden_size, num_labels)
+        self.max_visual_tokens = max_visual_tokens
+
+    def forward(self, input_ids, attention_mask, token_type_ids, pixel_values):
+        visual_outputs = self.vision_encoder(pixel_values=pixel_values, return_dict=True)
+        visual_embeds = visual_outputs.last_hidden_state[:, 1 : 1 + self.max_visual_tokens, :]
+        batch_size, visual_tokens, _ = visual_embeds.shape
+        visual_attention_mask = torch.ones((batch_size, visual_tokens), dtype=torch.long, device=visual_embeds.device)
+        visual_token_type_ids = torch.ones((batch_size, visual_tokens), dtype=torch.long, device=visual_embeds.device)
+
+        outputs = self.backbone(
             input_ids=input_ids,
             attention_mask=attention_mask,
             token_type_ids=token_type_ids,
@@ -458,68 +273,29 @@ class VisualBertClassifier(nn.Module):
             return_dict=True,
         )
         pooled = outputs.pooler_output if outputs.pooler_output is not None else outputs.last_hidden_state[:, 0]
-        return self.classifier(pooled)
+        return self.classifier(self.dropout(pooled))
 
 
-def ensure_file(path: Path) -> Path:
-    if not path.exists():
-        raise FileNotFoundError(f"Missing required file: {path}")
-    return path
+def tokenize(text: str) -> list[str]:
+    return token_pattern.findall(text.lower())
 
 
-def tokenize_lstm(text: str) -> list[str]:
-    return re.findall(r"[a-z']+", text.lower())
+def encode_text(text: str, vocab: dict[str, int], max_length: int = 300) -> list[int]:
+    ids = [vocab.get(token, vocab["<unk>"]) for token in tokenize(text)[:max_length]]
+    return ids if ids else [vocab["<unk>"]]
 
 
-def encode_lstm_text(text: str, vocab: dict[str, int], max_length: int) -> list[int]:
-    token_ids = [vocab.get(token, vocab["<unk>"]) for token in tokenize_lstm(text)[:max_length]]
-    return token_ids if token_ids else [vocab["<unk>"]]
+def load_image(image_input) -> Image.Image:
+    if image_input is None or str(image_input).strip() == "":
+        raise gr.Error("Vui lòng chọn một ảnh đầu vào.")
+    return Image.open(image_input).convert("RGB")
 
 
-def build_text_summary(predicted: list[str], scores: dict[str, float], model_name: str) -> str:
-    if predicted:
-        tags = "".join(
-            f'<span class="prediction-tag">{label} · {scores[label]:.3f}</span>' for label in predicted
-        )
-        explanation = "Các nhãn hiển thị phía dưới là những nhãn có xác suất vượt ngưỡng 0.50."
-    else:
-        top_label = max(scores, key=scores.get)
-        tags = f'<span class="prediction-tag">{top_label} · {scores[top_label]:.3f}</span>'
-        explanation = "Không có nhãn nào vượt ngưỡng 0.50, nên demo hiển thị nhãn có xác suất cao nhất để tham khảo."
-
-    return f"""
-    <div class="result-card">
-      <span class="section-eyebrow">Single Model</span>
-      <div class="summary-title-row">
-        <div>
-          <h3>Kết quả suy luận với {model_name}</h3>
-          <p>Đây là bài toán multi-label, nên một comment có thể nhận nhiều nhãn cùng lúc.</p>
-        </div>
-        <span class="model-chip">{model_name}</span>
-      </div>
-      <div class="prediction-tags">{tags}</div>
-      <p class="prediction-subtle">{explanation}</p>
-    </div>
-    """
-
-
-def build_mm_summary(top_label: str, score: float, model_name: str) -> str:
-    return f"""
-    <div class="result-card">
-      <span class="section-eyebrow">Single Model</span>
-      <div class="summary-title-row">
-        <div>
-          <h3>Kết quả suy luận với {model_name}</h3>
-          <p>Dự đoán cuối cùng cho cặp <strong>tweet + image</strong> là:</p>
-        </div>
-        <span class="model-chip">{model_name}</span>
-      </div>
-      <div class="prediction-tags">
-        <span class="prediction-tag">{MM_LABEL_TITLES[top_label]} · {score:.3f}</span>
-      </div>
-      <p class="prediction-subtle">Nhãn hiển thị là nhãn 5 lớp cuối cùng của task humanitarian categories.</p>
-    </div>
-    """
+def shorten_text(text: str, limit: int = 480) -> str:
+    text = " ".join(str(text or "").split())
+    if len(text) <= limit:
+        return text
+    return text[: limit - 1].rstrip() + "…"
 
 
 @lru_cache(maxsize=1)
@@ -528,8 +304,8 @@ def load_text_metrics() -> dict:
 
 
 @lru_cache(maxsize=1)
-def load_mm_metrics() -> dict:
-    return json.loads(ensure_file(MM_ARTIFACT_DIR / "crisismmd_metrics_summary.json").read_text(encoding="utf-8"))
+def load_multimodal_metrics() -> dict:
+    return json.loads(ensure_file(MM_ARTIFACT_DIR / "n24news_metrics_summary.json").read_text(encoding="utf-8"))
 
 
 @lru_cache(maxsize=1)
@@ -549,16 +325,14 @@ def load_bert_bundle():
 @lru_cache(maxsize=1)
 def load_lstm_bundle():
     vocab = json.loads(ensure_file(TEXT_ARTIFACT_DIR / "lstm_vocab.json").read_text(encoding="utf-8"))
-    state_dict = torch.load(ensure_file(TEXT_ARTIFACT_DIR / "lstm_multilabel_best.pt"), map_location=DEVICE)
-    embed_dim = state_dict["embedding.weight"].shape[1]
-    hidden_dim = state_dict["classifier.weight"].shape[1] // 2
     model = LSTMClassifier(
         vocab_size=len(vocab),
-        embed_dim=embed_dim,
-        hidden_dim=hidden_dim,
+        embed_dim=128,
+        hidden_dim=192,
         num_labels=len(TEXT_LABELS),
         dropout=0.3,
     )
+    state_dict = torch.load(ensure_file(TEXT_ARTIFACT_DIR / "lstm_multilabel_best.pt"), map_location=DEVICE)
     model.load_state_dict(state_dict)
     model.to(DEVICE).eval()
     return vocab, model
@@ -566,548 +340,451 @@ def load_lstm_bundle():
 
 @lru_cache(maxsize=1)
 def load_clip_bundle():
-    processor = AutoProcessor.from_pretrained("openai/clip-vit-base-patch32")
-    model = ClipClassifier("openai/clip-vit-base-patch32", num_classes=len(MM_LABELS))
-    state_dict = torch.load(ensure_file(MM_ARTIFACT_DIR / "crisismmd_clip_best.pt"), map_location=DEVICE)
-    model.load_state_dict(state_dict)
+    checkpoint = torch.load(ensure_file(MM_ARTIFACT_DIR / "n24news_clip_best.pt"), map_location=DEVICE)
+    cfg = checkpoint["config"]
+    labels = checkpoint["label_names"]
+    processor = AutoProcessor.from_pretrained(cfg["backbone"])
+    model = CLIPClassifier(cfg["backbone"], len(labels), cfg["dropout"])
+    model.load_state_dict(checkpoint["model_state_dict"])
     model.to(DEVICE).eval()
-    return processor, model
+    return processor, model, labels, cfg
 
 
 @lru_cache(maxsize=1)
 def load_visualbert_bundle():
-    processor = AutoProcessor.from_pretrained("openai/clip-vit-base-patch32")
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-    model = VisualBertClassifier(
-        model_name="uclanlp/visualbert-vqa-coco-pre",
-        vision_name="openai/clip-vit-base-patch32",
-        num_classes=len(MM_LABELS),
+    checkpoint = torch.load(ensure_file(MM_ARTIFACT_DIR / "n24news_visualbert_best.pt"), map_location=DEVICE)
+    cfg = checkpoint["config"]
+    labels = checkpoint["label_names"]
+    tokenizer = AutoTokenizer.from_pretrained(cfg["tokenizer_name"])
+    image_processor = AutoImageProcessor.from_pretrained(cfg["vision_backbone"])
+    model = VisualBERTClassifier(
+        visualbert_backbone=cfg["visualbert_backbone"],
+        vision_backbone=cfg["vision_backbone"],
+        num_labels=len(labels),
+        dropout=cfg["dropout"],
+        max_visual_tokens=cfg["max_visual_tokens"],
     )
-    state_dict = torch.load(ensure_file(MM_ARTIFACT_DIR / "crisismmd_visualbert_best.pt"), map_location=DEVICE)
-    model.load_state_dict(state_dict)
+    model.load_state_dict(checkpoint["model_state_dict"])
     model.to(DEVICE).eval()
-    return processor, tokenizer, model
+    return tokenizer, image_processor, model, labels, cfg
 
-
-def run_text_model(comment: str, model_name: str) -> dict:
-    with torch.no_grad():
-        if model_name == "BERT":
-            tokenizer, model = load_bert_bundle()
-            encoded = tokenizer([comment], padding=True, truncation=True, max_length=192, return_tensors="pt")
-            encoded = {key: value.to(DEVICE) for key, value in encoded.items()}
-            logits = model(**encoded).logits
-        else:
-            vocab, model = load_lstm_bundle()
-            token_ids = encode_lstm_text(comment, vocab, max_length=300)
-            input_ids = torch.tensor([token_ids], dtype=torch.long, device=DEVICE)
-            lengths = torch.tensor([len(token_ids)], dtype=torch.long, device=DEVICE)
-            logits = model(input_ids, lengths)
-    probs = torch.sigmoid(logits)[0].detach().cpu().tolist()
-    scores = {label: float(prob) for label, prob in zip(TEXT_LABELS, probs)}
-    predicted = [label for label, prob in scores.items() if prob >= 0.5]
-    top_label = max(scores, key=scores.get)
-    return {"model": model_name, "scores": scores, "predicted": predicted, "top_label": top_label}
-
-
-def run_mm_model(image, tweet_text: str, model_name: str) -> dict:
-    if isinstance(image, (str, Path)):
-        image = Image.open(image).convert("RGB")
-    elif isinstance(image, Image.Image):
-        image = image.convert("RGB")
-    else:
-        image = Image.fromarray(image).convert("RGB")
-    with torch.no_grad():
-        if model_name == "CLIP":
-            processor, model = load_clip_bundle()
-            encoded = processor(text=[tweet_text], images=[image], padding=True, truncation=True, max_length=77, return_tensors="pt")
-            encoded = {key: value.to(DEVICE) for key, value in encoded.items()}
-            logits = model(**encoded)
-        else:
-            processor, tokenizer, model = load_visualbert_bundle()
-            image_inputs = processor(images=[image], return_tensors="pt")
-            text_inputs = tokenizer([tweet_text], padding=True, truncation=True, max_length=64, return_tensors="pt")
-            if "token_type_ids" not in text_inputs:
-                text_inputs["token_type_ids"] = torch.zeros_like(text_inputs["input_ids"])
-            batch = {
-                "input_ids": text_inputs["input_ids"].to(DEVICE),
-                "attention_mask": text_inputs["attention_mask"].to(DEVICE),
-                "token_type_ids": text_inputs["token_type_ids"].to(DEVICE),
-                "pixel_values": image_inputs["pixel_values"].to(DEVICE),
-            }
-            logits = model(**batch)
-    probs = torch.softmax(logits, dim=1)[0].detach().cpu().tolist()
-    scores = {label: float(prob) for label, prob in zip(MM_LABELS, probs)}
-    top_label = max(scores, key=scores.get)
-    return {"model": model_name, "scores": scores, "top_label": top_label}
-
-def build_text_table(scores: dict[str, float]) -> pd.DataFrame:
-    return pd.DataFrame(
-        [
-            {
-                "Nhãn": label,
-                "Xác suất": round(scores[label], 4),
-                "Mô tả": TEXT_LABEL_DESCRIPTIONS[label],
-            }
-            for label in sorted(TEXT_LABELS, key=lambda item: scores[item], reverse=True)
-        ]
+def predict_with_bert(text: str) -> dict[str, float]:
+    tokenizer, model = load_bert_bundle()
+    encoded = tokenizer(
+        [text],
+        padding=True,
+        truncation=True,
+        max_length=192,
+        return_tensors="pt",
     )
+    encoded = {key: value.to(DEVICE) for key, value in encoded.items()}
+    with torch.no_grad():
+        logits = model(**encoded).logits[0]
+    probs = torch.sigmoid(logits).detach().cpu().tolist()
+    return dict(zip(TEXT_LABELS, probs))
 
 
-def build_text_compare_table(bert_scores: dict[str, float], lstm_scores: dict[str, float]) -> pd.DataFrame:
-    rows = []
-    for label in TEXT_LABELS:
-        bert_score = bert_scores[label]
-        lstm_score = lstm_scores[label]
-        rows.append(
-            {
-                "Nhãn": label,
-                "BERT": round(bert_score, 4),
-                "LSTM": round(lstm_score, 4),
-                "Chênh lệch (BERT-LSTM)": round(bert_score - lstm_score, 4),
-                "Mô tả": TEXT_LABEL_DESCRIPTIONS[label],
-            }
-        )
-    return pd.DataFrame(rows).sort_values("BERT", ascending=False).reset_index(drop=True)
+def predict_with_lstm(text: str) -> dict[str, float]:
+    vocab, model = load_lstm_bundle()
+    token_ids = encode_text(text, vocab)
+    input_ids = torch.tensor([token_ids], dtype=torch.long, device=DEVICE)
+    lengths = torch.tensor([len(token_ids)], dtype=torch.long, device=DEVICE)
+    with torch.no_grad():
+        logits = model(input_ids, lengths)[0]
+    probs = torch.sigmoid(logits).detach().cpu().tolist()
+    return dict(zip(TEXT_LABELS, probs))
 
 
-def build_mm_table(scores: dict[str, float]) -> pd.DataFrame:
-    return pd.DataFrame(
-        [
-            {
-                "Nhãn": label,
-                "Tên hiển thị": MM_LABEL_TITLES[label],
-                "Xác suất": round(scores[label], 4),
-            }
-            for label in sorted(MM_LABELS, key=lambda item: scores[item], reverse=True)
-        ]
+def predict_with_clip(image: Image.Image, text: str) -> dict[str, float]:
+    processor, model, labels, cfg = load_clip_bundle()
+    encoded = processor(
+        text=[text],
+        images=[image],
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=cfg["max_text_length"],
     )
+    encoded = {key: value.to(DEVICE) for key, value in encoded.items()}
+    with torch.no_grad():
+        logits = model(
+            input_ids=encoded["input_ids"],
+            attention_mask=encoded["attention_mask"],
+            pixel_values=encoded["pixel_values"],
+        )[0]
+    probs = torch.softmax(logits, dim=-1).detach().cpu().tolist()
+    return dict(zip(labels, probs))
 
 
-def build_mm_compare_table(clip_scores: dict[str, float], vb_scores: dict[str, float]) -> pd.DataFrame:
+def predict_with_visualbert(image: Image.Image, text: str) -> dict[str, float]:
+    tokenizer, image_processor, model, labels, cfg = load_visualbert_bundle()
+    text_inputs = tokenizer(
+        [text],
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=cfg["max_text_length"],
+    )
+    pixel_values = image_processor(images=[image], return_tensors="pt")["pixel_values"]
+    batch_inputs = {
+        "input_ids": text_inputs["input_ids"].to(DEVICE),
+        "attention_mask": text_inputs["attention_mask"].to(DEVICE),
+        "token_type_ids": text_inputs.get("token_type_ids", torch.zeros_like(text_inputs["input_ids"])).to(DEVICE),
+        "pixel_values": pixel_values.to(DEVICE),
+    }
+    with torch.no_grad():
+        logits = model(**batch_inputs)[0]
+    probs = torch.softmax(logits, dim=-1).detach().cpu().tolist()
+    return dict(zip(labels, probs))
+
+
+def top_label(scores: dict[str, float]) -> str:
+    return max(scores.items(), key=lambda item: item[1])[0]
+
+
+def build_score_table(
+    model_a: str,
+    scores_a: dict[str, float],
+    model_b: str | None = None,
+    scores_b: dict[str, float] | None = None,
+    title_map: dict[str, str] | None = None,
+    top_n: int | None = None,
+) -> pd.DataFrame:
     rows = []
-    for label in MM_LABELS:
-        clip_score = clip_scores[label]
-        vb_score = vb_scores[label]
-        rows.append(
-            {
-                "Nhãn": label,
-                "Tên hiển thị": MM_LABEL_TITLES[label],
-                "CLIP": round(clip_score, 4),
-                "VisualBERT": round(vb_score, 4),
-                "Chênh lệch (CLIP-VB)": round(clip_score - vb_score, 4),
-            }
-        )
-    return pd.DataFrame(rows).sort_values("CLIP", ascending=False).reset_index(drop=True)
+    for label, score_a in scores_a.items():
+        display = title_map.get(label, label) if title_map else label
+        row = {"Nhãn": display, model_a: round(score_a, 4)}
+        if model_b and scores_b:
+            score_b = scores_b[label]
+            row[model_b] = round(score_b, 4)
+            row["Chênh lệch"] = round(score_a - score_b, 4)
+            row["_sort"] = max(score_a, score_b)
+        else:
+            row["_sort"] = score_a
+        rows.append(row)
+    frame = pd.DataFrame(rows).sort_values("_sort", ascending=False).drop(columns="_sort")
+    if top_n is not None:
+        frame = frame.head(top_n)
+    return frame.reset_index(drop=True)
 
-def render_text_benchmark() -> str:
+
+def render_single_text_result(model_name: str, scores: dict[str, float]) -> str:
+    label = top_label(scores)
+    tags = "".join(
+        f'<span class="demo-chip">{TEXT_LABEL_TITLES[name]}: {score:.3f}</span>'
+        for name, score in sorted(scores.items(), key=lambda item: item[1], reverse=True)[:3]
+    )
+    return f"""
+    <div class="compare-card">
+      <span class="section-eyebrow">Kết quả suy luận</span>
+      <h3>{model_name}</h3>
+      <p><strong>Nhãn nổi bật:</strong> {TEXT_LABEL_TITLES[label]}</p>
+      <p>{TEXT_LABEL_DESCRIPTIONS[label]}</p>
+      <div class="demo-chip-row">{tags}</div>
+    </div>
+    """
+
+
+def render_compare_text_result(bert_scores: dict[str, float], lstm_scores: dict[str, float]) -> str:
     metrics = load_text_metrics()
-    bert = metrics["bert"]
-    lstm = metrics["lstm"]
+    winner = "BERT" if metrics["bert"]["macro_f1"] >= metrics["lstm"]["macro_f1"] else "LSTM"
+    bert_label = TEXT_LABEL_TITLES[top_label(bert_scores)]
+    lstm_label = TEXT_LABEL_TITLES[top_label(lstm_scores)]
+    delta_macro = metrics["bert"]["macro_f1"] - metrics["lstm"]["macro_f1"]
+
     return f"""
-    <div class="result-card">
-      <div class="compare-panel-header">
+    <div class="compare-card">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
         <div>
-          <span class="section-eyebrow">Benchmark</span>
-          <h3>Performance snapshot</h3>
-          <p>BERT hiện là mô hình dẫn đầu của nhánh văn bản trên cùng test split.</p>
+          <span class="section-eyebrow">Compare mode</span>
+          <h3>BERT vs LSTM</h3>
+          <p>So sánh trực tiếp hai mô hình trên cùng một bình luận đầu vào.</p>
         </div>
-        <span class="winner-chip">BERT dẫn đầu</span>
+        <span class="winner-chip">{winner} dẫn đầu benchmark</span>
       </div>
-      <div class="benchmark-grid">
-        <div class="benchmark-tile">
-          <div class="benchmark-value">{bert['exact_match_accuracy']:.4f}</div>
-          <div class="benchmark-label">Exact-match</div>
-          <div class="benchmark-meta">BERT</div>
-        </div>
-        <div class="benchmark-tile">
-          <div class="benchmark-value">{bert['micro_f1']:.4f}</div>
-          <div class="benchmark-label">Micro F1</div>
-          <div class="benchmark-meta">BERT</div>
-        </div>
-        <div class="benchmark-tile">
-          <div class="benchmark-value">{bert['macro_f1']:.4f}</div>
-          <div class="benchmark-label">Macro F1</div>
-          <div class="benchmark-meta">BERT</div>
-        </div>
-        <div class="benchmark-tile">
-          <div class="benchmark-value">{bert['macro_f1'] - lstm['macro_f1']:.4f}</div>
-          <div class="benchmark-label">Delta Macro F1</div>
-          <div class="benchmark-meta">BERT so với LSTM</div>
-        </div>
+      <div class="metric-grid">
+        <div class="metric-tile"><div class="metric-value">{metrics['bert']['macro_f1']:.4f}</div><div class="metric-label">BERT macro F1</div></div>
+        <div class="metric-tile"><div class="metric-value">{metrics['lstm']['macro_f1']:.4f}</div><div class="metric-label">LSTM macro F1</div></div>
+        <div class="metric-tile"><div class="metric-value">{metrics['bert']['micro_f1']:.4f}</div><div class="metric-label">BERT micro F1</div></div>
+        <div class="metric-tile"><div class="metric-value">{delta_macro:.4f}</div><div class="metric-label">Delta macro F1</div></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-model"><h4>BERT</h4><p>Nhãn nổi bật: <strong>{bert_label}</strong></p></div>
+        <div class="compare-model"><h4>LSTM</h4><p>Nhãn nổi bật: <strong>{lstm_label}</strong></p></div>
       </div>
     </div>
     """
 
 
-def render_mm_benchmark() -> str:
-    metrics = load_mm_metrics()
-    clip = metrics["clip"]
-    vb = metrics["visualbert"]
+def render_single_multimodal_result(model_name: str, scores: dict[str, float]) -> str:
+    label = top_label(scores)
+    tags = "".join(
+        f'<span class="demo-chip">{name}: {score:.3f}</span>'
+        for name, score in sorted(scores.items(), key=lambda item: item[1], reverse=True)[:4]
+    )
     return f"""
-    <div class="result-card">
-      <div class="compare-panel-header">
+    <div class="compare-card">
+      <span class="section-eyebrow">Kết quả suy luận</span>
+      <h3>{model_name}</h3>
+      <p><strong>Chuyên mục dự đoán:</strong> {label}</p>
+      <p>Mô hình trả về phân phối xác suất trên 24 lớp của N24News từ cùng một cặp ảnh-văn bản.</p>
+      <div class="demo-chip-row">{tags}</div>
+    </div>
+    """
+
+
+def render_compare_multimodal_result(clip_scores: dict[str, float], visualbert_scores: dict[str, float]) -> str:
+    metrics = load_multimodal_metrics()["models"]
+    winner = "VisualBERT" if metrics["VisualBERT"]["macro_f1"] >= metrics["CLIP"]["macro_f1"] else "CLIP"
+    clip_label = top_label(clip_scores)
+    vb_label = top_label(visualbert_scores)
+    delta_macro = metrics["VisualBERT"]["macro_f1"] - metrics["CLIP"]["macro_f1"]
+
+    return f"""
+    <div class="compare-card">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
         <div>
-          <span class="section-eyebrow">Benchmark</span>
-          <h3>Performance snapshot</h3>
-          <p>CLIP đang là mô hình dẫn đầu trên split agreed-label của CrisisMMD.</p>
+          <span class="section-eyebrow">Compare mode</span>
+          <h3>CLIP vs VisualBERT</h3>
+          <p>So sánh trực tiếp hai mô hình trên cùng một cặp ảnh bài báo và văn bản bài báo.</p>
         </div>
-        <span class="winner-chip">CLIP dẫn đầu</span>
+        <span class="winner-chip">{winner} dẫn đầu benchmark</span>
       </div>
-      <div class="benchmark-grid">
-        <div class="benchmark-tile">
-          <div class="benchmark-value">{clip['accuracy']:.4f}</div>
-          <div class="benchmark-label">Accuracy</div>
-          <div class="benchmark-meta">CLIP</div>
-        </div>
-        <div class="benchmark-tile">
-          <div class="benchmark-value">{clip['macro_f1']:.4f}</div>
-          <div class="benchmark-label">Macro F1</div>
-          <div class="benchmark-meta">CLIP</div>
-        </div>
-        <div class="benchmark-tile">
-          <div class="benchmark-value">{clip['loss']:.4f}</div>
-          <div class="benchmark-label">Loss</div>
-          <div class="benchmark-meta">CLIP</div>
-        </div>
-        <div class="benchmark-tile">
-          <div class="benchmark-value">{clip['macro_f1'] - vb['macro_f1']:.4f}</div>
-          <div class="benchmark-label">Delta Macro F1</div>
-          <div class="benchmark-meta">CLIP so với VisualBERT</div>
-        </div>
+      <div class="metric-grid">
+        <div class="metric-tile"><div class="metric-value">{metrics['VisualBERT']['macro_f1']:.4f}</div><div class="metric-label">VisualBERT macro F1</div></div>
+        <div class="metric-tile"><div class="metric-value">{metrics['CLIP']['macro_f1']:.4f}</div><div class="metric-label">CLIP macro F1</div></div>
+        <div class="metric-tile"><div class="metric-value">{metrics['VisualBERT']['accuracy']:.4f}</div><div class="metric-label">VisualBERT accuracy</div></div>
+        <div class="metric-tile"><div class="metric-value">{delta_macro:.4f}</div><div class="metric-label">Delta macro F1</div></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-model"><h4>CLIP</h4><p>Nhãn nổi bật: <strong>{clip_label}</strong></p></div>
+        <div class="compare-model"><h4>VisualBERT</h4><p>Nhãn nổi bật: <strong>{vb_label}</strong></p></div>
       </div>
     </div>
     """
 
-def predict_text(comment: str, mode: str, model_name: str):
-    comment = (comment or "").strip()
-    if not comment:
-        raise gr.Error("Vui lòng nhập một đoạn bình luận để chạy demo.")
 
-    if mode == "Compare both models":
-        bert_result = run_text_model(comment, "BERT")
-        lstm_result = run_text_model(comment, "LSTM")
-        metrics = load_text_metrics()
-        bert_tags = "".join(
-            f'<span class="prediction-tag">{label} · {score:.3f}</span>'
-            for label, score in sorted(bert_result["scores"].items(), key=lambda item: item[1], reverse=True)[:3]
-        )
-        lstm_tags = "".join(
-            f'<span class="prediction-tag">{label} · {score:.3f}</span>'
-            for label, score in sorted(lstm_result["scores"].items(), key=lambda item: item[1], reverse=True)[:3]
-        )
-        summary = f"""
-        <div class="result-card">
-          <div class="compare-panel-header">
-            <div>
-              <span class="section-eyebrow">Compare Mode</span>
-              <h3>BERT vs LSTM</h3>
-              <p>Hai mô hình được chạy trên cùng một bình luận để so sánh nhãn nổi bật và độ tự tin.</p>
-            </div>
-            <span class="winner-chip">BERT thắng benchmark</span>
-          </div>
-          <div class="compare-kpi-row">
-            <div class="stat-tile">
-              <div class="stat-value">{metrics['bert']['macro_f1']:.4f}</div>
-              <div class="stat-label">Macro F1 của BERT</div>
-              <div class="stat-meta">Mốc chuẩn hiện tại</div>
-            </div>
-            <div class="stat-tile">
-              <div class="stat-value">{metrics['lstm']['macro_f1']:.4f}</div>
-              <div class="stat-label">Macro F1 của LSTM</div>
-              <div class="stat-meta">Baseline tuần tự</div>
-            </div>
-            <div class="stat-tile">
-              <div class="stat-value">{metrics['bert']['macro_f1'] - metrics['lstm']['macro_f1']:.4f}</div>
-              <div class="stat-label">Chênh lệch</div>
-              <div class="stat-meta">BERT so với LSTM</div>
-            </div>
-          </div>
-          <div class="compare-grid">
-            <div class="compare-model-card is-winner">
-              <div class="compare-model-head">
-                <h4>BERT</h4>
-                <span class="winner-chip">Ưu tiên</span>
-              </div>
-              <p class="compare-model-subtle">Nhãn nổi bật hiện tại: <strong>{bert_result['top_label']}</strong></p>
-              <div class="prediction-tags">{bert_tags}</div>
-            </div>
-            <div class="compare-model-card">
-              <div class="compare-model-head">
-                <h4>LSTM</h4>
-                <span class="model-chip">Baseline</span>
-              </div>
-              <p class="compare-model-subtle">Nhãn nổi bật hiện tại: <strong>{lstm_result['top_label']}</strong></p>
-              <div class="prediction-tags">{lstm_tags}</div>
-            </div>
-          </div>
-        </div>
-        """
-        return summary, build_text_compare_table(bert_result["scores"], lstm_result["scores"])
+def run_text_demo(text: str, mode: str, model_name: str) -> tuple[str, pd.DataFrame]:
+    text = str(text or "").strip()
+    if not text:
+        raise gr.Error("Vui lòng nhập một bình luận để chạy suy luận.")
 
-    result = run_text_model(comment, model_name)
-    return build_text_summary(result["predicted"], result["scores"], model_name), build_text_table(result["scores"])
+    if mode == "Một mô hình":
+        scores = predict_with_bert(text) if model_name == "BERT" else predict_with_lstm(text)
+        table = build_score_table(model_name, scores, title_map=TEXT_LABEL_TITLES)
+        return render_single_text_result(model_name, scores), table
+
+    bert_scores = predict_with_bert(text)
+    lstm_scores = predict_with_lstm(text)
+    table = build_score_table("BERT", bert_scores, "LSTM", lstm_scores, title_map=TEXT_LABEL_TITLES)
+    return render_compare_text_result(bert_scores, lstm_scores), table
 
 
-def predict_multimodal(image, tweet_text: str, mode: str, model_name: str):
-    tweet_text = (tweet_text or "").strip()
-    if image is None:
-        raise gr.Error("Vui lòng chọn một ảnh cho demo đa phương thức.")
-    if not tweet_text:
-        raise gr.Error("Vui lòng nhập tweet tương ứng với ảnh.")
+def run_multimodal_demo(image_input, text: str, mode: str, model_name: str) -> tuple[str, pd.DataFrame]:
+    text = str(text or "").strip()
+    if not text:
+        raise gr.Error("Vui lòng nhập văn bản bài báo để chạy suy luận.")
 
-    if mode == "Compare both models":
-        clip_result = run_mm_model(image, tweet_text, "CLIP")
-        vb_result = run_mm_model(image, tweet_text, "VisualBERT")
-        metrics = load_mm_metrics()
-        clip_tags = "".join(
-            f'<span class="prediction-tag">{label} · {score:.3f}</span>'
-            for label, score in sorted(clip_result["scores"].items(), key=lambda item: item[1], reverse=True)[:3]
-        )
-        vb_tags = "".join(
-            f'<span class="prediction-tag">{label} · {score:.3f}</span>'
-            for label, score in sorted(vb_result["scores"].items(), key=lambda item: item[1], reverse=True)[:3]
-        )
-        summary = f"""
-        <div class="result-card">
-          <div class="compare-panel-header">
-            <div>
-              <span class="section-eyebrow">Compare Mode</span>
-              <h3>CLIP vs VisualBERT</h3>
-              <p>Hai mô hình dùng cùng một cặp tweet và ảnh để so sánh dự đoán cuối cùng.</p>
-            </div>
-            <span class="winner-chip">CLIP thắng benchmark</span>
-          </div>
-          <div class="compare-kpi-row">
-            <div class="stat-tile">
-              <div class="stat-value">{metrics['clip']['macro_f1']:.4f}</div>
-              <div class="stat-label">Macro F1 của CLIP</div>
-              <div class="stat-meta">Mốc chuẩn hiện tại</div>
-            </div>
-            <div class="stat-tile">
-              <div class="stat-value">{metrics['visualbert']['macro_f1']:.4f}</div>
-              <div class="stat-label">Macro F1 của VisualBERT</div>
-              <div class="stat-meta">Baseline transformer</div>
-            </div>
-            <div class="stat-tile">
-              <div class="stat-value">{metrics['clip']['macro_f1'] - metrics['visualbert']['macro_f1']:.4f}</div>
-              <div class="stat-label">Chênh lệch</div>
-              <div class="stat-meta">CLIP so với VisualBERT</div>
-            </div>
-          </div>
-          <div class="compare-grid">
-            <div class="compare-model-card is-winner">
-              <div class="compare-model-head">
-                <h4>CLIP</h4>
-                <span class="winner-chip">Ưu tiên</span>
-              </div>
-              <p class="compare-model-subtle">Nhãn nổi bật hiện tại: <strong>{MM_LABEL_TITLES[clip_result['top_label']]}</strong></p>
-              <div class="prediction-tags">{clip_tags}</div>
-            </div>
-            <div class="compare-model-card">
-              <div class="compare-model-head">
-                <h4>VisualBERT</h4>
-                <span class="model-chip">Baseline</span>
-              </div>
-              <p class="compare-model-subtle">Nhãn nổi bật hiện tại: <strong>{MM_LABEL_TITLES[vb_result['top_label']]}</strong></p>
-              <div class="prediction-tags">{vb_tags}</div>
-            </div>
-          </div>
-        </div>
-        """
-        return summary, build_mm_compare_table(clip_result["scores"], vb_result["scores"])
+    image = load_image(image_input)
 
-    single_result = run_mm_model(image, tweet_text, model_name)
-    return build_mm_summary(single_result["top_label"], single_result["scores"][single_result["top_label"]], model_name), build_mm_table(single_result["scores"])
+    if mode == "Một mô hình":
+        scores = predict_with_clip(image, text) if model_name == "CLIP" else predict_with_visualbert(image, text)
+        table = build_score_table(model_name, scores, top_n=10)
+        return render_single_multimodal_result(model_name, scores), table
+
+    clip_scores = predict_with_clip(image, text)
+    visualbert_scores = predict_with_visualbert(image, text)
+    table = build_score_table("CLIP", clip_scores, "VisualBERT", visualbert_scores, top_n=10)
+    return render_compare_multimodal_result(clip_scores, visualbert_scores), table
 
 
 def checkpoint_status() -> str:
-    rows = []
-    for label, path in [
+    items = [
         ("BERT checkpoint", TEXT_ARTIFACT_DIR / "bert_multilabel_best.pt"),
         ("LSTM checkpoint", TEXT_ARTIFACT_DIR / "lstm_multilabel_best.pt"),
-        ("CLIP checkpoint", MM_ARTIFACT_DIR / "crisismmd_clip_best.pt"),
-        ("VisualBERT checkpoint", MM_ARTIFACT_DIR / "crisismmd_visualbert_best.pt"),
-    ]:
-        rows.append(
-            f"<tr><td>{label}</td><td>{'Found' if path.exists() else 'Missing'}</td><td>{path.name}</td></tr>"
-        )
-    rows_html = "".join(rows)
+        ("CLIP checkpoint", MM_ARTIFACT_DIR / "n24news_clip_best.pt"),
+        ("VisualBERT checkpoint", MM_ARTIFACT_DIR / "n24news_visualbert_best.pt"),
+    ]
+    rows = "".join(
+        f"<tr><td>{label}</td><td>{'Có' if path.exists() else 'Thiếu'}</td><td><code>{path.name}</code></td></tr>"
+        for label, path in items
+    )
     return f"""
-    <div class="result-card">
-      <h3>Checkpoint status</h3>
-      <p>Demo này load checkpoint local. Nếu clone repo mới mà không có file <code>.pt</code>, bạn cần copy checkpoint vào đúng thư mục artifact.</p>
-      <table style="width:100%; margin-top: 12px; border-collapse: collapse;">
-        <thead>
-          <tr><th style="text-align:left; padding: 8px;">Artifact</th><th style="text-align:left; padding: 8px;">Status</th><th style="text-align:left; padding: 8px;">File</th></tr>
-        </thead>
-        <tbody>
-          {rows_html}
-        </tbody>
+    <div class="demo-card">
+      <p class="section-eyebrow">Checkpoint</p>
+      <h3 style="margin-top:0; color:#14365f;">Trạng thái checkpoint local</h3>
+      <table class="results-table">
+        <thead><tr><th>Thành phần</th><th>Trạng thái</th><th>Tệp</th></tr></thead>
+        <tbody>{rows}</tbody>
       </table>
+      <p style="margin-top:12px; color:#425469;">
+        Demo local sẽ hoạt động đầy đủ khi bốn checkpoint trên đều hiện trạng thái <strong>Có</strong>.
+      </p>
     </div>
     """
 
 
-def toggle_model_visibility(mode: str):
-    return gr.update(visible=(mode == "Single model"))
+def multimodal_examples() -> list[list[str]]:
+    path = N24_PROCESSED_DIR / "test.csv"
+    if not path.exists():
+        return []
+    frame = pd.read_csv(path, usecols=["category", "text_input", "image_relpath"]).dropna()
+    examples = []
+    seen = set()
+    for _, row in frame.iterrows():
+        category = row["category"]
+        if category in seen:
+            continue
+        image_path = REPO_ROOT / row["image_relpath"]
+        if not image_path.exists():
+            continue
+        seen.add(category)
+        examples.append([str(image_path), shorten_text(row["text_input"], 700), "Một mô hình", "VisualBERT"])
+        if len(examples) == 2:
+            break
+    if examples:
+        examples.append([examples[0][0], examples[0][1], "So sánh hai mô hình", "VisualBERT"])
+    return examples
 
-with gr.Blocks(title="CO3133 Demo | BTL1") as demo:
+
+def toggle_model_dropdown(mode: str):
+    return gr.update(visible=mode == "Một mô hình")
+
+
+TEXT_METRICS = load_text_metrics()
+MM_METRICS = load_multimodal_metrics()
+MM_EXAMPLES = multimodal_examples()
+
+with gr.Blocks(title="CO3133 Demo Hub") as demo:
     gr.HTML(
         f"""
         <div class="demo-shell">
-          <div class="demo-hero">
+          <section class="demo-hero">
             <h1>CO3133 Demo Hub</h1>
             <p>
               Demo này load checkpoint đã huấn luyện cho <strong>Bài tập lớn 1</strong> và cho phép thử nhanh hai task:
-              <strong>text classification</strong> với Jigsaw và <strong>text-image classification</strong> với CrisisMMD.
+              <strong>text classification</strong> với Jigsaw và
+              <strong>text-image classification</strong> với N24News.
             </p>
             <div class="demo-chip-row">
               <span class="demo-chip">Device: {DEVICE}</span>
+              <span class="demo-chip">BERT vs LSTM</span>
+              <span class="demo-chip">CLIP vs VisualBERT</span>
               <span class="demo-chip">Lazy checkpoint loading</span>
-              <span class="demo-chip">Task switching via tabs</span>
             </div>
-          </div>
+          </section>
         </div>
         """
     )
-    with gr.Tabs(elem_classes=["task-tabs"]):
+
+    with gr.Accordion("Trạng thái checkpoint và lưu ý chạy demo", open=False):
+        gr.HTML(checkpoint_status())
+
+    with gr.Tabs(elem_classes=["demo-shell"]):
         with gr.Tab("Văn bản"):
             gr.HTML(
-                """
+                f"""
                 <div class="demo-card">
+                  <p class="section-eyebrow">Text classification</p>
                   <h2 style="margin-top:0;">Jigsaw Toxic Comment</h2>
-                  <p style="margin:0; line-height:1.7; color:#415268;">
-                    Nhập một bình luận để xem mô hình dự đoán các nhãn độc hại theo bài toán multi-label 6 nhãn.
-                    Bạn có thể chạy một model riêng lẻ hoặc bật compare mode để đối chiếu BERT với LSTM trên cùng một prompt.
-                  </p>
+                  <p>Nhập một bình luận để xem mô hình dự đoán các nhãn độc hại theo bài toán multi-label 6 nhãn. Bạn có thể chạy một mô hình riêng lẻ hoặc bật compare mode để đối chiếu BERT với LSTM trên cùng một prompt.</p>
+                  <div class="metric-grid">
+                    <div class="metric-tile"><div class="metric-value">{TEXT_METRICS['bert']['exact_match_accuracy']:.4f}</div><div class="metric-label">BERT exact-match</div></div>
+                    <div class="metric-tile"><div class="metric-value">{TEXT_METRICS['bert']['micro_f1']:.4f}</div><div class="metric-label">BERT micro F1</div></div>
+                    <div class="metric-tile"><div class="metric-value">{TEXT_METRICS['bert']['macro_f1']:.4f}</div><div class="metric-label">BERT macro F1</div></div>
+                    <div class="metric-tile"><div class="metric-value">{TEXT_METRICS['bert']['macro_f1'] - TEXT_METRICS['lstm']['macro_f1']:.4f}</div><div class="metric-label">Delta macro F1</div></div>
+                  </div>
                 </div>
                 """
             )
             with gr.Row():
-                with gr.Column(scale=6):
+                with gr.Column(scale=11):
                     text_input = gr.Textbox(
                         label="Bình luận đầu vào",
-                        placeholder="Nhập một comment để chạy suy luận...",
                         lines=8,
+                        placeholder="Nhập một comment để chạy suy luận...",
                     )
-                    text_mode = gr.Radio(
-                        choices=["Single model", "Compare both models"],
-                        value="Single model",
-                        label="Chế độ chạy",
+                    text_mode_input = gr.Radio(
+                        choices=["Một mô hình", "So sánh hai mô hình"],
+                        value="Một mô hình",
+                        label="Chế độ suy luận",
                     )
-                    text_model = gr.Dropdown(
+                    text_model_input = gr.Dropdown(
                         choices=["BERT", "LSTM"],
                         value="BERT",
                         label="Mô hình",
                     )
-                    with gr.Row():
-                        text_submit = gr.Button("Chạy demo", variant="primary")
-                        text_clear = gr.Button("Xóa nội dung")
-                    gr.Examples(
-                        examples=TEXT_EXAMPLES,
-                        inputs=[text_input, text_mode, text_model],
-                        label="Ví dụ nhanh",
+                    text_run_button = gr.Button("Chạy demo", variant="primary")
+                with gr.Column(scale=9):
+                    text_html_output = gr.HTML(
+                        "<div class='result-card'><h3>Kết quả sẽ hiển thị ở đây</h3><p>Demo sẽ trả về phần tóm tắt nổi bật và bảng xác suất theo nhãn. Khi bật compare mode, bảng sẽ hiển thị cả hai mô hình trên cùng input.</p></div>"
                     )
-                with gr.Column(scale=5):
-                    text_summary = gr.HTML(
-                        """
-                        <div class="result-card">
-                          <h3>Kết quả sẽ hiển thị ở đây</h3>
-                          <p>Demo sẽ trả về phần tóm tắt nổi bật và bảng xác suất theo nhãn. Khi bật compare mode, bảng sẽ hiển thị cả hai mô hình trên cùng input.</p>
-                        </div>
-                        """
-                    )
-                    text_table = gr.Dataframe(label="Bảng xác suất", interactive=False, wrap=True)
-            gr.HTML(render_text_benchmark())
+                    text_table_output = gr.Dataframe(label="Bảng xác suất", interactive=False)
 
-            text_mode.change(fn=toggle_model_visibility, inputs=[text_mode], outputs=[text_model])
-            text_submit.click(
-                fn=predict_text,
-                inputs=[text_input, text_mode, text_model],
-                outputs=[text_summary, text_table],
-            )
-            text_clear.click(
-                fn=lambda: ("", "Single model", "BERT", None, None),
-                outputs=[text_input, text_mode, text_model, text_summary, text_table],
+            gr.Examples(examples=TEXT_EXAMPLES, inputs=[text_input, text_mode_input, text_model_input], label="Ví dụ nhanh")
+
+            text_mode_input.change(fn=toggle_model_dropdown, inputs=text_mode_input, outputs=text_model_input)
+            text_run_button.click(
+                fn=run_text_demo,
+                inputs=[text_input, text_mode_input, text_model_input],
+                outputs=[text_html_output, text_table_output],
             )
 
         with gr.Tab("Đa phương thức"):
             gr.HTML(
-                """
+                f"""
                 <div class="demo-card">
-                  <h2 style="margin-top:0;">CrisisMMD Humanitarian Categories</h2>
-                  <p style="margin:0; line-height:1.7; color:#415268;">
-                    Chọn một ảnh và nhập tweet tương ứng để mô hình dự đoán một trong 5 nhãn humanitarian.
-                    Bạn có thể chạy single model hoặc compare trực tiếp CLIP với VisualBERT trên cùng cặp image + text.
-                  </p>
+                  <p class="section-eyebrow">Text-image classification</p>
+                  <h2 style="margin-top:0;">N24News</h2>
+                  <p>Nhập ảnh bài báo và văn bản bài báo để mô hình dự đoán chuyên mục tin tức. Bạn có thể chạy một mô hình riêng lẻ hoặc bật compare mode để đối chiếu CLIP với VisualBERT trên cùng một cặp đầu vào.</p>
+                  <div class="metric-grid">
+                    <div class="metric-tile"><div class="metric-value">{MM_METRICS['models']['VisualBERT']['accuracy']:.4f}</div><div class="metric-label">VisualBERT accuracy</div></div>
+                    <div class="metric-tile"><div class="metric-value">{MM_METRICS['models']['VisualBERT']['macro_f1']:.4f}</div><div class="metric-label">VisualBERT macro F1</div></div>
+                    <div class="metric-tile"><div class="metric-value">{MM_METRICS['models']['CLIP']['macro_f1']:.4f}</div><div class="metric-label">CLIP macro F1</div></div>
+                    <div class="metric-tile"><div class="metric-value">{MM_METRICS['split_sizes']['test']}</div><div class="metric-label">Số mẫu test</div></div>
+                  </div>
                 </div>
                 """
             )
             with gr.Row():
-                with gr.Column(scale=6):
-                    image_input = gr.Image(type="pil", label="Ảnh đầu vào")
-                    tweet_input = gr.Textbox(
-                        label="Tweet đi kèm",
-                        placeholder="Nhập nội dung tweet tương ứng với ảnh...",
-                        lines=6,
+                with gr.Column(scale=11):
+                    image_input = gr.Image(label="Ảnh bài báo", type="filepath")
+                    news_text_input = gr.Textbox(
+                        label="Văn bản bài báo",
+                        lines=10,
+                        placeholder="Nhập headline, abstract hoặc nội dung bài báo để chạy suy luận...",
                     )
-                    mm_mode = gr.Radio(
-                        choices=["Single model", "Compare both models"],
-                        value="Single model",
-                        label="Chế độ chạy",
+                    mm_mode_input = gr.Radio(
+                        choices=["Một mô hình", "So sánh hai mô hình"],
+                        value="Một mô hình",
+                        label="Chế độ suy luận",
                     )
-                    mm_model = gr.Dropdown(
+                    mm_model_input = gr.Dropdown(
                         choices=["CLIP", "VisualBERT"],
-                        value="CLIP",
+                        value="VisualBERT",
                         label="Mô hình",
                     )
-                    with gr.Row():
-                        mm_submit = gr.Button("Chạy demo", variant="primary")
-                        mm_clear = gr.Button("Xóa nội dung")
-                    gr.Examples(
-                        examples=MULTIMODAL_EXAMPLES,
-                        inputs=[image_input, tweet_input, mm_mode, mm_model],
-                        label="Ví dụ nhanh",
+                    mm_run_button = gr.Button("Chạy demo", variant="primary")
+                with gr.Column(scale=9):
+                    mm_html_output = gr.HTML(
+                        "<div class='result-card'><h3>Kết quả sẽ hiển thị ở đây</h3><p>Demo sẽ trả về chuyên mục dự đoán và bảng xác suất trên 24 lớp của N24News. Khi bật compare mode, bảng sẽ hiển thị đồng thời CLIP và VisualBERT.</p></div>"
                     )
-                with gr.Column(scale=5):
-                    mm_summary = gr.HTML(
-                        """
-                        <div class="result-card">
-                          <h3>Kết quả sẽ hiển thị ở đây</h3>
-                          <p>Demo sẽ trả về nhãn 5 lớp cuối cùng và bảng xác suất theo lớp. Khi bật compare mode, bảng sẽ hiển thị cả CLIP lẫn VisualBERT.</p>
-                        </div>
-                        """
-                    )
-                    mm_table = gr.Dataframe(label="Bảng xác suất", interactive=False, wrap=True)
-            gr.HTML(render_mm_benchmark())
+                    mm_table_output = gr.Dataframe(label="Bảng xác suất", interactive=False)
 
-            mm_mode.change(fn=toggle_model_visibility, inputs=[mm_mode], outputs=[mm_model])
-            mm_submit.click(
-                fn=predict_multimodal,
-                inputs=[image_input, tweet_input, mm_mode, mm_model],
-                outputs=[mm_summary, mm_table],
-            )
-            mm_clear.click(
-                fn=lambda: (None, "", "Single model", "CLIP", None, None),
-                outputs=[image_input, tweet_input, mm_mode, mm_model, mm_summary, mm_table],
+            if MM_EXAMPLES:
+                gr.Examples(
+                    examples=MM_EXAMPLES,
+                    inputs=[image_input, news_text_input, mm_mode_input, mm_model_input],
+                    label="Ví dụ nhanh",
+                )
+
+            mm_mode_input.change(fn=toggle_model_dropdown, inputs=mm_mode_input, outputs=mm_model_input)
+            mm_run_button.click(
+                fn=run_multimodal_demo,
+                inputs=[image_input, news_text_input, mm_mode_input, mm_model_input],
+                outputs=[mm_html_output, mm_table_output],
             )
 
-    with gr.Accordion("Trạng thái checkpoint và lưu ý chạy demo", open=False):
-        gr.HTML(checkpoint_status())
-        gr.Markdown(
-            """
-            - Demo sẽ tải model ở lần suy luận đầu tiên cho từng tab, nên lần chạy đầu có thể chậm hơn.
-            - Nếu Hugging Face model chưa có trong cache local, lần đầu load có thể tải thêm backbone.
-            - Repo public hiện không push checkpoint `.pt`, nên demo này được thiết kế để chạy local.
-            """
-        )
 
 if __name__ == "__main__":
-    port = int(os.getenv("DEMO_PORT", "7862"))
-    demo.launch(
-        server_name="127.0.0.1",
-        server_port=port,
-        show_error=True,
-        css=DEMO_CSS,
-        theme=gr.themes.Soft(),
-    )
+    demo.launch(server_name="127.0.0.1", server_port=DEMO_PORT, share=False, css=DEMO_CSS)

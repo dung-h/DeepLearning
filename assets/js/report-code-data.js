@@ -37,7 +37,7 @@ LABELS = ["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate
         source: "text_classification.ipynb · Ô mã tinh chỉnh BERT",
         language: "python",
         summary:
-          "Tinh chỉnh BERT với tên biến ngắn gọn hơn, giữ tokenizer và dataloader ở mức dễ đọc cho bài toán multi-label.",
+          "Tinh chỉnh BERT với tokenizer và dataloader gọn hơn, phù hợp cho bài toán multi-label.",
         badges: ["Ô notebook", "Python", "BERT", "Huấn luyện"],
         code: `tokenizer = AutoTokenizer.from_pretrained(BERT_CFG["model_name"])
 
@@ -66,7 +66,7 @@ model = AutoModelForSequenceClassification.from_pretrained(
         source: "text_classification.ipynb · Ô mã baseline LSTM",
         language: "python",
         summary:
-          "Baseline tuần tự dùng vocabulary tự xây và BiLSTM. Các hàm tokenization, vocab và collate được tách rõ ràng hơn.",
+          "Baseline tuần tự dùng vocabulary tự xây và BiLSTM. Các hàm tokenization, vocab và collate được tách rõ ràng.",
         badges: ["Ô notebook", "Python", "LSTM", "Baseline"],
         code: `token_pattern = re.compile(r"[a-z']+")
 
@@ -99,118 +99,133 @@ class LSTMClassifier(nn.Module):
     files: [
       {
         name: "text_image_classification.ipynb",
-        tabLabel: "Cấu hình dữ liệu",
-        source: "text_image_classification.ipynb · Ô mã cấu hình CrisisMMD",
+        tabLabel: "Cấu hình N24News",
+        source: "text_image_classification.ipynb · Ô mã cấu hình dữ liệu",
         language: "python",
         summary:
-          "Tách riêng cấu hình dữ liệu, giải thích rõ agreed-label split và giữ phần tải, giải nén độc lập với phần mô hình.",
-        badges: ["Ô notebook", "Python", "CrisisMMD", "Dữ liệu"],
-        code: `MM_DIR = BTL1_ROOT / "data" / "multimodal" / "crisismmd"
-EXT_DIR = MM_DIR / "external"
-RAW_DIR = MM_DIR / "raw"
-PROCESSED_DIR = MM_DIR / "processed"
+          "Thiết lập thư mục source/raw/processed, link Google Drive và các siêu tham số chính cho CLIP và VisualBERT.",
+        badges: ["Ô notebook", "Python", "N24News", "Cấu hình"],
+        code: `N24_DIR = BTL1_ROOT / "data" / "multimodal" / "n24news"
+SOURCE_DIR = N24_DIR / "source"
+RAW_DIR = N24_DIR / "raw"
+PROCESSED_DIR = N24_DIR / "processed"
 ARTIFACT_DIR = BTL1_ROOT / "artifacts" / "multimodal"
 
-LABELS = [
-    "affected_individuals",
-    "infrastructure_and_utility_damage",
-    "rescue_volunteering_or_donation_effort",
-    "other_relevant_information",
-    "not_humanitarian",
-]
-label2id = {label: idx for idx, label in enumerate(LABELS)}
+N24NEWS_DRIVE_URL = "https://drive.google.com/file/d/1OS1fXwZ1Vsj70lEQajccyssxQRYp5X9D/view?usp=share_link"
+SEED = 42
+DOWNLOAD_IF_MISSING = True
 
-SPLIT_FILES = {
-    "train": find_one(AGREED_DIR, "task_humanitarian_text_img_agreed_lab_train.tsv"),
-    "dev": find_one(AGREED_DIR, "task_humanitarian_text_img_agreed_lab_dev.tsv"),
-    "test": find_one(AGREED_DIR, "task_humanitarian_text_img_agreed_lab_test.tsv"),
+CLIP_CFG = {
+    "backbone": "openai/clip-vit-base-patch32",
+    "batch_size": 8,
+    "epochs": 2,
+    "lr": 1e-5,
+    "dropout": 0.2,
+    "max_text_length": 77,
+}
+
+VB_CFG = {
+    "visualbert_backbone": "uclanlp/visualbert-vqa-coco-pre",
+    "vision_backbone": "openai/clip-vit-base-patch32",
+    "tokenizer_name": "bert-base-uncased",
+    "batch_size": 4,
+    "epochs": 2,
+    "lr": 1e-5,
+    "dropout": 0.2,
+    "max_text_length": 256,
+    "max_visual_tokens": 32,
 }`,
       },
       {
         name: "text_image_classification.ipynb",
-        tabLabel: "Huấn luyện CLIP",
-        source: "text_image_classification.ipynb · Ô mã huấn luyện CLIP",
+        tabLabel: "Chuẩn bị split",
+        source: "text_image_classification.ipynb · Ô mã build train/dev/test",
         language: "python",
         summary:
-          "CLIP dùng tên biến ngắn gọn hơn như processor, model, train_loader, val_loader và giữ luồng huấn luyện dễ đọc hơn.",
-        badges: ["Ô notebook", "Python", "CLIP", "Huấn luyện"],
-        code: `processor = AutoProcessor.from_pretrained(CLIP_CFG["model_name"])
+          "Notebook ưu tiên dùng split official của N24News, ghép ảnh với văn bản bài báo và lưu ra train/dev/test đã xử lý.",
+        badges: ["Ô notebook", "Python", "Split", "Preprocessing"],
+        code: `official_split_files = {}
+for root in candidate_data_roots():
+    for split_name in ["train", "dev", "test"]:
+        split_file = next(root.rglob(f"nytimes_{split_name}.json"), None)
+        if split_file is not None:
+            official_split_files[split_name] = split_file
 
-def collate_batch(batch):
-    images, texts, labels = zip(*batch)
-    encoded = processor(
-        text=list(texts),
-        images=list(images),
-        padding=True,
-        truncation=True,
-        max_length=CLIP_CFG["max_length"],
-        return_tensors="pt",
-    )
-    encoded["labels"] = torch.tensor(labels, dtype=torch.long)
-    return encoded
+if len(official_split_files) == 3:
+    train_records = load_manifest_records(official_split_files["train"])
+    dev_records = load_manifest_records(official_split_files["dev"])
+    test_records = load_manifest_records(official_split_files["test"])
 
-class ClipClassifier(nn.Module):
-    def __init__(self, model_name: str, num_classes: int, dropout: float = 0.2):
-        super().__init__()
-        self.backbone = CLIPModel.from_pretrained(model_name)
-        dim = self.backbone.config.projection_dim
-        self.head = nn.Linear(dim * 2, num_classes)`,
+    train_df = pd.DataFrame(build_rows_from_records(train_records, image_index, "train"))
+    dev_df = pd.DataFrame(build_rows_from_records(dev_records, image_index, "dev"))
+    test_df = pd.DataFrame(build_rows_from_records(test_records, image_index, "test"))
+
+label_names = combined_df["category"].value_counts().index.tolist()
+label_to_id = {label: idx for idx, label in enumerate(label_names)}`,
       },
       {
         name: "text_image_classification.ipynb",
-        tabLabel: "Huấn luyện VisualBERT",
-        source: "text_image_classification.ipynb · Ô mã huấn luyện VisualBERT",
+        tabLabel: "Định nghĩa mô hình",
+        source: "text_image_classification.ipynb · Ô mã CLIP và VisualBERT",
         language: "python",
         summary:
-          "VisualBERT dùng tokenizer và processor tách riêng, kết hợp CLIP vision encoder để sinh visual embedding cho backbone.",
-        badges: ["Ô notebook", "Python", "VisualBERT", "Bộ mã hóa ảnh"],
-        code: `processor = AutoProcessor.from_pretrained(VB_CFG["vision_name"])
-tokenizer = AutoTokenizer.from_pretrained(VB_CFG["model_name"])
-
-def collate_batch(batch):
-    images, texts, labels = zip(*batch)
-    image_inputs = processor(images=list(images), return_tensors="pt")
-    text_inputs = tokenizer(
-        list(texts),
-        padding=True,
-        truncation=True,
-        max_length=VB_CFG["max_length"],
-        return_tensors="pt",
-    )
-    text_inputs["pixel_values"] = image_inputs["pixel_values"]
-    text_inputs["labels"] = torch.tensor(labels, dtype=torch.long)
-    return text_inputs
-
-class VisualBertClassifier(nn.Module):
-    def __init__(self, model_name: str, vision_name: str, num_classes: int, dropout: float = 0.2):
+          "Hai backbone pretrained được bọc bằng classification head để giải cùng một bài toán news category classification.",
+        badges: ["Ô notebook", "Python", "CLIP", "VisualBERT"],
+        code: `class CLIPClassifier(nn.Module):
+    def __init__(self, backbone: str, num_labels: int, dropout: float):
         super().__init__()
-        self.vision = CLIPVisionModel.from_pretrained(vision_name)
-        self.backbone = VisualBertModel.from_pretrained(model_name)`,
+        self.backbone = CLIPModel.from_pretrained(backbone)
+        hidden_size = self.backbone.config.projection_dim
+        self.dropout = nn.Dropout(dropout)
+        self.classifier = nn.Linear(hidden_size * 2, num_labels)
+
+class VisualBERTClassifier(nn.Module):
+    def __init__(self, visualbert_backbone: str, vision_backbone: str, num_labels: int, dropout: float, max_visual_tokens: int):
+        super().__init__()
+        self.vision_encoder = CLIPVisionModel.from_pretrained(vision_backbone)
+        config = VisualBertConfig.from_pretrained(visualbert_backbone)
+        config.visual_embedding_dim = self.vision_encoder.config.hidden_size
+        self.backbone = VisualBertModel.from_pretrained(
+            visualbert_backbone,
+            config=config,
+            ignore_mismatched_sizes=True,
+        )
+        self.classifier = nn.Linear(config.hidden_size, num_labels)`,
       },
       {
         name: "text_image_classification.ipynb",
-        tabLabel: "Đánh giá",
-        source: "text_image_classification.ipynb · Ô mã đánh giá và xuất kết quả",
+        tabLabel: "Huấn luyện và eval",
+        source: "text_image_classification.ipynb · Ô mã train/eval",
         language: "python",
         summary:
-          "Xuất bảng so sánh, per-label F1 và confusion matrix theo đúng tên artifact mà report web đang sử dụng.",
-        badges: ["Ô notebook", "Python", "Đánh giá", "Kết quả"],
-        code: `comparison_df = pd.DataFrame([
-    {"model": "CLIP", "accuracy": clip_metrics["accuracy"], "macro_f1": clip_metrics["macro_f1"]},
-    {"model": "VisualBERT", "accuracy": visualbert_metrics["accuracy"], "macro_f1": visualbert_metrics["macro_f1"]},
-])
-comparison_df.to_csv(ARTIFACT_DIR / "crisismmd_model_comparison.csv", index=False)
+          "Cell này gom logic huấn luyện, early stopping, lưu checkpoint và đánh giá cuối trên tập test.",
+        badges: ["Ô notebook", "Python", "Train", "Evaluation"],
+        code: `def train_model(model_name: str, model: nn.Module, train_loader: DataLoader, dev_loader: DataLoader, cfg: dict) -> dict:
+    checkpoint_path = ARTIFACT_DIR / f"n24news_{model_name.lower()}_best.pt"
+    criterion = nn.CrossEntropyLoss()
+    optimizer = AdamW(model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"])
 
-clip_cm = confusion_matrix(clip_y_true, clip_y_pred, labels=list(range(len(LABELS))))
-visualbert_cm = confusion_matrix(
-    visualbert_y_true,
-    visualbert_y_pred,
-    labels=list(range(len(LABELS))),
-)
-(ARTIFACT_DIR / "crisismmd_confusion_matrices.json").write_text(
-    json.dumps({"labels": LABELS, "clip": clip_cm.tolist(), "visualbert": visualbert_cm.tolist()}, indent=2),
-    encoding="utf-8",
-)`,
+    best_macro_f1 = -1.0
+    patience_left = cfg["patience"]
+
+    for epoch in range(1, cfg["epochs"] + 1):
+        model.train()
+        ...
+        if dev_metrics["macro_f1"] > best_macro_f1:
+            best_macro_f1 = dev_metrics["macro_f1"]
+            patience_left = cfg["patience"]
+            torch.save(
+                {
+                    "model_state_dict": model.state_dict(),
+                    "label_names": label_names,
+                    "config": cfg,
+                },
+                checkpoint_path,
+            )
+        else:
+            patience_left -= 1
+            if patience_left <= 0:
+                break`,
       },
     ],
   },

@@ -1,34 +1,24 @@
 # BTL1 Demo
 
-## Run
+Demo Gradio cho Bài tập lớn số 1.
 
-```powershell
-python btl1/demo/app.py
-```
+## Thành phần hiện có
 
-The Gradio app starts on `http://127.0.0.1:7862` by default.
+- `Text Classification`
+  - dataset: Jigsaw Toxic Comment
+  - models: BERT, LSTM
+  - hỗ trợ chạy một mô hình hoặc so sánh trực tiếp hai mô hình
 
-To use a custom port:
+- `Text-Image Classification`
+  - dataset: N24News
+  - models: CLIP, VisualBERT
+  - hỗ trợ chạy một mô hình hoặc so sánh trực tiếp hai mô hình
 
-```powershell
-$env:DEMO_PORT = "43881"
-python btl1/demo/app.py
-```
+## Yêu cầu local
 
-## Features
+Demo này phụ thuộc vào checkpoint local trong:
 
-- `Text Classification` tab:
-  - run `BERT` or `LSTM` individually
-  - run both models on the same comment in `Compare both models` mode
-  - inspect per-label scores and highlighted prediction deltas
-- `Text-Image Classification` tab:
-  - run `CLIP` or `VisualBERT` individually
-  - run both models on the same tweet-image pair in `Compare both models` mode
-  - inspect score differences and task benchmark highlights
-- The interface includes curated examples, compact benchmark summaries, and side-by-side comparison tables.
+- `btl1/artifacts/text/`
+- `btl1/artifacts/multimodal/`
 
-## Notes
-
-- This demo loads local checkpoints from `btl1/artifacts/`.
-- Raw datasets are not required for inference, but the `.pt` checkpoints must exist locally.
-- If the Hugging Face backbones are not cached, the first run may download them automatically.
+Vì các checkpoint `.pt` không được đẩy lên remote, demo đầy đủ chỉ chạy được trên máy có artifact local.

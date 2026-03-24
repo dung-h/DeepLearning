@@ -8,12 +8,17 @@
   var gold = "#b69247";
   var goldSoft = "#d8c08c";
 
+  var reportData = window.REPORT_VISUAL_DATA || {};
+  var finalResults = reportData.finalResults || {};
+  var text = reportData.text || {};
+  var multimodal = reportData.multimodal || {};
+
   Chart.defaults.font.family = '"IBM Plex Sans", sans-serif';
   Chart.defaults.color = "#1a2431";
   Chart.defaults.borderColor = "rgba(20,54,95,0.12)";
 
   function makeDatasets(rawDatasets, isLine) {
-    return rawDatasets.map(function (dataset, index) {
+    return (rawDatasets || []).map(function (dataset, index) {
       var palette = [
         { border: navy, background: "rgba(20,54,95,0.82)" },
         { border: gold, background: "rgba(182,146,71,0.82)" },
@@ -151,18 +156,18 @@
     });
   }
 
-  buildBarChart("final-text-metrics-chart", window.REPORT_VISUAL_DATA.finalResults.textMetrics);
-  buildBarChart("final-mm-metrics-chart", window.REPORT_VISUAL_DATA.finalResults.multimodalMetrics);
-  buildLineChart("final-text-loss-chart", window.REPORT_VISUAL_DATA.finalResults.textLoss);
-  buildLineChart("final-mm-loss-chart", window.REPORT_VISUAL_DATA.finalResults.multimodalLoss);
+  buildBarChart("final-text-metrics-chart", finalResults.textMetrics);
+  buildBarChart("final-mm-metrics-chart", finalResults.multimodalMetrics);
+  buildLineChart("final-text-loss-chart", finalResults.textLoss);
+  buildLineChart("final-mm-loss-chart", finalResults.multimodalLoss);
 
-  buildBarChart("text-metrics-chart", window.REPORT_VISUAL_DATA.text.metrics);
-  buildBarChart("text-per-label-chart", window.REPORT_VISUAL_DATA.text.perLabel);
-  buildLineChart("text-history-chart", window.REPORT_VISUAL_DATA.text.history);
-  buildLineChart("text-loss-chart", window.REPORT_VISUAL_DATA.text.loss);
+  buildBarChart("text-metrics-chart", text.metrics);
+  buildBarChart("text-per-label-chart", text.perLabel);
+  buildLineChart("text-history-chart", text.history);
+  buildLineChart("text-loss-chart", text.loss);
 
-  buildBarChart("mm-metrics-chart", window.REPORT_VISUAL_DATA.multimodal.metrics);
-  buildBarChart("mm-per-label-chart", window.REPORT_VISUAL_DATA.multimodal.perLabel);
-  buildLineChart("mm-history-chart", window.REPORT_VISUAL_DATA.multimodal.history);
-  buildLineChart("mm-loss-chart", window.REPORT_VISUAL_DATA.multimodal.loss);
+  buildBarChart("mm-metrics-chart", multimodal.metrics);
+  buildBarChart("mm-per-label-chart", multimodal.perLabel);
+  buildLineChart("mm-history-chart", multimodal.history);
+  buildLineChart("mm-loss-chart", multimodal.loss);
 })();

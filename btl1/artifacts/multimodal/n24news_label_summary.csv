@@ -1,0 +1,73 @@
+split,category,samples
+train,Opinion,2437
+train,Art & Design,2431
+train,Television,2419
+train,Music,2416
+train,Travel,2413
+train,Real Estate,2413
+train,Books,2412
+train,Theater,2409
+train,Health,2409
+train,Sports,2407
+train,Science,2387
+train,Fashion & Style,2385
+train,Food,2385
+train,Movies,2384
+train,Technology,2376
+train,Dance,2365
+train,Media,2363
+train,Style,2147
+train,Automobiles,1456
+train,Economy,1398
+train,Your Money,1020
+train,Global Business,955
+train,Education,672
+train,Well,529
+dev,Food,326
+dev,Movies,325
+dev,Dance,318
+dev,Sports,314
+dev,Media,312
+dev,Fashion & Style,309
+dev,Science,308
+dev,Travel,301
+dev,Television,301
+dev,Technology,300
+dev,Music,299
+dev,Real Estate,289
+dev,Health,285
+dev,Books,284
+dev,Theater,281
+dev,Opinion,280
+dev,Style,271
+dev,Art & Design,257
+dev,Automobiles,196
+dev,Economy,180
+dev,Global Business,127
+dev,Your Money,109
+dev,Education,79
+dev,Well,72
+test,Media,326
+test,Technology,325
+test,Dance,318
+test,Art & Design,313
+test,Theater,311
+test,Fashion & Style,307
+test,Health,307
+test,Science,306
+test,Books,305
+test,Real Estate,299
+test,Movies,292
+test,Food,290
+test,Travel,287
+test,Music,286
+test,Opinion,284
+test,Television,281
+test,Sports,280
+test,Style,263
+test,Economy,183
+test,Automobiles,173
+test,Your Money,134
+test,Global Business,100
+test,Well,80
+test,Education,74

@@ -1,42 +1,33 @@
-# Tổng hợp kết quả cuối cùng - CO3133
+# Tóm tắt kết quả cuối BTL1
 
-Tài liệu này được viết để đưa thẳng vào slide báo cáo hoặc phần tổng hợp trên landing page.
+## Nhánh văn bản
 
-## 1. Nhánh văn bản
+- Dataset: `Jigsaw Toxic Comment Classification Challenge`
+- Bài toán: `multi-label text classification` với 6 nhãn
+- So sánh: `BERT` vs `LSTM`
+- Kết quả tốt nhất:
+  - `BERT`
+  - Exact-match accuracy: `0.9306`
+  - Micro F1: `0.8030`
+  - Macro F1: `0.6765`
 
-Dataset: `Jigsaw Toxic Comment Classification Challenge`
+## Nhánh đa phương thức
 
-| Model | Exact-match accuracy | Micro F1 | Macro F1 |
-| --- | ---: | ---: | ---: |
-| BERT | 0.9306 | 0.8030 | 0.6765 |
-| LSTM | 0.9224 | 0.7386 | 0.5489 |
+- Dataset: `N24News`
+- Bài toán: `image + news text -> category classification`
+- So sánh: `CLIP` vs `VisualBERT`
+- Split official đã dùng:
+  - `train = 48,988`
+  - `dev = 6,123`
+  - `test = 6,124`
+- Kết quả tốt nhất:
+  - `VisualBERT`
+  - Accuracy: `0.8751`
+  - Macro F1: `0.8575`
+  - Weighted F1: `0.8732`
 
-Nhận xét:
-- BERT là mô hình tốt nhất ở nhánh văn bản.
-- BERT vượt LSTM trên cả exact-match accuracy, micro F1 và macro F1.
+## Nhận xét nhanh
 
-## 2. Nhánh đa phương thức
-
-Dataset: `CrisisMMD v2.0 - Humanitarian Categories (5 classes, agreed-label split)`
-
-| Model | Accuracy | Macro F1 |
-| --- | ---: | ---: |
-| CLIP | 0.8806 | 0.7965 |
-| VisualBERT | 0.8115 | 0.7290 |
-
-Nhận xét:
-- CLIP là mô hình tốt nhất ở nhánh đa phương thức.
-- CLIP vượt VisualBERT trên cả accuracy và macro F1.
-
-## 3. Kết luận tổng hợp
-
-- Ở hai nhánh đã hoàn tất trong repo hiện tại, các mô hình transformer-based đều cho kết quả tốt hơn baseline còn lại.
-- Nhánh văn bản: `BERT > LSTM`
-- Nhánh đa phương thức: `CLIP > VisualBERT`
-
-## 4. Nguồn và tài nguyên
-
-- Official CrisisMMD: https://crisisnlp.qcri.org/crisismmd
-- CrisisMMD paper: https://arxiv.org/abs/1805.00713
-- Tệp notebook văn bản: `btl1/notebooks/text_classification.ipynb`
-- Tệp notebook đa phương thức: `btl1/notebooks/text_image_classification.ipynb`
+- Ở nhánh văn bản, `BERT` vượt `LSTM` trên toàn bộ chỉ số chính.
+- Ở nhánh đa phương thức, `VisualBERT` vượt `CLIP` trên cả accuracy, macro F1 và weighted F1.
+- Toàn bộ số liệu trên đều được lấy từ artifact thật sau khi chạy notebook trong thư mục `btl1/artifacts/`.

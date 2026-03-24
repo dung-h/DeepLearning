@@ -7,7 +7,7 @@ window.SITE_DATA = {
     instructor: "Lê Thành Sách",
     term: "Năm học 2025-2026, Học kỳ 2",
     summary:
-      "Landing page này giới thiệu các bài tập lớn của nhóm trong môn CO3133, đồng thời đóng vai trò là điểm truy cập tập trung tới các tài nguyên công khai như báo cáo, bảng kết quả, notebook và mã nguồn.",
+      "Landing page này giới thiệu các bài tập lớn của nhóm trong môn CO3133, đồng thời đóng vai trò là điểm truy cập tập trung tới báo cáo, bảng kết quả, notebook và mã nguồn công khai.",
     overview: {
       title: "Một cổng truy cập thống nhất",
       copy:
@@ -15,45 +15,45 @@ window.SITE_DATA = {
       points: [
         "Trang chủ giới thiệu nhóm và tập hợp toàn bộ assignment trong một cấu trúc nhất quán.",
         "Mỗi assignment có trang riêng để gắn báo cáo, notebook, bảng kết quả và các tài liệu công khai.",
-        "Các kết quả thực nghiệm cuối cùng của Bài tập lớn 1 đã được tổng hợp sẵn để dùng cho landing page và slide báo cáo."
-      ]
-    }
+        "Các kết quả công khai chỉ phản ánh những phần vẫn còn hợp lệ trong nhánh chính của repo.",
+      ],
+    },
   },
   group: {
     name: "Tên nhóm sẽ được cập nhật",
     summary:
       "Landing page đã sẵn sàng cho việc điền tên nhóm, thành viên và các tài nguyên chính thức khi nhóm hoàn thiện thông tin công khai.",
-    members: []
+    members: [],
   },
   assignments: [
     {
       id: "assignment-1",
       numberLabel: "Bài tập lớn số 1",
-      title: "Phân loại ảnh, văn bản và đa phương thức",
+      title: "Phân loại văn bản và đa phương thức",
       page: "assignments/assignment-1.html",
       cardSummary:
-        "Trang công khai cho Bài tập lớn 1, hiện đã có bảng kết quả thực nghiệm cuối cùng cho nhánh văn bản và đa phương thức.",
+        "Trang công khai cho Bài tập lớn 1. Nhánh văn bản đã hoàn tất với BERT vượt LSTM, còn nhánh đa phương thức dùng N24News và cho thấy VisualBERT vượt CLIP trên tập test 24 lớp.",
       overview:
-        "Bài tập lớn số 1 tập trung vào các bài toán phân loại trên dữ liệu văn bản và đa phương thức. Trong repo hiện tại, nhánh văn bản sử dụng Jigsaw Toxic Comment và nhánh đa phương thức sử dụng CrisisMMD, với kết quả thực nghiệm đã được tổng hợp để phục vụ landing page và slide báo cáo.",
+        "Bài tập lớn số 1 tập trung vào các bài toán phân loại trên dữ liệu văn bản và đa phương thức. Nhánh văn bản dùng Jigsaw Toxic Comment, còn nhánh đa phương thức dùng N24News cho bài toán image + news text classification.",
       summary:
-        "Trang này đóng vai trò là điểm truy cập công khai tới notebook, bảng kết quả tổng hợp và các tư liệu minh họa cho quá trình thực nghiệm của Bài tập lớn 1.",
+        "Trang này đóng vai trò là điểm truy cập công khai tới báo cáo, notebook, bảng kết quả tổng hợp và các tài liệu minh họa cho quá trình thực nghiệm của Bài tập lớn số 1.",
       resources: [],
       resourceGroups: [
         {
           title: "Bắt đầu từ đây",
           copy:
-            "Dành cho người xem lần đầu. Nhóm tài nguyên này đi thẳng vào phần kết quả và diễn giải tổng quan, không buộc người xem phải mở notebook hay tệp dữ liệu phụ trợ ngay từ đầu.",
+            "Dành cho người xem lần đầu. Nhóm tài nguyên này đi thẳng vào phần kết quả và diễn giải tổng quan, không buộc người xem phải mở notebook hay tệp phụ trợ ngay từ đầu.",
           featured: true,
           items: [
             {
               type: "Tổng quan",
               label: "Mở trang kết quả tổng hợp",
               title: "Bảng kết quả tổng hợp",
-              note: "Trang tổng hợp ngắn gọn toàn bộ kết quả cuối cùng của hai nhánh đã hoàn thành, phù hợp để xem nhanh hoặc dùng khi thuyết trình.",
+              note: "Trang tổng hợp ngắn gọn hai nhánh thực nghiệm, gồm bảng metric cuối và biểu đồ so sánh trực quan.",
               url: "../btl1/reports/final-results.html",
-              featured: true
-            }
-          ]
+              featured: true,
+            },
+          ],
         },
         {
           title: "Báo cáo theo từng nhánh",
@@ -65,73 +65,73 @@ window.SITE_DATA = {
               label: "Mở báo cáo văn bản",
               title: "Trang trình bày nhánh văn bản",
               note: "Bản trình bày cho Jigsaw Toxic Comment với số liệu chính, learning curves, per-label F1 và phần đọc mã nguồn trực tiếp trên web.",
-              url: "../btl1/reports/text-report.html"
+              url: "../btl1/reports/text-report.html",
             },
             {
               type: "Đa phương thức",
               label: "Mở báo cáo đa phương thức",
               title: "Trang trình bày nhánh đa phương thức",
-              note: "Bản trình bày cho CrisisMMD với confusion matrix tách riêng, hình minh họa chính và phần đọc mã nguồn cho các ô notebook quan trọng.",
-              url: "../btl1/reports/multimodal-report.html"
-            }
-          ]
+              note: "Bản trình bày cho N24News với mô tả dataset, bảng kết quả, chart tương tác, figure tham chiếu và mẫu preview.",
+              url: "../btl1/reports/multimodal-report.html",
+            },
+          ],
         },
         {
           title: "Phụ lục kỹ thuật",
           copy:
-            "Dành cho người cần đối chiếu lại notebook gốc hoặc tái sử dụng phần tóm tắt cho slide. Các tài nguyên này được đặt ở lớp phụ để không lấn át phần trình bày công khai chính.",
+            "Dành cho người cần đối chiếu notebook gốc hoặc tái sử dụng phần tóm tắt cho slide. Các tài nguyên này được đặt ở lớp phụ để không lấn át phần trình bày công khai chính.",
           items: [
             {
               type: "Trình xem",
               label: "Mở notebook văn bản",
               title: "Trình xem notebook nhánh văn bản",
-              note: "Trình xem notebook theo giao diện trình soạn thảo chỉ đọc, phù hợp cho người muốn theo dõi mã nguồn trực tiếp trên web mà không phải mở file `.ipynb` thô.",
-              url: "../btl1/reports/text-notebook-viewer.html"
+              note: "Trình xem notebook theo giao diện trình soạn thảo chỉ đọc, phù hợp cho người muốn theo dõi mã nguồn trực tiếp trên web.",
+              url: "../btl1/reports/text-notebook-viewer.html",
             },
             {
               type: "Trình xem",
               label: "Mở notebook đa phương thức",
               title: "Trình xem notebook nhánh đa phương thức",
-              note: "Trình xem notebook theo giao diện trình soạn thảo chỉ đọc cho CrisisMMD, giúp phần mã dễ theo dõi hơn so với mở notebook thô.",
-              url: "../btl1/reports/multimodal-notebook-viewer.html"
+              note: "Trình xem notebook cho pipeline N24News với các ô mã chính về dữ liệu, mô hình và huấn luyện.",
+              url: "../btl1/reports/multimodal-notebook-viewer.html",
             },
             {
               type: "Tóm tắt",
               label: "Mở bản tóm tắt cho slide",
               title: "Bản tóm tắt Markdown",
               note: "Bản tóm tắt ngắn gọn để tái sử dụng trong slide hoặc phần tổng kết của báo cáo.",
-              url: "../btl1/reports/final-results-summary.md"
-            }
-          ]
-        }
+              url: "../btl1/reports/final-results-summary.md",
+            },
+          ],
+        },
       ],
       sections: [
         {
           title: "Thiết lập thực nghiệm",
           copy:
-            "Nhánh văn bản dùng Jigsaw Toxic Comment Classification Challenge với bài toán multi-label 6 nhãn. Nhánh đa phương thức dùng CrisisMMD v2.0, task humanitarian categories với agreed-label split 5 lớp."
+            "Nhánh văn bản dùng Jigsaw Toxic Comment Classification Challenge với bài toán multi-label 6 nhãn. Nhánh đa phương thức dùng N24News cho bài toán image + news text → category classification với 24 lớp.",
         },
         {
           title: "Kết quả nhánh văn bản",
           copy:
-            "BERT đạt exact-match accuracy 0.9306, micro F1 0.8030 và macro F1 0.6765. LSTM đạt exact-match accuracy 0.9224, micro F1 0.7386 và macro F1 0.5489. BERT là mô hình tốt hơn trên cả ba chỉ số chính."
+            "BERT đạt exact-match accuracy 0.9306, micro F1 0.8030 và macro F1 0.6765. LSTM đạt exact-match accuracy 0.9224, micro F1 0.7386 và macro F1 0.5489. BERT là mô hình tốt hơn trên cả ba chỉ số chính.",
         },
         {
           title: "Kết quả nhánh đa phương thức",
           copy:
-            "CLIP đạt accuracy 0.8806 và macro F1 0.7965 trên tập test CrisisMMD. VisualBERT đạt accuracy 0.8115 và macro F1 0.7290. CLIP giữ lợi thế rõ rệt trên cả accuracy và macro F1."
+            "VisualBERT đạt accuracy 0.8751, macro F1 0.8575 và weighted F1 0.8732 trên tập test N24News. CLIP đạt accuracy 0.8488, macro F1 0.8064 và weighted F1 0.8346. VisualBERT là mô hình tốt nhất của nhánh đa phương thức hiện tại.",
         },
         {
           title: "Trình bày kết quả",
           copy:
-            "Các kết quả cuối cùng đã được tổ chức lại thành các trang trình bày riêng cho từng nhánh, có hình minh họa, bảng số liệu và phần đọc mã nguồn trực tiếp trên web thay vì chỉ đưa liên kết tải tệp thô."
+            "Các kết quả công khai được tổ chức thành các trang trình bày riêng cho từng nhánh, có hình minh họa, bảng số liệu, chart tương tác và phần đọc mã nguồn trực tiếp trên web thay vì chỉ đưa liên kết tới tệp thô.",
         },
         {
           title: "Nhận xét tổng hợp",
           copy:
-            "Ở cả hai nhánh đã hoàn tất trong repo hiện tại, mô hình dựa trên transformer cho kết quả tốt hơn baseline còn lại. BERT vượt LSTM ở nhánh văn bản, trong khi CLIP vượt VisualBERT ở nhánh đa phương thức."
-        }
-      ]
+            "Trong trạng thái hiện tại, BERT là mô hình tốt nhất cho nhánh văn bản và VisualBERT là mô hình tốt nhất cho nhánh đa phương thức. Cả hai nhánh đều đã có artifact thật, report web và demo local để phục vụ báo cáo.",
+        },
+      ],
     },
     {
       id: "assignment-2",
@@ -145,7 +145,7 @@ window.SITE_DATA = {
       summary:
         "Cấu trúc trang được giữ tối giản để tập trung vào khả năng truy cập nhanh tới báo cáo, demo và mã nguồn khi có dữ liệu chính thức.",
       resources: [],
-      sections: []
+      sections: [],
     },
     {
       id: "assignment-3",
@@ -159,7 +159,7 @@ window.SITE_DATA = {
       summary:
         "Mọi thành phần nội bộ đã được loại bỏ để trang chỉ giữ vai trò là trang giới thiệu công khai, gọn gàng và chuyên nghiệp.",
       resources: [],
-      sections: []
-    }
-  ]
+      sections: [],
+    },
+  ],
 };
