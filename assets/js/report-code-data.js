@@ -139,25 +139,25 @@ VB_CFG = {
       {
         name: "text_image_classification.ipynb",
         tabLabel: "Chuẩn bị split",
-        source: "text_image_classification.ipynb · Ô mã build train/dev/test",
+        source: "text_image_classification.ipynb · Ô mã build train/val/test",
         language: "python",
         summary:
-          "Notebook ưu tiên dùng split official của N24News, ghép ảnh với văn bản bài báo và lưu ra train/dev/test đã xử lý.",
+          "Notebook ưu tiên dùng split official của N24News, ghép ảnh với văn bản bài báo và lưu ra train/val/test đã xử lý.",
         badges: ["Ô notebook", "Python", "Split", "Preprocessing"],
         code: `official_split_files = {}
 for root in candidate_data_roots():
-    for split_name in ["train", "dev", "test"]:
-        split_file = next(root.rglob(f"nytimes_{split_name}.json"), None)
+    for internal_name, official_name in official_split_map.items():
+        split_file = next(root.rglob(f"nytimes_{official_name}.json"), None)
         if split_file is not None:
-            official_split_files[split_name] = split_file
+            official_split_files[internal_name] = split_file
 
 if len(official_split_files) == 3:
     train_records = load_manifest_records(official_split_files["train"])
-    dev_records = load_manifest_records(official_split_files["dev"])
+    val_records = load_manifest_records(official_split_files["val"])
     test_records = load_manifest_records(official_split_files["test"])
 
     train_df = pd.DataFrame(build_rows_from_records(train_records, image_index, "train"))
-    dev_df = pd.DataFrame(build_rows_from_records(dev_records, image_index, "dev"))
+    val_df = pd.DataFrame(build_rows_from_records(val_records, image_index, "val"))
     test_df = pd.DataFrame(build_rows_from_records(test_records, image_index, "test"))
 
 label_names = combined_df["category"].value_counts().index.tolist()
@@ -200,7 +200,7 @@ class VisualBERTClassifier(nn.Module):
         summary:
           "Cell này gom logic huấn luyện, early stopping, lưu checkpoint và đánh giá cuối trên tập test.",
         badges: ["Ô notebook", "Python", "Train", "Evaluation"],
-        code: `def train_model(model_name: str, model: nn.Module, train_loader: DataLoader, dev_loader: DataLoader, cfg: dict) -> dict:
+        code: `def train_model(model_name: str, model: nn.Module, train_loader: DataLoader, val_loader: DataLoader, cfg: dict) -> dict:
     checkpoint_path = ARTIFACT_DIR / f"n24news_{model_name.lower()}_best.pt"
     criterion = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"])
@@ -211,8 +211,8 @@ class VisualBERTClassifier(nn.Module):
     for epoch in range(1, cfg["epochs"] + 1):
         model.train()
         ...
-        if dev_metrics["macro_f1"] > best_macro_f1:
-            best_macro_f1 = dev_metrics["macro_f1"]
+        if val_metrics["macro_f1"] > best_macro_f1:
+            best_macro_f1 = val_metrics["macro_f1"]
             patience_left = cfg["patience"]
             torch.save(
                 {

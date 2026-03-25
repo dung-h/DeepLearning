@@ -18,7 +18,7 @@
 - So sánh: `CLIP` vs `VisualBERT`
 - Split official đã dùng:
   - `train = 48,988`
-  - `dev = 6,123`
+  - `val = 6,123`
   - `test = 6,124`
 - Kết quả tốt nhất:
   - `VisualBERT`

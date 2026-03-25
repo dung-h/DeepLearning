@@ -18,10 +18,10 @@
         <p class="eyebrow">Nhánh đa phương thức</p>
         <h1>N24News</h1>
         <p class="lede">
-          Trang này trình bày nhánh <strong>text-image classification</strong> của Bài tập lớn số 1.
+          Báo cáo này trình bày bài toán <strong>text-image classification</strong> trên N24News.
           Mỗi mẫu đầu vào gồm <strong>ảnh bài báo + văn bản bài báo</strong>, đầu ra là
-          <strong>nhãn chuyên mục tin tức</strong> trong 24 lớp của N24News.
-          Hai mô hình được so sánh là <strong>CLIP</strong> và <strong>VisualBERT</strong>.
+          <strong>nhãn chuyên mục tin tức</strong> trong 24 lớp. Hai mô hình được so sánh là
+          <strong>CLIP</strong> và <strong>VisualBERT</strong>.
         </p>
       </div>
     </header>
@@ -31,26 +31,26 @@
         <div class="detail-grid">
           <div>
             <p class="section-kicker">Tổng quan</p>
-            <h2>VisualBERT vượt CLIP</h2>
+            <h2>VisualBERT dẫn đầu trên N24News</h2>
             <p class="body-copy">
-              Trên tập test của N24News, VisualBERT đạt accuracy <strong>0.8751</strong> và macro F1
-              <strong>0.8575</strong>, cao hơn CLIP ở cả ba chỉ số chính.
-              Toàn bộ pipeline được triển khai trong notebook
-              <a class="muted-link" href="../notebooks/text_image_classification.ipynb">text_image_classification.ipynb</a>.
+              Trên tập test của N24News, VisualBERT đạt <strong>accuracy 0.8751</strong>,
+              <strong>macro F1 0.8575</strong> và <strong>weighted F1 0.8732</strong>.
+              So với CLIP, mô hình này không chỉ tốt hơn ở các lớp lớn mà còn cải thiện rõ ở các lớp
+              khó như <strong>Well</strong>, <strong>Style</strong>, <strong>Your Money</strong> và <strong>Education</strong>.
             </p>
             <ul class="pill-list" style="margin-top: 1rem;">
               <li class="pill">Dataset: N24News</li>
-              <li class="pill">Bài toán: Image + news text → category</li>
-              <li class="pill">24 lớp chuyên mục</li>
-              <li class="pill">Split official: train / dev / test</li>
+              <li class="pill">Bài toán: image + news text → category</li>
+              <li class="pill">24 lớp</li>
+              <li class="pill">Split nội bộ: train / val / test</li>
             </ul>
           </div>
           <div class="info-card">
             <h3>Kết luận nhanh</h3>
             <p class="body-copy">
-              VisualBERT là mô hình tốt nhất của nhánh đa phương thức trong repo hiện tại.
-              Kết quả này cho thấy việc kết hợp backbone thị giác với lớp fusion kiểu VisualBERT
-              phù hợp hơn CLIP classifier trên bài toán phân loại chuyên mục tin tức của N24News.
+              Mô hình fusion kiểu VisualBERT phù hợp hơn CLIP classifier trên bài toán tin tức nhiều lớp.
+              Tín hiệu này thể hiện đồng thời ở metric tổng, per-class F1, đường cong validation
+              và các ca nhầm lẫn khó trong tập test.
             </p>
           </div>
         </div>
@@ -63,12 +63,11 @@
         </div>
         <div class="callout-grid">
           <article class="callout-card">
-            <h3>Nguồn và bài toán</h3>
+            <h3>Nguồn và cấu trúc bài toán</h3>
             <p>
-              N24News là một dataset phân loại tin tức đa phương thức, trong đó mỗi mẫu gồm
-              ảnh đại diện bài báo, tiêu đề, abstract, body và nhãn chuyên mục.
-              Trong bài làm này, nhóm dùng cặp <code>image + news text</code> để dự đoán
-              <code>news category</code>. Nguồn chính thức được lấy từ repo của tác giả và bài báo LREC.
+              N24News là dataset phân loại tin tức đa phương thức, trong đó mỗi mẫu gồm ảnh đại diện bài báo,
+              tiêu đề, abstract, body và nhãn chuyên mục. Trong bài làm này, nhóm dùng cặp
+              <code>image + news text</code> để dự đoán <code>news category</code>.
             </p>
             <div class="branch-link-row" style="margin-top: 0.9rem;">
               <a class="button-link button-secondary" href="https://github.com/billywzh717/N24News" target="_blank" rel="noreferrer">Official repo</a>
@@ -77,209 +76,254 @@
             </div>
           </article>
           <article class="callout-card">
-            <h3>Đặc trưng dữ liệu thực tế</h3>
+            <h3>Quy mô dữ liệu thực nghiệm</h3>
             <p>
-              Bộ dữ liệu local dùng đúng split official trong package N24News: 48,988 mẫu train,
-              6,123 mẫu dev và 6,124 mẫu test, tổng cộng <strong>61,235</strong> cặp ảnh-văn bản.
-              Tập lớp gồm 24 chuyên mục, tương đối rộng và phù hợp cho bài toán classification nhiều lớp.
+              Bộ dữ liệu local dùng split official trong package N24News: 48,988 mẫu train,
+              6,123 mẫu val và 6,124 mẫu test, tổng cộng <strong>61,235</strong> cặp ảnh-văn bản.
+              Package gốc đặt tên split giữa là <code>dev</code>, còn repo này chuẩn hóa thành <code>val</code>
+              để đồng bộ với notebook, report và artifact.
             </p>
             <div class="dataset-stat-grid">
               <div class="dataset-stat"><strong>61,235</strong><span>mẫu tổng cộng</span></div>
               <div class="dataset-stat"><strong>48,988</strong><span>train</span></div>
-              <div class="dataset-stat"><strong>6,123</strong><span>dev</span></div>
+              <div class="dataset-stat"><strong>6,123</strong><span>val</span></div>
               <div class="dataset-stat"><strong>6,124</strong><span>test</span></div>
             </div>
-            <div class="dataset-label-list">
-              <div class="dataset-label-item"><span>Opinion</span><strong>2,437 train</strong></div>
-              <div class="dataset-label-item"><span>Art &amp; Design</span><strong>2,431 train</strong></div>
-              <div class="dataset-label-item"><span>Technology</span><strong>2,376 train</strong></div>
-              <div class="dataset-label-item"><span>Your Money</span><strong>1,020 train</strong></div>
-              <div class="dataset-label-item"><span>Education</span><strong>672 train</strong></div>
-              <div class="dataset-label-item"><span>Well</span><strong>529 train</strong></div>
-            </div>
           </article>
         </div>
+        <div id="mm-metric-spotlights" class="metric-spotlight-grid" aria-label="Tóm tắt metric chính"></div>
       </section>
 
-      <section class="panel">
+      <section class="panel visual-story-panel">
         <div class="section-heading">
-          <p class="section-kicker">Điểm nhấn</p>
-          <h2>Chỉ số nổi bật</h2>
+          <p class="section-kicker">Visual Storytelling</p>
+          <h2>Kể chuyện bằng dữ liệu thật</h2>
         </div>
-        <div class="mini-stat-grid">
-          <article class="mini-stat">
-            <h3>Mô hình tốt nhất</h3>
-            <p class="mini-stat-value">VisualBERT</p>
-            <p>Hiệu năng cao nhất trên tập test.</p>
-          </article>
-          <article class="mini-stat">
-            <h3>Accuracy</h3>
-            <p class="mini-stat-value">0.8751</p>
-            <p>Kết quả test của VisualBERT.</p>
-          </article>
-          <article class="mini-stat">
-            <h3>Macro F1</h3>
-            <p class="mini-stat-value">0.8575</p>
-            <p>Chỉ số chính để so sánh hai mô hình.</p>
-          </article>
-          <article class="mini-stat">
-            <h3>Delta macro F1</h3>
-            <p class="mini-stat-value">0.0511</p>
-            <p>VisualBERT cao hơn CLIP trên cùng tập test.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="section-heading">
-          <p class="section-kicker">Chỉ số</p>
-          <h2>Bảng so sánh mô hình</h2>
-        </div>
-        <div class="table-wrap">
-          <table class="results-table">
-            <thead>
-              <tr>
-                <th>Mô hình</th>
-                <th>Accuracy</th>
-                <th>Macro F1</th>
-                <th>Weighted F1</th>
-                <th>Loss</th>
-                <th>Nhận xét</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>VisualBERT</strong></td>
-                <td>0.8751</td>
-                <td>0.8575</td>
-                <td>0.8732</td>
-                <td>0.3978</td>
-                <td>Mô hình tốt nhất trên nhánh đa phương thức hiện tại.</td>
-              </tr>
-              <tr>
-                <td><strong>CLIP</strong></td>
-                <td>0.8488</td>
-                <td>0.8064</td>
-                <td>0.8346</td>
-                <td>1.9987</td>
-                <td>Baseline mạnh, nhưng thấp hơn VisualBERT trên cả ba chỉ số chính.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="section-heading">
-          <p class="section-kicker">Biểu đồ</p>
-          <h2>Biểu đồ tương tác</h2>
-        </div>
-        <div class="chart-canvas-grid">
-          <article class="chart-card">
-            <h3>So sánh metric chính</h3>
+        <p class="results-note visual-story-note">
+          Các biểu đồ dưới đây được dựng trực tiếp từ artifact thật của thí nghiệm N24News.
+          Mục tiêu là làm rõ ba câu hỏi: mô hình nào tốt hơn trên metric chính, cải thiện đó đến từ lớp nào,
+          và quan hệ giữa <em>support</em> với độ khó của từng lớp ra sao.
+        </p>
+        <div class="storyboard-grid">
+          <article class="chart-card story-card story-card-primary">
+            <h3>Khoảng cách trên metric chính</h3>
             <p class="chart-copy">
-              Biểu đồ cột dùng dữ liệu thật từ <code>n24news_model_comparison.csv</code>,
-              cho thấy VisualBERT vượt CLIP trên accuracy, macro F1 và weighted F1.
+              So sánh trực tiếp accuracy, macro F1 và weighted F1 giữa hai mô hình. Các marker và đường nối
+              giúp nhìn rõ mức chênh thay vì chỉ đọc bảng số.
             </p>
-            <div class="chart-shell">
+            <div class="chart-shell chart-shell-compact">
               <canvas id="mm-metrics-chart"></canvas>
             </div>
           </article>
-          <article class="chart-card">
-            <h3>F1 theo từng lớp</h3>
+          <article class="chart-card story-card">
+            <h3>Gain landscape theo từng lớp</h3>
             <p class="chart-copy">
-              Biểu đồ này được dựng từ <code>n24news_per_label_f1.csv</code>, giúp nhìn ra
-              lớp nào hai mô hình bám sát nhau và lớp nào VisualBERT vượt rõ rệt.
+              Mỗi thanh biểu diễn mức tăng F1 của VisualBERT so với CLIP trên một lớp.
+              Các lớp có mức tăng lớn nhất chính là nơi fusion model mang lại nhiều giá trị nhất.
             </p>
-            <div class="chart-shell">
-              <canvas id="mm-per-label-chart"></canvas>
+            <div class="chart-shell chart-shell-tall">
+              <canvas id="mm-gain-chart"></canvas>
             </div>
           </article>
-          <article class="chart-card wide">
-            <h3>Lịch sử validation</h3>
+          <article class="chart-card story-card wide">
+            <h3>Support so với mức cải thiện</h3>
             <p class="chart-copy">
-              Đường cong validation accuracy và macro F1 theo epoch của CLIP và VisualBERT.
-              VisualBERT tăng nhanh hơn và giữ ổn định tốt hơn trên tập dev.
+              Biểu đồ scatter cho thấy lớp nào vừa ít mẫu vừa có mức tăng mạnh. Các điểm ở góc trên bên trái
+              là những lớp đuôi đáng chú ý nhất.
+            </p>
+            <div class="chart-shell chart-shell-wide">
+              <canvas id="mm-support-chart"></canvas>
+            </div>
+          </article>
+          <article class="chart-card story-card">
+            <h3>Validation trajectory</h3>
+            <p class="chart-copy">
+              VisualBERT tăng nhanh hơn và giữ macro F1 ổn định hơn trên tập val. Đây là tín hiệu quan trọng
+              trước khi nhìn sang metric test.
             </p>
             <div class="chart-shell">
               <canvas id="mm-history-chart"></canvas>
             </div>
           </article>
-          <article class="chart-card wide">
-            <h3>Biểu đồ loss khi fine-tune</h3>
+          <article class="chart-card story-card">
+            <h3>Loss khi fine-tune</h3>
             <p class="chart-copy">
-              Train loss và dev loss của hai mô hình trong quá trình fine-tune.
-              Đây là cơ sở trực quan để đối chiếu mức hội tụ và độ ổn định khi huấn luyện.
+              Train loss và val loss được hiển thị bằng đồ thị vùng để nhìn rõ tốc độ hội tụ
+              và độ ổn định giữa hai mô hình.
             </p>
             <div class="chart-shell">
               <canvas id="mm-loss-chart"></canvas>
             </div>
           </article>
         </div>
-        <p class="results-note" style="margin-top: 1rem;">
-          Các biểu đồ trên dùng số liệu thật lấy từ artifact sau khi chạy notebook. Phần hình Matplotlib phía dưới
-          vẫn được giữ lại như lớp tham chiếu cho người xem muốn đối chiếu lại figure gốc.
-        </p>
+        <div class="class-focus-card" id="mm-class-focus">
+          <div class="class-focus-head">
+            <div>
+              <p class="section-kicker">Tương tác</p>
+              <h3>Lớp đang được soi kỹ</h3>
+            </div>
+            <span class="class-focus-tip">Di chuột hoặc bấm vào hai biểu đồ ở trên</span>
+          </div>
+          <div class="class-focus-body">
+            <div class="class-focus-summary">
+              <strong id="mm-class-focus-label">Well</strong>
+              <p id="mm-class-focus-note">VisualBERT tạo khoảng cách lớn nhất ở lớp đuôi này, cho thấy lợi thế rõ ràng trên nhóm mẫu khó.</p>
+            </div>
+            <div class="class-focus-metrics">
+              <div class="class-focus-metric">
+                <span>Support</span>
+                <strong id="mm-class-focus-support">80</strong>
+              </div>
+              <div class="class-focus-metric">
+                <span>CLIP F1</span>
+                <strong id="mm-class-focus-clip">0.1176</strong>
+              </div>
+              <div class="class-focus-metric">
+                <span>VisualBERT F1</span>
+                <strong id="mm-class-focus-visualbert">0.5000</strong>
+              </div>
+              <div class="class-focus-metric is-gain">
+                <span>ΔF1</span>
+                <strong id="mm-class-focus-delta">+0.3824</strong>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section class="panel">
         <div class="section-heading">
-          <p class="section-kicker">Mẫu dữ liệu</p>
-          <h2>Một số mẫu preview từ N24News</h2>
+          <p class="section-kicker">Lớp khó</p>
+          <h2>Tail Class Spotlight</h2>
         </div>
+        <p class="results-note">
+          Đây là bốn lớp cần chú ý nhất trong báo cáo: hoặc support thấp, hoặc mức cải thiện giữa hai mô hình
+          đủ lớn để ảnh hưởng rõ đến macro F1 cuối cùng.
+        </p>
+        <div id="mm-tail-spotlights" class="tail-spotlight-grid" aria-label="Các lớp khó và tín hiệu nổi bật"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Nhận xét từ biểu đồ</p>
+          <h2>Đọc nhanh kết quả</h2>
+        </div>
+        <div class="callout-grid">
+          <article class="callout-card">
+            <h3>Chênh lệch metric tổng</h3>
+            <p>VisualBERT hơn CLIP khoảng <strong>0.0511 macro F1</strong>. Với bài toán 24 lớp, đây là khoảng cách đủ lớn để xem là khác biệt thực chất, không chỉ là dao động nhẹ.</p>
+          </article>
+          <article class="callout-card">
+            <h3>Cải thiện đến từ đâu</h3>
+            <p>Phần tăng thêm chủ yếu đến từ các lớp khó và đuôi như <strong>Well</strong>, <strong>Style</strong>, <strong>Your Money</strong> và <strong>Education</strong>, chứ không chỉ ở các lớp lớn.</p>
+          </article>
+          <article class="callout-card">
+            <h3>Tín hiệu hội tụ</h3>
+            <p>VisualBERT đạt val accuracy và val macro F1 cao hơn ngay từ epoch 2, đồng thời có val loss thấp hơn đáng kể so với CLIP.</p>
+          </article>
+          <article class="callout-card">
+            <h3>Ý nghĩa thực tiễn</h3>
+            <p>Trên dữ liệu tin tức, việc kết hợp tín hiệu thị giác và ngôn ngữ bằng cơ chế fusion sâu có vẻ phù hợp hơn mô hình classifier dựa trên embedding CLIP thuần.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Mẫu khó</p>
+          <h2>Gallery Các Trường Hợp Gây Nhầm Lẫn</h2>
+        </div>
+        <p class="results-note">
+          Các mẫu dưới đây được chọn từ tập test thật, ưu tiên những trường hợp thuộc tail classes
+          hoặc những ca mà CLIP dự đoán sai còn VisualBERT dự đoán đúng.
+        </p>
         <div class="figure-grid">
-          <article class="figure-card">
-            <h3>Travel</h3>
-            <p>Afropunk, Huichica and More: 8 Music Festivals to Hit This Year</p>
-            <img src="./media/n24news-preview/01-travel.jpg" alt="Mẫu N24News lớp Travel">
-            <div class="figure-meta">
-              <span>Category: Travel</span>
-              <span>Official split</span>
+          <article class="figure-card hard-case-card">
+            <h3>Well</h3>
+            <p>Parents Mourning Stillbirth Follow Familiar Patterns on YouTube</p>
+            <img src="./media/n24news-hard-cases/01-well.jpg?v=20260324a" alt="Mẫu khó lớp Well">
+            <p class="hard-case-copy">Headline: Parents Mourning Stillbirth Follow Familiar Patterns on YouTube. Abstract: Over the course of about 15 years, a researcher says, YouTube has become a kind of virtual cemetery for parents experiencing stillbirth...</p>
+            <div class="prediction-stack">
+              <div class="prediction-line"><strong>Nhãn thật</strong><span></span><span class="status-chip is-neutral">Well</span></div>
+              <div class="prediction-line"><strong>CLIP</strong><span>Health · 0.1721</span><span class="status-chip is-bad">Sai</span></div>
+              <div class="prediction-line"><strong>VisualBERT</strong><span>Well · 0.3984</span><span class="status-chip is-good">Đúng</span></div>
             </div>
           </article>
-          <article class="figure-card">
+          <article class="figure-card hard-case-card">
+            <h3>Well</h3>
+            <p>Those Who Can't March Can Still Make a Difference</p>
+            <img src="./media/n24news-hard-cases/02-well.jpg?v=20260324a" alt="Mẫu khó lớp Well">
+            <p class="hard-case-copy">Headline: Those Who Can't March Can Still Make a Difference. Abstract: Many people with compromised immune systems feel too vulnerable to participate in public demonstrations, yet may want to be part of the solution...</p>
+            <div class="prediction-stack">
+              <div class="prediction-line"><strong>Nhãn thật</strong><span></span><span class="status-chip is-neutral">Well</span></div>
+              <div class="prediction-line"><strong>CLIP</strong><span>Health · 0.1258</span><span class="status-chip is-bad">Sai</span></div>
+              <div class="prediction-line"><strong>VisualBERT</strong><span>Opinion · 0.9670</span><span class="status-chip is-bad">Sai</span></div>
+            </div>
+          </article>
+          <article class="figure-card hard-case-card">
             <h3>Style</h3>
-            <p>The Repurposing of a Vogue Editor</p>
-            <img src="./media/n24news-preview/02-style.jpg" alt="Mẫu N24News lớp Style">
-            <div class="figure-meta">
-              <span>Category: Style</span>
-              <span>Official split</span>
+            <p>John Cena Grants a Wish Before His Wrestling Match</p>
+            <img src="./media/n24news-hard-cases/03-style.jpg?v=20260324a" alt="Mẫu khó lớp Style">
+            <p class="hard-case-copy">Headline: John Cena Grants a Wish Before His Wrestling Match. Abstract: The professional wrestler, who stars in the R-rated comedy &quot;Blockers,&quot; has some unfinished business at Madison Square Garden...</p>
+            <div class="prediction-stack">
+              <div class="prediction-line"><strong>Nhãn thật</strong><span></span><span class="status-chip is-neutral">Style</span></div>
+              <div class="prediction-line"><strong>CLIP</strong><span>Sports · 0.2011</span><span class="status-chip is-bad">Sai</span></div>
+              <div class="prediction-line"><strong>VisualBERT</strong><span>Style · 0.5487</span><span class="status-chip is-good">Đúng</span></div>
             </div>
           </article>
-          <article class="figure-card">
-            <h3>Real Estate</h3>
-            <p>Sites for Aviation Buffs</p>
-            <img src="./media/n24news-preview/03-real-estate.jpg" alt="Mẫu N24News lớp Real Estate">
-            <div class="figure-meta">
-              <span>Category: Real Estate</span>
-              <span>Official split</span>
+          <article class="figure-card hard-case-card">
+            <h3>Style</h3>
+            <p>What Time Do Jupiter and Saturn Align?</p>
+            <img src="./media/n24news-hard-cases/04-style.jpg?v=20260324a" alt="Mẫu khó lớp Style">
+            <p class="hard-case-copy">Headline: What Time Do Jupiter and Saturn Align? Abstract: A celestial meet-cute will unfold before our eyes today. Here's why you should be excited about that...</p>
+            <div class="prediction-stack">
+              <div class="prediction-line"><strong>Nhãn thật</strong><span></span><span class="status-chip is-neutral">Style</span></div>
+              <div class="prediction-line"><strong>CLIP</strong><span>Science · 0.2040</span><span class="status-chip is-bad">Sai</span></div>
+              <div class="prediction-line"><strong>VisualBERT</strong><span>Science · 0.9911</span><span class="status-chip is-bad">Sai</span></div>
             </div>
           </article>
-          <article class="figure-card">
-            <h3>Television</h3>
-            <p>What's on TV Monday: 'Amy Schumer Learns to Cook' and 'Jawbreaker'</p>
-            <img src="./media/n24news-preview/04-television.jpg" alt="Mẫu N24News lớp Television">
-            <div class="figure-meta">
-              <span>Category: Television</span>
-              <span>Official split</span>
+          <article class="figure-card hard-case-card">
+            <h3>Education</h3>
+            <p>Drug-Dealing Network Alleged at Duke, U.N.C. Chapel Hill and Appalachian State</p>
+            <img src="./media/n24news-hard-cases/05-education.jpg?v=20260324a" alt="Mẫu khó lớp Education">
+            <p class="hard-case-copy">Headline: Drug-Dealing Network Alleged at Duke, U.N.C. Chapel Hill and Appalachian State. Abstract: Prosecutors said current or former students were part of an operation that funneled thousands of pounds of marijuana...</p>
+            <div class="prediction-stack">
+              <div class="prediction-line"><strong>Nhãn thật</strong><span></span><span class="status-chip is-neutral">Education</span></div>
+              <div class="prediction-line"><strong>CLIP</strong><span>Health · 0.0962</span><span class="status-chip is-bad">Sai</span></div>
+              <div class="prediction-line"><strong>VisualBERT</strong><span>Education · 0.3896</span><span class="status-chip is-good">Đúng</span></div>
             </div>
           </article>
-          <article class="figure-card">
-            <h3>Economy</h3>
-            <p>Argentina Raises Key Rate to 40%, Bringing Economic Uncertainty</p>
-            <img src="./media/n24news-preview/05-economy.jpg" alt="Mẫu N24News lớp Economy">
-            <div class="figure-meta">
-              <span>Category: Economy</span>
-              <span>Official split</span>
+          <article class="figure-card hard-case-card">
+            <h3>Education</h3>
+            <p>Answers: Human Ecology</p>
+            <img src="./media/n24news-hard-cases/06-education.jpg?v=20260324a" alt="Mẫu khó lớp Education">
+            <p class="hard-case-copy">Headline: Answers: Human Ecology. Abstract: Answers to the pop quiz. Body: 1. c. Life's boundaries are not always clear. One fungus occupies about 2,384 acres of the forest floor...</p>
+            <div class="prediction-stack">
+              <div class="prediction-line"><strong>Nhãn thật</strong><span></span><span class="status-chip is-neutral">Education</span></div>
+              <div class="prediction-line"><strong>CLIP</strong><span>Science · 0.1025</span><span class="status-chip is-bad">Sai</span></div>
+              <div class="prediction-line"><strong>VisualBERT</strong><span>Science · 0.9741</span><span class="status-chip is-bad">Sai</span></div>
             </div>
           </article>
-          <article class="figure-card">
-            <h3>Opinion</h3>
-            <p>Repurposing Drugs to Fight Cancer</p>
-            <img src="./media/n24news-preview/06-opinion.jpg" alt="Mẫu N24News lớp Opinion">
-            <div class="figure-meta">
-              <span>Category: Opinion</span>
-              <span>Official split</span>
+          <article class="figure-card hard-case-card">
+            <h3>Your Money</h3>
+            <p>Going Back to School, Without the Pressure</p>
+            <img src="./media/n24news-hard-cases/07-your-money.jpg?v=20260324a" alt="Mẫu khó lớp Your Money">
+            <p class="hard-case-copy">Headline: Going Back to School, Without the Pressure. Abstract: Residences near or on college campuses offer courses and culture for older adults...</p>
+            <div class="prediction-stack">
+              <div class="prediction-line"><strong>Nhãn thật</strong><span></span><span class="status-chip is-neutral">Your Money</span></div>
+              <div class="prediction-line"><strong>CLIP</strong><span>Real Estate · 0.1551</span><span class="status-chip is-bad">Sai</span></div>
+              <div class="prediction-line"><strong>VisualBERT</strong><span>Your Money · 0.4304</span><span class="status-chip is-good">Đúng</span></div>
+            </div>
+          </article>
+          <article class="figure-card hard-case-card">
+            <h3>Your Money</h3>
+            <p>Giving Up the Affluent Suburbs for City Living</p>
+            <img src="./media/n24news-hard-cases/08-your-money.jpg?v=20260324a" alt="Mẫu khó lớp Your Money">
+            <p class="hard-case-copy">Headline: Giving Up the Affluent Suburbs for City Living. Abstract: A rising number of wealthy suburbanites are abandoning their empty-nest suburban estates for high-end city residences...</p>
+            <div class="prediction-stack">
+              <div class="prediction-line"><strong>Nhãn thật</strong><span></span><span class="status-chip is-neutral">Your Money</span></div>
+              <div class="prediction-line"><strong>CLIP</strong><span>Real Estate · 0.1890</span><span class="status-chip is-bad">Sai</span></div>
+              <div class="prediction-line"><strong>VisualBERT</strong><span>Real Estate · 0.9901</span><span class="status-chip is-bad">Sai</span></div>
             </div>
           </article>
         </div>
@@ -292,18 +336,45 @@
         </div>
         <div class="figure-grid">
           <article class="figure-card">
-            <h3>EDA của N24News</h3>
-            <p>Tổng quan số mẫu theo lớp và đặc trưng độ dài văn bản trên split official của bộ dữ liệu.</p>
-            <img src="../artifacts/multimodal/n24news_eda_overview.png" alt="EDA của N24News">
+            <h3>EDA tổng quan</h3>
+            <p>Tổng quan số mẫu theo lớp, heatmap split và độ dài văn bản trên toàn bộ tập N24News.</p>
+            <img src="../artifacts/multimodal/n24news_eda_overview.png?v=20260324a" alt="EDA tổng quan của N24News">
             <div class="figure-meta">
               <span>61,235 mẫu</span>
               <span>24 lớp</span>
             </div>
           </article>
           <article class="figure-card">
+            <h3>Heatmap split-category</h3>
+            <p>Biểu đồ nhiệt cho thấy rõ các lớp đuôi như Well, Education và Your Money trên ba split train, val và test.</p>
+            <img src="../artifacts/multimodal/n24news_split_category_heatmap.png?v=20260324a" alt="Heatmap phân bố lớp của N24News">
+            <div class="figure-meta">
+              <span>Train / val / test</span>
+              <span>Category heatmap</span>
+            </div>
+          </article>
+          <article class="figure-card">
+            <h3>Độ dài văn bản</h3>
+            <p>Violin plot cho thấy độ dài văn bản giữa ba split khá đồng đều, phù hợp để so sánh công bằng khi huấn luyện và đánh giá.</p>
+            <img src="../artifacts/multimodal/n24news_text_length_boxplot.png?v=20260324a" alt="Phân bố độ dài văn bản của N24News">
+            <div class="figure-meta">
+              <span>Median ~ 5.1k chars</span>
+              <span>Violin plot</span>
+            </div>
+          </article>
+          <article class="figure-card">
+            <h3>Mẫu đại diện theo lớp</h3>
+            <p>Lưới mẫu giúp rà soát chất lượng cặp ảnh-văn bản và cảm quan trực quan của dataset trước khi huấn luyện.</p>
+            <img src="../artifacts/multimodal/n24news_sample_grid.png?v=20260324a" alt="Lưới mẫu đại diện của N24News">
+            <div class="figure-meta">
+              <span>Representative samples</span>
+              <span>Image + headline</span>
+            </div>
+          </article>
+          <article class="figure-card">
             <h3>Đường cong huấn luyện của CLIP</h3>
-            <p>CLIP hội tụ nhanh nhưng dev macro F1 vẫn thấp hơn VisualBERT trên cùng protocol.</p>
-            <img src="../artifacts/multimodal/n24news_clip_history.png" alt="Đường cong huấn luyện của CLIP trên N24News">
+            <p>CLIP hội tụ nhanh nhưng val macro F1 vẫn thấp hơn VisualBERT trên cùng protocol.</p>
+            <img src="../artifacts/multimodal/n24news_clip_history.png?v=20260324a" alt="Đường cong huấn luyện của CLIP trên N24News">
             <div class="figure-meta">
               <span>Accuracy test: 0.8488</span>
               <span>Macro F1: 0.8064</span>
@@ -312,7 +383,7 @@
           <article class="figure-card">
             <h3>Đường cong huấn luyện của VisualBERT</h3>
             <p>VisualBERT đạt validation tốt hơn và tạo lợi thế rõ trên test split.</p>
-            <img src="../artifacts/multimodal/n24news_visualbert_history.png" alt="Đường cong huấn luyện của VisualBERT trên N24News">
+            <img src="../artifacts/multimodal/n24news_visualbert_history.png?v=20260324a" alt="Đường cong huấn luyện của VisualBERT trên N24News">
             <div class="figure-meta">
               <span>Accuracy test: 0.8751</span>
               <span>Macro F1: 0.8575</span>
@@ -321,7 +392,7 @@
           <article class="figure-card">
             <h3>F1 theo từng lớp</h3>
             <p>Biểu đồ tổng hợp per-class F1 của CLIP và VisualBERT trên toàn bộ 24 lớp của N24News.</p>
-            <img src="../artifacts/multimodal/n24news_per_label_f1.png" alt="Biểu đồ per-class F1 trên N24News">
+            <img src="../artifacts/multimodal/n24news_per_label_f1.png?v=20260324a" alt="Biểu đồ per-class F1 trên N24News">
             <div class="figure-meta">
               <span>CLIP vs VisualBERT</span>
               <span>Per-class F1</span>
@@ -330,7 +401,7 @@
           <article class="figure-card">
             <h3>CLIP confusion matrix</h3>
             <p>Phân bố nhầm lẫn của CLIP trên tập test của N24News.</p>
-            <img src="../artifacts/multimodal/n24news_clip_confusion_matrix.png" alt="CLIP confusion matrix trên N24News">
+            <img src="../artifacts/multimodal/n24news_clip_confusion_matrix.png?v=20260324a" alt="CLIP confusion matrix trên N24News">
             <div class="figure-meta">
               <span>Mô hình: CLIP</span>
               <span>24 lớp</span>
@@ -339,7 +410,7 @@
           <article class="figure-card">
             <h3>VisualBERT confusion matrix</h3>
             <p>Phân bố nhầm lẫn của VisualBERT trên tập test. Đây là mô hình tốt nhất của nhánh đa phương thức.</p>
-            <img src="../artifacts/multimodal/n24news_visualbert_confusion_matrix.png" alt="VisualBERT confusion matrix trên N24News">
+            <img src="../artifacts/multimodal/n24news_visualbert_confusion_matrix.png?v=20260324a" alt="VisualBERT confusion matrix trên N24News">
             <div class="figure-meta">
               <span>Mô hình: VisualBERT</span>
               <span>24 lớp</span>
@@ -354,7 +425,7 @@
           <h2>Mã nguồn và notebook</h2>
         </div>
         <p class="results-note">
-          Notebook multimodal hiện đã chạy xong đầy đủ từ bước chuẩn bị dữ liệu, fine-tune cho đến export artifact.
+          Notebook multimodal đã chạy xong đầy đủ từ bước chuẩn bị dữ liệu, EDA, fine-tune cho đến export artifact.
           Người xem có thể đọc notebook theo giao diện web hoặc mở trực tiếp tệp <code>.ipynb</code>.
         </p>
         <div class="branch-link-row" style="margin-top: 0.9rem;">
@@ -367,7 +438,8 @@
     </main>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-  <script src="../../assets/js/report-visual-data.js"></script>
-  <script src="../../assets/js/report-charts.js"></script>
+  <script src="../../assets/js/report-visual-data.js?v=20260324b"></script>
+  <script src="../../assets/js/report-charts.js?v=20260324b"></script>
+  <script src="../../assets/js/report-lightbox.js?v=20260324a"></script>
 </body>
 </html>

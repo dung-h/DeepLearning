@@ -3,7 +3,7 @@
   "task": "image + news text -> category classification",
   "split_sizes": {
     "train": 48988,
-    "dev": 6123,
+    "val": 6123,
     "test": 6124
   },
   "num_classes": 24,

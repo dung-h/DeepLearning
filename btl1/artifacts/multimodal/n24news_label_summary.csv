@@ -23,30 +23,30 @@ train,Your Money,1020
 train,Global Business,955
 train,Education,672
 train,Well,529
-dev,Food,326
-dev,Movies,325
-dev,Dance,318
-dev,Sports,314
-dev,Media,312
-dev,Fashion & Style,309
-dev,Science,308
-dev,Travel,301
-dev,Television,301
-dev,Technology,300
-dev,Music,299
-dev,Real Estate,289
-dev,Health,285
-dev,Books,284
-dev,Theater,281
-dev,Opinion,280
-dev,Style,271
-dev,Art & Design,257
-dev,Automobiles,196
-dev,Economy,180
-dev,Global Business,127
-dev,Your Money,109
-dev,Education,79
-dev,Well,72
+val,Food,326
+val,Movies,325
+val,Dance,318
+val,Sports,314
+val,Media,312
+val,Fashion & Style,309
+val,Science,308
+val,Travel,301
+val,Television,301
+val,Technology,300
+val,Music,299
+val,Real Estate,289
+val,Health,285
+val,Books,284
+val,Theater,281
+val,Opinion,280
+val,Style,271
+val,Art & Design,257
+val,Automobiles,196
+val,Economy,180
+val,Global Business,127
+val,Your Money,109
+val,Education,79
+val,Well,72
 test,Media,326
 test,Technology,325
 test,Dance,318

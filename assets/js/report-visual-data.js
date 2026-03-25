@@ -117,7 +117,7 @@ window.REPORT_VISUAL_DATA = {
           ]
         },
         {
-          "label": "CLIP dev loss",
+          "label": "CLIP val loss",
           "values": [
             2.212451562682106,
             1.9942953754012616
@@ -131,7 +131,7 @@ window.REPORT_VISUAL_DATA = {
           ]
         },
         {
-          "label": "VisualBERT dev loss",
+          "label": "VisualBERT val loss",
           "values": [
             0.4788217472471327,
             0.39278849777154884
@@ -337,6 +337,38 @@ window.REPORT_VISUAL_DATA = {
         "Education",
         "Well"
       ],
+      "support": [
+        311,
+        305,
+        307,
+        299,
+        307,
+        306,
+        325,
+        318,
+        281,
+        292,
+        290,
+        284,
+        286,
+        326,
+        287,
+        313,
+        280,
+        263,
+        173,
+        183,
+        134,
+        100,
+        74,
+        80
+      ],
+      "tailHighlights": [
+        "Well",
+        "Education",
+        "Your Money",
+        "Style"
+      ],
       "datasets": [
         {
           "label": "CLIP",
@@ -405,28 +437,28 @@ window.REPORT_VISUAL_DATA = {
       ],
       "datasets": [
         {
-          "label": "CLIP dev accuracy",
+          "label": "CLIP val accuracy",
           "values": [
             0.8402743753062224,
             0.8584027437530622
           ]
         },
         {
-          "label": "CLIP dev macro F1",
+          "label": "CLIP val macro F1",
           "values": [
             0.7899371045216143,
             0.8113901152364199
           ]
         },
         {
-          "label": "VisualBERT dev accuracy",
+          "label": "VisualBERT val accuracy",
           "values": [
             0.8494202188469704,
             0.8771843867385268
           ]
         },
         {
-          "label": "VisualBERT dev macro F1",
+          "label": "VisualBERT val macro F1",
           "values": [
             0.8196884129449747,
             0.8581381032863605
@@ -449,7 +481,7 @@ window.REPORT_VISUAL_DATA = {
           ]
         },
         {
-          "label": "CLIP dev loss",
+          "label": "CLIP val loss",
           "values": [
             2.212451562682106,
             1.9942953754012616
@@ -463,7 +495,7 @@ window.REPORT_VISUAL_DATA = {
           ]
         },
         {
-          "label": "VisualBERT dev loss",
+          "label": "VisualBERT val loss",
           "values": [
             0.4788217472471327,
             0.39278849777154884

@@ -3,36 +3,36 @@
     "category": "Travel",
     "headline": "Afropunk, Huichica and More: 8 Music Festivals to Hit This Year",
     "abstract": "Whether in the desert, the forest or a city, all of these festivals are notable for their settings, as well as fun extracurricular programming and highly curated, alternative lineups.",
-    "image": "../media/n24news-preview/01-travel.jpg"
+    "image": "./media/n24news-preview/01-travel.jpg"
   },
   {
     "category": "Style",
     "headline": "The Repurposing of a Vogue Editor",
     "abstract": "After almost 20 years at the magazine, Tonne Goodman is cutting loose. Her memoir will be published next week.",
-    "image": "../media/n24news-preview/02-style.jpg"
+    "image": "./media/n24news-preview/02-style.jpg"
   },
   {
     "category": "Real Estate",
     "headline": "Sites for Aviation Buffs",
     "abstract": "The Dayton area has more than a dozen sites for aviation enthusiasts to visit, including the bicycle shop occupied in 1892 by the Wright Brothers.",
-    "image": "../media/n24news-preview/03-real-estate.jpg"
+    "image": "./media/n24news-preview/03-real-estate.jpg"
   },
   {
     "category": "Television",
     "headline": "What's on TV Monday: 'Amy Schumer Learns to Cook' and 'Jawbreaker'",
     "abstract": "The comedian's culinary apprenticeship continues with a new self-shot season. And a cult classic starring Rose McGowan arrives on Shudder.",
-    "image": "../media/n24news-preview/04-television.jpg"
+    "image": "./media/n24news-preview/04-television.jpg"
   },
   {
     "category": "Economy",
     "headline": "Argentina Raises Key Rate to 40%, Bringing Economic Uncertainty",
     "abstract": "The move seeks to stabilize the country's currency, the peso, after a strong depreciation in recent days raised questions about the prospects for President Mauricio Macri's ambitious agenda.",
-    "image": "../media/n24news-preview/05-economy.jpg"
+    "image": "./media/n24news-preview/05-economy.jpg"
   },
   {
     "category": "Opinion",
     "headline": "Repurposing Drugs to Fight Cancer",
     "abstract": "While doctors are allowed to use drugs approved for one disease to treat another condition, many don't because approval to do so doesn't appear on the label. But that may be changing.",
-    "image": "../media/n24news-preview/06-opinion.jpg"
+    "image": "./media/n24news-preview/06-opinion.jpg"
   }
 ]
