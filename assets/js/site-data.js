@@ -20,10 +20,19 @@ window.SITE_DATA = {
     },
   },
   group: {
-    name: "Tên nhóm sẽ được cập nhật",
+    name: "DL123",
     summary:
-      "Landing page đã sẵn sàng cho việc điền tên nhóm, thành viên và các tài nguyên chính thức khi nhóm hoàn thiện thông tin công khai.",
-    members: [],
+      "Nhóm DL123 thực hiện Bài tập lớn số 1 của môn CO3133 với hai nhánh chính: phân loại văn bản và phân loại đa phương thức.",
+    members: [
+      {
+        name: "Hồ Anh Dũng",
+        role: "MSSV 2310543",
+      },
+      {
+        name: "Huỳnh Đức Nhân",
+        role: "MSSV 2312420",
+      },
+    ],
   },
   assignments: [
     {
@@ -52,6 +61,13 @@ window.SITE_DATA = {
               note: "Trang tổng hợp ngắn gọn hai nhánh thực nghiệm, gồm bảng metric cuối và biểu đồ so sánh trực quan.",
               url: "../btl1/reports/final-results.html",
               featured: true,
+            },
+            {
+              type: "Mã nguồn",
+              label: "Mở repo GitHub",
+              title: "Kho mã nguồn công khai",
+              note: "Repository GitHub của nhóm, chứa landing page, notebook, báo cáo web và toàn bộ mã nguồn công khai của Bài tập lớn số 1.",
+              url: "https://github.com/dung-h/DeepLearning",
             },
           ],
         },
