@@ -9,3 +9,4 @@ btl1/data/
 Thumbs.db
 __pycache__/
 .ipynb_checkpoints/
+*/notebooks/wandb/
