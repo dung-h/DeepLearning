@@ -12,76 +12,87 @@
 </head>
 <body data-page="home" data-root=".">
   <div class="page-shell">
-    <header class="site-header">
-      <div class="crest-mark" aria-hidden="true">
-        <span>CO</span>
-        <span>3133</span>
+    <header class="site-header home-hero">
+      <div class="hero-band">
+        <div class="hero-band-left">
+          <p class="eyebrow">Môn học</p>
+          <p id="hero-band-copy" class="hero-band-copy">CO3133 · Deep Learning and Applications</p>
+        </div>
+        <div class="hero-band-right">
+          <span id="hero-group-chip" class="hero-chip">DL123</span>
+          <span id="hero-term-chip" class="hero-chip hero-chip-secondary">2025-2026 · Semester 2</span>
+        </div>
       </div>
-      <div class="header-copy">
-        <p class="eyebrow">Landing page học thuật</p>
+
+      <div class="hero-main-copy hero-main-copy-simplified">
+        <div class="crest-mark" aria-hidden="true">
+          <span>CO</span>
+          <span>3133</span>
+        </div>
+        <p class="section-kicker">Bài tập lớn</p>
         <h1 id="site-title">CO3133</h1>
         <p id="site-subtitle" class="lede">Landing page công khai cho các bài tập lớn của nhóm.</p>
+        <p id="hero-meta-line" class="hero-meta-line"></p>
+        <div id="hero-actions" class="hero-actions"></div>
+        <div class="hero-inline-card">
+          <h2 id="course-heading">CO3133 · Học sâu và ứng dụng</h2>
+          <p id="course-summary" class="hero-summary"></p>
+        </div>
       </div>
     </header>
 
     <main>
-      <section class="panel hero-panel">
-        <div class="hero-grid">
-          <div>
-            <p class="section-kicker">Giới thiệu</p>
-            <h2 id="course-heading">CO3133 · Học sâu và ứng dụng</h2>
-            <p id="course-summary" class="body-copy"></p>
-          </div>
-          <div class="info-card">
-            <h3>Thông tin môn học</h3>
-            <dl id="course-meta" class="meta-list"></dl>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
+      <section class="panel home-intro-panel">
         <div class="section-heading">
-          <p class="section-kicker">Tổng quan</p>
-          <h2 id="home-overview-title">Tổng quan landing page</h2>
+          <div>
+            <p class="section-kicker">Tổng quan</p>
+            <h2 id="home-overview-title">Tổng quan landing page</h2>
+          </div>
         </div>
-        <div class="overview-grid">
-          <article class="overview-card">
+        <div class="overview-spotlight-grid">
+          <article class="overview-card overview-card-primary">
+            <p class="section-kicker">Khái quát</p>
             <h3 id="overview-title"></h3>
-            <p id="overview-copy" class="body-copy"></p>
-          </article>
-          <article class="overview-card">
-            <h3>Cách sử dụng</h3>
             <ul id="overview-points" class="overview-list"></ul>
           </article>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="section-heading">
-          <p class="section-kicker">Nhóm thực hiện</p>
-          <h2>Thành viên và giảng viên</h2>
-        </div>
-        <div class="two-column-grid">
-          <article class="info-card">
-            <h3>Tên nhóm</h3>
-            <p id="group-name" class="feature-copy"></p>
+          <article class="overview-card">
+            <p class="section-kicker">Nhóm thực hiện</p>
+            <h3 id="group-name">DL123</h3>
             <p id="group-summary" class="body-copy"></p>
           </article>
-          <article class="info-card">
-            <h3>Giảng viên hướng dẫn</h3>
-            <p id="instructor-name" class="feature-copy"></p>
-            <p class="body-copy">Trang được tổ chức theo hướng công khai, rõ ràng và dễ truy cập để người xem có thể theo dõi từng bài tập lớn một cách thuận tiện.</p>
-          </article>
         </div>
-        <div id="members-grid" class="member-grid"></div>
       </section>
 
-      <section class="panel">
+      <section class="panel assignment-showcase-panel">
         <div class="section-heading">
-          <p class="section-kicker">Bài tập lớn</p>
-          <h2>Các bài tập lớn</h2>
+          <div>
+            <p class="section-kicker">Bài tập lớn</p>
+            <h2>Các bài tập lớn</h2>
+          </div>
         </div>
-        <div id="assignment-grid" class="assignment-grid"></div>
+        <div id="assignment-grid" class="assignment-showcase-grid"></div>
+      </section>
+
+      <section class="panel team-panel">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Nhóm thực hiện</p>
+            <h2>Thành viên và giảng viên</h2>
+          </div>
+        </div>
+        <div class="team-layout">
+          <article class="info-card team-feature-card">
+            <h3>Tên nhóm</h3>
+            <p class="feature-copy" id="team-group-name"></p>
+            <p id="team-group-summary" class="body-copy"></p>
+          </article>
+          <article class="info-card team-feature-card">
+            <h3>Giảng viên hướng dẫn</h3>
+            <p id="instructor-name" class="feature-copy"></p>
+            <p class="body-copy">Trang được tổ chức theo hướng học thuật, dễ quét nhanh và ưu tiên đúng các đường dẫn công khai cần cho chấm bài.</p>
+          </article>
+        </div>
+        <div id="members-grid" class="member-grid member-grid-home"></div>
       </section>
     </main>
   </div>

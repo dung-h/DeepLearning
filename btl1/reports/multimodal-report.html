@@ -33,8 +33,8 @@
             <p class="section-kicker">Tổng quan</p>
             <h2>VisualBERT dẫn đầu trên N24News</h2>
             <p class="body-copy">
-              Trên tập test của N24News, VisualBERT đạt <strong>accuracy 0.8751</strong>,
-              <strong>macro F1 0.8575</strong> và <strong>weighted F1 0.8732</strong>.
+              Trên tập test của N24News, VisualBERT đạt <strong>accuracy 0.8752</strong>,
+              <strong>macro F1 0.8641</strong> và <strong>weighted F1 0.8746</strong>.
               So với CLIP, mô hình này không chỉ tốt hơn ở các lớp lớn mà còn cải thiện rõ ở các lớp
               khó như <strong>Well</strong>, <strong>Style</strong>, <strong>Your Money</strong> và <strong>Education</strong>.
             </p>
@@ -211,7 +211,7 @@
         <div class="callout-grid">
           <article class="callout-card">
             <h3>Chênh lệch metric tổng</h3>
-            <p>VisualBERT hơn CLIP khoảng <strong>0.0511 macro F1</strong>. Với bài toán 24 lớp, đây là khoảng cách đủ lớn để xem là khác biệt thực chất, không chỉ là dao động nhẹ.</p>
+            <p>VisualBERT hơn CLIP khoảng <strong>0.0578 macro F1</strong>. Với bài toán 24 lớp, đây là khoảng cách đủ lớn để xem là khác biệt thực chất, không chỉ là dao động nhẹ.</p>
           </article>
           <article class="callout-card">
             <h3>Cải thiện đến từ đâu</h3>
@@ -385,8 +385,8 @@
             <p>VisualBERT đạt validation tốt hơn và tạo lợi thế rõ trên test split.</p>
             <img src="../artifacts/multimodal/n24news_visualbert_history.png?v=20260324a" alt="Đường cong huấn luyện của VisualBERT trên N24News">
             <div class="figure-meta">
-              <span>Accuracy test: 0.8751</span>
-              <span>Macro F1: 0.8575</span>
+              <span>Accuracy test: 0.8752</span>
+              <span>Macro F1: 0.8641</span>
             </div>
           </article>
           <article class="figure-card">
@@ -421,6 +421,60 @@
 
       <section class="panel">
         <div class="section-heading">
+          <p class="section-kicker">PEFT</p>
+          <h2>PEFT variant comparison</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Variant</th>
+                <th>Accuracy</th>
+                <th>Macro F1</th>
+                <th>Weighted F1</th>
+                <th>Runtime</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>CLIP</strong></td>
+                <td>deep_head</td>
+                <td>0.8225</td>
+                <td>0.8075</td>
+                <td>0.8184</td>
+                <td>55.7 min</td>
+              </tr>
+              <tr>
+                <td><strong>CLIP</strong></td>
+                <td>lora</td>
+                <td>0.8388</td>
+                <td>0.8230</td>
+                <td>0.8363</td>
+                <td>98.5 min</td>
+              </tr>
+              <tr>
+                <td><strong>VisualBERT</strong></td>
+                <td>deep_head</td>
+                <td>0.7183</td>
+                <td>0.6777</td>
+                <td>0.7063</td>
+                <td>5.61 h</td>
+              </tr>
+              <tr>
+                <td><strong>VisualBERT</strong></td>
+                <td>lora</td>
+                <td>0.8023</td>
+                <td>0.7777</td>
+                <td>0.7965</td>
+                <td>3.58 h</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="section-heading">
           <p class="section-kicker">Notebook</p>
           <h2>Mã nguồn và notebook</h2>
         </div>
@@ -431,8 +485,8 @@
         <div class="branch-link-row" style="margin-top: 0.9rem;">
           <a class="button-link" href="./multimodal-notebook-viewer.html">Mở trình xem notebook</a>
           <a class="button-link button-secondary" href="../notebooks/text_image_classification.ipynb">Tệp notebook gốc (.ipynb)</a>
-          <a class="button-link button-secondary" href="../artifacts/multimodal/n24news_model_comparison.csv">Bảng số liệu so sánh</a>
-          <a class="button-link button-secondary" href="../artifacts/multimodal/n24news_metrics_summary.json">Tóm tắt metric (JSON)</a>
+          <a class="button-link button-secondary" href="../artifacts/multimodal/n24news_model_comparison_full_finetune.csv">Bảng số liệu so sánh</a>
+          <a class="button-link button-secondary" href="../artifacts/multimodal/n24news_metrics_summary_full_finetune.json">Tóm tắt metric (JSON)</a>
         </div>
       </section>
     </main>

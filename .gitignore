@@ -1,4 +1,6 @@
 GPT.md
+AGENTS.md
+.codex/
 legacy/
 tracking_progress.txt
 logs/
@@ -9,3 +11,22 @@ btl1/data/
 Thumbs.db
 __pycache__/
 .ipynb_checkpoints/
+
+# Background image-training runtime files
+btl1/artifacts/image/image_notebook_run_*.stdout.log
+btl1/artifacts/image/image_notebook_run_*.stderr.log
+btl1/artifacts/image/image_training_run_*.stdout.log
+btl1/artifacts/image/image_training_run_*.stderr.log
+btl1/artifacts/image/image_training_background.json
+
+# Per-epoch resume/checkpoint artifacts are runtime state, not report artifacts
+btl1/artifacts/image/checkpoints/
+btl1/artifacts/image/*.pth
+btl1/artifacts/text/downloads/
+btl1/artifacts/image/downloads/
+btl1/artifacts/multimodal/downloads/
+btl1/artifacts/multimodal/full_finetune_run/
+btl1/artifacts/image/demo_smoke*
+
+# Local notebook runners and utility scripts
+btl1/scripts/

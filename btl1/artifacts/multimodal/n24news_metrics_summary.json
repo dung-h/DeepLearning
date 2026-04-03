@@ -36,15 +36,23 @@
   "models": {
     "CLIP": {
       "accuracy": 0.848791639451339,
+      "macro_precision": 0.854957237704757,
+      "macro_recall": 0.8099257304835836,
       "macro_f1": 0.8063637712893706,
+      "weighted_precision": 0.847609504422477,
+      "weighted_recall": 0.848791639451339,
       "weighted_f1": 0.8346101567155595,
       "loss": 1.9986581727619035
     },
     "VisualBERT": {
-      "accuracy": 0.8750816459830176,
-      "macro_f1": 0.8574857709215573,
-      "weighted_f1": 0.8732028740467108,
-      "loss": 0.3977566836103748
+      "accuracy": 0.8752449379490529,
+      "macro_precision": 0.8653726800047785,
+      "macro_recall": 0.8636523965478554,
+      "macro_f1": 0.864149161959657,
+      "weighted_precision": 0.8746917561172777,
+      "weighted_recall": 0.8752449379490529,
+      "weighted_f1": 0.87464539811239,
+      "loss": 0.39742207846553795
     }
   },
   "sources": {

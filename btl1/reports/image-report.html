@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo cáo nhánh ảnh | CO3133</title>
+  <meta name="description" content="Trang trình bày kết quả thực nghiệm cho nhánh ảnh của Bài tập lớn số 1 môn CO3133 với weather dataset.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header compact">
+      <div class="header-copy">
+        <a href="./final-results.html" class="breadcrumb-link">Bảng kết quả cuối</a>
+        <p class="eyebrow">Nhánh ảnh</p>
+        <h1>Weather Dataset</h1>
+        <p class="lede">
+          Báo cáo này trình bày nhánh phân loại ảnh thời tiết của Bài tập lớn số 1.
+          Hai mô hình được so sánh là <strong>ResNet50</strong> và <strong>ViT-Base</strong>,
+          cùng dùng split stratified <strong>70 / 15 / 15</strong> và được đánh giá trên tập test riêng.
+        </p>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel hero-panel">
+        <div class="detail-grid">
+          <div>
+            <p class="section-kicker">Tổng quan</p>
+            <h2>ViT-Base vượt ResNet50</h2>
+            <p class="body-copy">
+              Trên tập test của weather dataset, ViT-Base đạt <strong>accuracy 0.9049</strong>
+              và <strong>weighted F1 0.9047</strong>, vượt ResNet50 với accuracy 0.8437
+              và weighted F1 0.8434. Khoảng cách này giữ ổn định cả ở bảng metric tổng,
+              best epoch và per-label metrics.
+            </p>
+            <ul class="pill-list" style="margin-top: 1rem;">
+              <li class="pill">11 lớp thời tiết</li>
+              <li class="pill">Split stratified 70 / 15 / 15</li>
+              <li class="pill">224 × 224</li>
+              <li class="pill">ResNet50 vs ViT-Base</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h3>Kết luận nhanh</h3>
+            <p class="body-copy">
+              ViT-Base là model tốt nhất của nhánh ảnh hiện tại. ResNet50 vẫn là baseline CNN
+              mạnh và hội tụ nhanh hơn, nhưng ViT-Base thắng rõ trên accuracy, weighted F1 và
+              phần lớn nhãn khó như frost, sandstorm, rain và fogsmog.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Dữ liệu</p>
+          <h2>Split và tiền xử lý</h2>
+        </div>
+        <div class="callout-grid">
+          <article class="callout-card">
+            <h3>Quy mô dữ liệu</h3>
+            <p>
+              Bộ dữ liệu gồm <strong>6,862</strong> ảnh thuộc 11 lớp thời tiết.
+              Split được giữ theo tỷ lệ stratified 70 / 15 / 15 với
+              <strong>4,803 train</strong>, <strong>1,029 val</strong> và
+              <strong>1,030 test</strong>.
+            </p>
+            <div class="dataset-stat-grid">
+              <div class="dataset-stat"><strong>6,862</strong><span>ảnh toàn bộ</span></div>
+              <div class="dataset-stat"><strong>4,803</strong><span>train</span></div>
+              <div class="dataset-stat"><strong>1,029</strong><span>val</span></div>
+              <div class="dataset-stat"><strong>1,030</strong><span>test</span></div>
+            </div>
+          </article>
+          <article class="callout-card">
+            <h3>Augmentation policy</h3>
+            <p>
+              Train transform dùng <code>RandomResizedCrop(224)</code>,
+              <code>RandomHorizontalFlip</code>, <code>RandomRotation(15)</code> và
+              <code>ColorJitter</code>. Eval transform giữ <code>Resize(224, 224)</code>
+              và <code>Normalize</code> để so sánh ổn định giữa ResNet50 và ViT-Base.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Điểm nhấn</p>
+          <h2>Chỉ số nổi bật</h2>
+        </div>
+        <div class="mini-stat-grid">
+          <article class="mini-stat">
+            <h3>Mô hình tốt nhất</h3>
+            <p class="mini-stat-value">ViT-Base</p>
+            <p>Model tốt nhất của nhánh ảnh ở thời điểm hiện tại.</p>
+          </article>
+          <article class="mini-stat">
+            <h3>Accuracy</h3>
+            <p class="mini-stat-value">0.9049</p>
+            <p>Kết quả test của ViT-Base.</p>
+          </article>
+          <article class="mini-stat">
+            <h3>Weighted F1</h3>
+            <p class="mini-stat-value">0.9047</p>
+            <p>Giữ ổn định trên toàn bộ 11 lớp.</p>
+          </article>
+          <article class="mini-stat">
+            <h3>Thời gian train</h3>
+            <p class="mini-stat-value">124.29m</p>
+            <p>Tổng thời gian train của ViT-Base.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Chỉ số</p>
+          <h2>Bảng so sánh mô hình</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Mô hình</th>
+                <th>Accuracy</th>
+                <th>Weighted F1</th>
+                <th>Precision</th>
+                <th>Best epoch</th>
+                <th>Tổng thời gian train</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>ViT-Base</strong></td>
+                <td>0.9049</td>
+                <td>0.9047</td>
+                <td>0.9060</td>
+                <td>38</td>
+                <td>124.29 phút</td>
+              </tr>
+              <tr>
+                <td><strong>ResNet50</strong></td>
+                <td>0.8437</td>
+                <td>0.8434</td>
+                <td>0.8513</td>
+                <td>24</td>
+                <td>44.94 phút</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Đọc nhanh</p>
+          <h2>Điểm đáng chú ý từ per-label metrics</h2>
+        </div>
+        <div class="callout-grid">
+          <article class="callout-card">
+            <h3>Nhóm lớp dễ</h3>
+            <p>
+              ViT-Base đạt F1 bằng <strong>1.0000</strong> ở <strong>lightning</strong> và
+              <strong>rainbow</strong>, cho thấy các lớp có motif thị giác rõ được nhận diện rất tốt.
+            </p>
+          </article>
+          <article class="callout-card">
+            <h3>Lớp được cải thiện rõ</h3>
+            <p>
+              So với ResNet50, ViT-Base tăng mạnh ở <strong>frost</strong>, <strong>sandstorm</strong>,
+              <strong>fogsmog</strong> và <strong>rain</strong>, là các lớp vốn dễ nhiễu về texture hoặc bối cảnh.
+            </p>
+          </article>
+          <article class="callout-card">
+            <h3>Lớp còn khó</h3>
+            <p>
+              <strong>Glaze</strong> và <strong>snow</strong> vẫn là hai lớp cần chú ý thêm trong phần error analysis.
+              Dù ViT-Base đã cải thiện, F1 của hai lớp này vẫn thấp hơn nhóm lớp còn lại.
+            </p>
+          </article>
+          <article class="callout-card">
+            <h3>Ý nghĩa thực nghiệm</h3>
+            <p>
+              Với weather dataset, representation kiểu transformer khai thác tốt hơn cấu trúc ảnh toàn cục,
+              còn ResNet50 phù hợp làm baseline gọn, nhanh và dễ tái sử dụng.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">EDA</p>
+          <h2>Hình tham chiếu</h2>
+        </div>
+        <div class="figure-grid">
+          <article class="figure-card">
+            <h3>Phân bố nhãn</h3>
+            <p>Biểu đồ cho thấy class distribution khá cân bằng và phù hợp với split stratified.</p>
+            <img src="../artifacts/image/label_distribution.png" alt="Phân bố nhãn của weather dataset">
+          </article>
+          <article class="figure-card">
+            <h3>Average image theo lớp</h3>
+            <p>Average image giúp nhìn nhanh motif thị giác đặc trưng của từng lớp thời tiết.</p>
+            <img src="../artifacts/image/average_images_per_class.png" alt="Average image theo lớp của weather dataset">
+          </article>
+          <article class="figure-card">
+            <h3>Pixel statistics</h3>
+            <p>Section này hỗ trợ giải thích vì sao augmentation màu và normalization là cần thiết.</p>
+            <img src="../artifacts/image/pixel_statistics.png" alt="Pixel statistics của weather dataset">
+          </article>
+          <article class="figure-card">
+            <h3>Outlier images</h3>
+            <p>Các ảnh quá tối, quá sáng hoặc tương phản thấp được tách riêng để soi chất lượng dữ liệu đầu vào.</p>
+            <img src="../artifacts/image/outlier_images.png" alt="Outlier images của weather dataset">
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">Tái sử dụng</p>
+          <h2>Notebook, artifact và checkpoint</h2>
+        </div>
+        <div class="resource-grid">
+          <article class="resource-card">
+            <h3>Notebook gốc</h3>
+            <p>Notebook đầy đủ cho EDA, split, augmentation, training và phần per-label metrics của nhánh ảnh.</p>
+            <div class="resource-actions">
+              <a class="button-link" href="../notebooks/image_classification.ipynb">Mở notebook</a>
+            </div>
+          </article>
+          <article class="resource-card">
+            <h3>Training summary</h3>
+            <p>Tệp JSON tổng hợp accuracy, weighted F1, best epoch, epochs trained và total runtime của hai mô hình.</p>
+            <div class="resource-actions">
+              <a class="button-link" href="../artifacts/image/training_summary.json">Mở JSON</a>
+            </div>
+          </article>
+          <article class="resource-card">
+            <h3>Per-label metrics</h3>
+            <p>Bảng CSV cho accuracy, precision, recall và F1 của từng lớp cho cả ResNet50 và ViT-Base.</p>
+            <div class="resource-actions">
+              <a class="button-link" href="../artifacts/image/image_per_label_metrics.csv">Mở CSV</a>
+            </div>
+          </article>
+          <article class="resource-card">
+            <h3>Bundle checkpoint</h3>
+            <p>Gói checkpoint tốt nhất của nhánh ảnh gồm cả ResNet50 và ViT-Base để chạy lại model mà không cần train từ đầu.</p>
+            <div class="resource-actions">
+              <a class="button-link" href="https://drive.google.com/file/d/1wkPuWUMKkm0K2N5l00Kk4Jij-xJKF7u8/view?usp=sharing" target="_blank" rel="noreferrer">Tải bundle</a>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

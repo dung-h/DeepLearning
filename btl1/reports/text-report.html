@@ -45,7 +45,8 @@
             <h3>Kết luận nhanh</h3>
             <p class="body-copy">
               BERT là mô hình tốt nhất ở nhánh văn bản trong repo hiện tại, vượt LSTM trên cả exact-match accuracy,
-              micro F1 và macro F1. Chênh lệch rõ nhất nằm ở macro F1, cho thấy BERT ổn định hơn trên các nhãn ít mẫu.
+              micro F1 và macro F1. Dưới protocol stratified hiện tại và khi đánh giá trên official test set của Kaggle,
+              khoảng cách giữa hai mô hình vẫn rất rõ theo hướng có lợi cho BERT.
             </p>
           </div>
         </div>
@@ -107,17 +108,17 @@
           </article>
           <article class="mini-stat">
             <h3>Exact-match</h3>
-            <p class="mini-stat-value">0.9306</p>
+            <p class="mini-stat-value">0.8545</p>
             <p>Kết quả test của BERT.</p>
           </article>
           <article class="mini-stat">
             <h3>Micro F1</h3>
-            <p class="mini-stat-value">0.8030</p>
+            <p class="mini-stat-value">0.6385</p>
             <p>Chỉ số chính để theo dõi bài toán multi-label.</p>
           </article>
           <article class="mini-stat">
             <h3>Macro F1</h3>
-            <p class="mini-stat-value">0.6765</p>
+            <p class="mini-stat-value">0.5787</p>
             <p>Thể hiện lợi thế của BERT trên các nhãn khó.</p>
           </article>
         </div>
@@ -142,16 +143,16 @@
             <tbody>
               <tr>
                 <td><strong>BERT</strong></td>
-                <td>0.9306</td>
-                <td>0.8030</td>
-                <td>0.6765</td>
+                <td>0.8545</td>
+                <td>0.6385</td>
+                <td>0.5787</td>
                 <td>Hiệu năng tốt nhất, đặc biệt nổi bật ở micro F1 và macro F1.</td>
               </tr>
               <tr>
                 <td><strong>LSTM</strong></td>
-                <td>0.9224</td>
-                <td>0.7386</td>
-                <td>0.5489</td>
+                <td>0.7611</td>
+                <td>0.1077</td>
+                <td>0.0773</td>
                 <td>Baseline tuần tự, thấp hơn BERT trên toàn bộ chỉ số chính.</td>
               </tr>
             </tbody>
@@ -189,7 +190,7 @@
             <h3>Lịch sử validation micro F1</h3>
             <p class="chart-copy">
               Dữ liệu được lấy từ <code>bert_history.csv</code> và <code>lstm_history.csv</code>. BERT hội tụ nhanh trong 2 epoch,
-              trong khi LSTM cần nhiều epoch hơn mới đạt đỉnh.
+              trong khi LSTM cần nhiều epoch hơn mới đạt đỉnh trên tập val.
             </p>
             <div class="chart-shell">
               <canvas id="text-history-chart"></canvas>
@@ -246,7 +247,7 @@
             <p>Validation F1 của BERT tăng nhanh và ổn định sau 2 epoch.</p>
             <img src="../artifacts/text/bert_learning_curves.png" alt="Đường cong huấn luyện của BERT trên Jigsaw">
             <div class="figure-meta">
-              <span>Micro F1 tốt nhất: 0.8030</span>
+              <span>Val micro F1 tốt nhất: 0.8008</span>
               <span>2 epoch</span>
             </div>
           </article>
@@ -255,7 +256,7 @@
             <p>LSTM học được baseline hợp lý nhưng chậm hơn và yếu hơn BERT ở validation F1.</p>
             <img src="../artifacts/text/lstm_learning_curves.png" alt="Đường cong huấn luyện của LSTM trên Jigsaw">
             <div class="figure-meta">
-              <span>Micro F1 tốt nhất: 0.7386</span>
+              <span>Val micro F1 tốt nhất: 0.7471</span>
               <span>5 epoch</span>
             </div>
           </article>

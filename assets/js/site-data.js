@@ -7,22 +7,22 @@ window.SITE_DATA = {
     instructor: "Lê Thành Sách",
     term: "Năm học 2025-2026, Học kỳ 2",
     summary:
-      "Landing page này giới thiệu các bài tập lớn của nhóm trong môn CO3133, đồng thời đóng vai trò là điểm truy cập tập trung tới báo cáo, bảng kết quả, notebook và mã nguồn công khai.",
+      "Trang công khai của nhóm DL123 cho Bài tập lớn số 1, gồm ba nhánh thực nghiệm: văn bản, đa phương thức và ảnh.",
     overview: {
-      title: "Một cổng truy cập thống nhất",
+      title: "Bài tập lớn số 1",
       copy:
-        "Mỗi trang bài tập lớn được tổ chức như một trang giới thiệu ngắn gọn, ưu tiên khả năng xem nhanh, điều hướng rõ ràng và trình bày phù hợp với bối cảnh học thuật.",
+        "Mỗi nhánh đều có notebook, artifact kết quả và điểm truy cập công khai để giảng viên hoặc bạn học đối chiếu nhanh.",
       points: [
-        "Trang chủ giới thiệu nhóm và tập hợp toàn bộ assignment trong một cấu trúc nhất quán.",
-        "Mỗi assignment có trang riêng để gắn báo cáo, notebook, bảng kết quả và các tài liệu công khai.",
-        "Các kết quả công khai chỉ phản ánh những phần vẫn còn hợp lệ trong nhánh chính của repo.",
+        "Nhánh văn bản dùng Jigsaw Toxic Comment để so sánh BERT và LSTM trên bài toán multi-label 6 nhãn.",
+        "Nhánh đa phương thức dùng N24News để so sánh CLIP, VisualBERT và các biến thể deep_head, lora.",
+        "Nhánh ảnh dùng weather dataset để so sánh ResNet50 và ViT-Base, kèm bundle checkpoint để chạy lại model.",
       ],
     },
   },
   group: {
     name: "DL123",
     summary:
-      "Nhóm DL123 thực hiện Bài tập lớn số 1 của môn CO3133 với hai nhánh chính: phân loại văn bản và phân loại đa phương thức.",
+      "Nhóm thực hiện Bài tập lớn số 1 theo hướng notebook-first: số liệu công khai đều bám theo notebook và artifact đang có trong repo.",
     members: [
       {
         name: "Hồ Anh Dũng",
@@ -38,35 +38,35 @@ window.SITE_DATA = {
     {
       id: "assignment-1",
       numberLabel: "Bài tập lớn số 1",
-      title: "Phân loại văn bản và đa phương thức",
+      title: "Phân loại văn bản, đa phương thức và ảnh",
       page: "assignments/assignment-1.html",
       cardSummary:
-        "Trang công khai cho Bài tập lớn 1. Nhánh văn bản đã hoàn tất với BERT vượt LSTM, còn nhánh đa phương thức dùng N24News và cho thấy VisualBERT vượt CLIP trên tập test 24 lớp.",
+        "Ba nhánh thực nghiệm của nhóm: Jigsaw Toxic Comment, N24News và weather dataset.",
       overview:
-        "Bài tập lớn số 1 tập trung vào các bài toán phân loại trên dữ liệu văn bản và đa phương thức. Nhánh văn bản dùng Jigsaw Toxic Comment, còn nhánh đa phương thức dùng N24News cho bài toán image + news text classification.",
+        "Bài tập lớn số 1 tổng hợp ba bài toán phân loại khác nhau để trình bày dữ liệu, mô hình, kết quả và khả năng tái sử dụng checkpoint.",
       summary:
-        "Trang này đóng vai trò là điểm truy cập công khai tới báo cáo, notebook, bảng kết quả tổng hợp và các tài liệu minh họa cho quá trình thực nghiệm của Bài tập lớn số 1.",
+        "Trang này gom báo cáo, notebook, bảng kết quả và bundle checkpoint cho toàn bộ Bài tập lớn số 1.",
       resources: [],
       resourceGroups: [
         {
-          title: "Bắt đầu từ đây",
+          title: "Lối vào chính",
           copy:
-            "Dành cho người xem lần đầu. Nhóm tài nguyên này đi thẳng vào phần kết quả và diễn giải tổng quan, không buộc người xem phải mở notebook hay tệp phụ trợ ngay từ đầu.",
+            "Các điểm truy cập phù hợp nhất để xem nhanh bài làm trước khi đi vào từng nhánh.",
           featured: true,
           items: [
             {
               type: "Tổng quan",
-              label: "Mở trang kết quả tổng hợp",
-              title: "Bảng kết quả tổng hợp",
-              note: "Trang tổng hợp ngắn gọn hai nhánh thực nghiệm, gồm bảng metric cuối và biểu đồ so sánh trực quan.",
+              label: "Xem bảng kết quả",
+              title: "Bảng kết quả cuối",
+              note: "Trang tổng hợp ba nhánh với bảng metric cuối, biểu đồ so sánh và liên kết sang từng báo cáo chi tiết.",
               url: "../btl1/reports/final-results.html",
               featured: true,
             },
             {
               type: "Mã nguồn",
-              label: "Mở repo GitHub",
-              title: "Kho mã nguồn công khai",
-              note: "Repository GitHub của nhóm, chứa landing page, notebook, báo cáo web và toàn bộ mã nguồn công khai của Bài tập lớn số 1.",
+              label: "Mở GitHub",
+              title: "Repository của nhóm",
+              note: "Kho mã nguồn chứa landing page, notebook, artifact, report web và các script phục vụ Bài tập lớn số 1.",
               url: "https://github.com/dung-h/DeepLearning",
             },
           ],
@@ -74,78 +74,150 @@ window.SITE_DATA = {
         {
           title: "Báo cáo theo từng nhánh",
           copy:
-            "Dành cho giảng viên hoặc peers muốn xem sâu hơn từng phần thực nghiệm mà vẫn ở định dạng web công khai, có số liệu, hình minh họa và phần đọc mã nguồn trực tiếp.",
+            "Ba nhánh hiện đã có điểm truy cập công khai rõ ràng để theo dõi riêng phần dữ liệu, mô hình và kết quả.",
           items: [
             {
               type: "Văn bản",
-              label: "Mở báo cáo văn bản",
-              title: "Trang trình bày nhánh văn bản",
-              note: "Bản trình bày cho Jigsaw Toxic Comment với số liệu chính, learning curves, per-label F1 và phần đọc mã nguồn trực tiếp trên web.",
+              label: "Mở report văn bản",
+              title: "Jigsaw Toxic Comment",
+              note: "Trang trình bày nhánh văn bản với metric test, learning curves, error analysis và liên kết notebook.",
               url: "../btl1/reports/text-report.html",
             },
             {
               type: "Đa phương thức",
-              label: "Mở báo cáo đa phương thức",
-              title: "Trang trình bày nhánh đa phương thức",
-              note: "Bản trình bày cho N24News với mô tả dataset, bảng kết quả, chart tương tác, figure tham chiếu và mẫu preview.",
+              label: "Mở report đa phương thức",
+              title: "N24News",
+              note: "Trang trình bày nhánh đa phương thức với CLIP, VisualBERT, các chart tương tác và phần PEFT comparison.",
               url: "../btl1/reports/multimodal-report.html",
+            },
+            {
+              type: "Ảnh",
+              label: "Mở report ảnh",
+              title: "Weather Dataset",
+              note: "Trang trình bày nhánh ảnh với EDA, split 70/15/15, augmentation, so sánh ResNet50 và ViT-Base.",
+              url: "../btl1/reports/image-report.html",
             },
           ],
         },
         {
-          title: "Phụ lục kỹ thuật",
+          title: "Notebook và artifact",
           copy:
-            "Dành cho người cần đối chiếu notebook gốc hoặc tái sử dụng phần tóm tắt cho slide. Các tài nguyên này được đặt ở lớp phụ để không lấn át phần trình bày công khai chính.",
+            "Các notebook gốc và file tóm tắt chính để đối chiếu lại số liệu hoặc xem pipeline đầy đủ.",
           items: [
             {
-              type: "Trình xem",
-              label: "Mở notebook văn bản",
-              title: "Trình xem notebook nhánh văn bản",
-              note: "Trình xem notebook theo giao diện trình soạn thảo chỉ đọc, phù hợp cho người muốn theo dõi mã nguồn trực tiếp trên web.",
-              url: "../btl1/reports/text-notebook-viewer.html",
+              type: "Notebook",
+              label: "Notebook văn bản",
+              title: "Notebook Jigsaw",
+              note: "Notebook huấn luyện và đánh giá cho BERT và LSTM trên dữ liệu toxic comment đa nhãn.",
+              url: "../btl1/notebooks/text_classification.ipynb",
             },
             {
-              type: "Trình xem",
-              label: "Mở notebook đa phương thức",
-              title: "Trình xem notebook nhánh đa phương thức",
-              note: "Trình xem notebook cho pipeline N24News với các ô mã chính về dữ liệu, mô hình và huấn luyện.",
-              url: "../btl1/reports/multimodal-notebook-viewer.html",
+              type: "Notebook",
+              label: "Notebook đa phương thức",
+              title: "Notebook N24News",
+              note: "Notebook đầy đủ cho EDA, split, CLIP, VisualBERT, PEFT variants và các artifact của nhánh đa phương thức.",
+              url: "../btl1/notebooks/text_image_classification.ipynb",
             },
             {
-              type: "Tóm tắt",
-              label: "Mở bản tóm tắt cho slide",
-              title: "Bản tóm tắt Markdown",
-              note: "Bản tóm tắt ngắn gọn để tái sử dụng trong slide hoặc phần tổng kết của báo cáo.",
-              url: "../btl1/reports/final-results-summary.md",
+              type: "Notebook",
+              label: "Notebook ảnh",
+              title: "Notebook weather dataset",
+              note: "Notebook cho EDA, augmentation, training và evaluation của ResNet50 và ViT-Base.",
+              url: "../btl1/notebooks/image_classification.ipynb",
+            },
+            {
+              type: "Artifact",
+              label: "Mở summary ảnh",
+              title: "Training summary của nhánh ảnh",
+              note: "File JSON tổng hợp accuracy, weighted F1, best epoch và thời gian train của hai mô hình ảnh.",
+              url: "../btl1/artifacts/image/training_summary.json",
+            },
+          ],
+        },
+        {
+          title: "Biến thể mô hình đã huấn luyện",
+          copy:
+            "Ngoài model tốt nhất, trang này cũng chỉ ra những biến thể đã được huấn luyện để phục vụ đối chiếu trong bối cảnh môn học.",
+          items: [
+            {
+              type: "Văn bản",
+              label: "Xem bảng so sánh",
+              title: "BERT và LSTM",
+              note: "Nhánh văn bản giữ cả hai mốc so sánh chính: BERT là model tốt nhất, LSTM là baseline tuần tự.",
+              url: "../btl1/artifacts/text/text_model_comparison.csv",
+            },
+            {
+              type: "Đa phương thức",
+              label: "Xem full finetune",
+              title: "CLIP và VisualBERT (full finetune)",
+              note: "Bảng so sánh official cho hai model chính trên N24News sau khi fine-tune đầy đủ backbone.",
+              url: "../btl1/artifacts/multimodal/n24news_model_comparison_full_finetune.csv",
+            },
+            {
+              type: "Đa phương thức",
+              label: "Xem deep_head và lora",
+              title: "PEFT variants trên N24News",
+              note: "Tổng hợp kết quả deep_head và lora cho cả CLIP lẫn VisualBERT, dùng để đối chiếu với full finetune.",
+              url: "../btl1/artifacts/multimodal/n24news_model_comparison_all_variants.csv",
+            },
+            {
+              type: "Ảnh",
+              label: "Xem training summary",
+              title: "ResNet50 và ViT-Base",
+              note: "Bảng tóm tắt nhánh ảnh cho thấy ViT-Base vượt ResNet50 trên test set và cần ít diễn giải hơn khi đối chiếu.",
+              url: "../btl1/artifacts/image/training_summary.json",
+            },
+          ],
+        },
+        {
+          title: "Bundle checkpoint",
+          copy:
+            "Các gói checkpoint tốt nhất để chạy lại model mà không cần huấn luyện từ đầu. Mỗi bundle chỉ chứa best checkpoint đã chốt.",
+          items: [
+            {
+              type: "Văn bản",
+              label: "Tải bundle văn bản",
+              title: "BERT + LSTM best checkpoints",
+              note: "Bundle checkpoint của nhánh văn bản gồm hai file best cho BERT và LSTM.",
+              url: "https://drive.google.com/file/d/1PhIMgu-1unj7Yt0dMTGkX2H9473lJycj/view?usp=sharing",
+            },
+            {
+              type: "Đa phương thức",
+              label: "Tải bundle đa phương thức",
+              title: "6 best checkpoints của N24News",
+              note: "Bundle checkpoint của nhánh đa phương thức gồm CLIP và VisualBERT cho full finetune, deep_head và lora.",
+              url: "https://drive.google.com/file/d/1sZBUPxE-LtUDARN0PRzPZI7yi4ARUm22/view?usp=sharing",
+            },
+            {
+              type: "Ảnh",
+              label: "Tải bundle ảnh",
+              title: "ResNet50 + ViT-Base best checkpoints",
+              note: "Bundle checkpoint của nhánh ảnh gồm hai mô hình đã chốt trong training summary.",
+              url: "https://drive.google.com/file/d/1wkPuWUMKkm0K2N5l00Kk4Jij-xJKF7u8/view?usp=sharing",
             },
           ],
         },
       ],
       sections: [
         {
-          title: "Thiết lập thực nghiệm",
+          title: "Dữ liệu",
           copy:
-            "Nhánh văn bản dùng Jigsaw Toxic Comment Classification Challenge với bài toán multi-label 6 nhãn. Nhánh đa phương thức dùng N24News cho bài toán image + news text → category classification với 24 lớp.",
+            "Ba nhánh dùng ba bộ dữ liệu khác nhau: Jigsaw Toxic Comment cho văn bản đa nhãn, N24News cho bài toán ảnh + văn bản tin tức, và weather dataset cho phân loại ảnh thời tiết.",
         },
         {
-          title: "Kết quả nhánh văn bản",
+          title: "Mô hình đã thử",
           copy:
-            "BERT đạt exact-match accuracy 0.9306, micro F1 0.8030 và macro F1 0.6765. LSTM đạt exact-match accuracy 0.9224, micro F1 0.7386 và macro F1 0.5489. BERT là mô hình tốt hơn trên cả ba chỉ số chính.",
+            "Nhánh văn bản so sánh BERT với LSTM. Nhánh đa phương thức có CLIP, VisualBERT và thêm các biến thể deep_head, lora. Nhánh ảnh so sánh ResNet50 với ViT-Base.",
         },
         {
-          title: "Kết quả nhánh đa phương thức",
+          title: "Kết quả tốt nhất",
           copy:
-            "VisualBERT đạt accuracy 0.8751, macro F1 0.8575 và weighted F1 0.8732 trên tập test N24News. CLIP đạt accuracy 0.8488, macro F1 0.8064 và weighted F1 0.8346. VisualBERT là mô hình tốt nhất của nhánh đa phương thức hiện tại.",
+            "BERT hiện là model tốt nhất của nhánh văn bản, VisualBERT là model tốt nhất của nhánh đa phương thức, còn ViT-Base là model tốt nhất của nhánh ảnh.",
         },
         {
-          title: "Trình bày kết quả",
+          title: "Khả năng tái sử dụng",
           copy:
-            "Các kết quả công khai được tổ chức thành các trang trình bày riêng cho từng nhánh, có hình minh họa, bảng số liệu, chart tương tác và phần đọc mã nguồn trực tiếp trên web thay vì chỉ đưa liên kết tới tệp thô.",
-        },
-        {
-          title: "Nhận xét tổng hợp",
-          copy:
-            "Trong trạng thái hiện tại, BERT là mô hình tốt nhất cho nhánh văn bản và VisualBERT là mô hình tốt nhất cho nhánh đa phương thức. Cả hai nhánh đều đã có artifact thật, report web và demo local để phục vụ báo cáo.",
+            "Cả ba nhánh đều đã có bundle checkpoint để tải về và chạy lại model; nhánh đa phương thức còn kèm inventory cho các biến thể đã huấn luyện.",
         },
       ],
     },
@@ -155,11 +227,11 @@ window.SITE_DATA = {
       title: "Trang đang được chuẩn bị",
       page: "assignments/assignment-2.html",
       cardSummary:
-        "Trang dành cho Bài tập lớn số 2 đã được chuẩn bị sẵn trong cùng cấu trúc trình bày để bảo đảm tính nhất quán trên toàn landing page.",
+        "Nội dung cho Bài tập lớn số 2 sẽ được bổ sung khi phần thực nghiệm hoàn tất.",
       overview:
-        "Trang assignment này sẽ được bổ sung nội dung công khai ngay khi nhóm hoàn thiện phần giới thiệu và các tài nguyên cần công bố.",
+        "Trang dành cho Bài tập lớn số 2 hiện chưa có nội dung công khai.",
       summary:
-        "Cấu trúc trang được giữ tối giản để tập trung vào khả năng truy cập nhanh tới báo cáo, demo và mã nguồn khi có dữ liệu chính thức.",
+        "Nhóm sẽ bổ sung báo cáo và tài nguyên khi có kết quả chính thức.",
       resources: [],
       sections: [],
     },
@@ -169,11 +241,11 @@ window.SITE_DATA = {
       title: "Trang đang được chuẩn bị",
       page: "assignments/assignment-3.html",
       cardSummary:
-        "Trang dành cho Bài tập lớn số 3 được bố trí cùng ngôn ngữ thiết kế để về sau có thể cập nhật liền mạch với các assignment còn lại.",
+        "Nội dung cho Bài tập lớn số 3 sẽ được bổ sung khi phần thực nghiệm hoàn tất.",
       overview:
-        "Trang này được giữ ở trạng thái công khai, tối giản và sẽ được mở rộng bằng các tài nguyên phù hợp khi assignment có nội dung chính thức.",
+        "Trang dành cho Bài tập lớn số 3 hiện chưa có nội dung công khai.",
       summary:
-        "Mọi thành phần nội bộ đã được loại bỏ để trang chỉ giữ vai trò là trang giới thiệu công khai, gọn gàng và chuyên nghiệp.",
+        "Nhóm sẽ bổ sung báo cáo và tài nguyên khi có kết quả chính thức.",
       resources: [],
       sections: [],
     },

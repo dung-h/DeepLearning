@@ -1,31 +1,33 @@
 # CO3133 Project Workspace
 
-Repo này được tổ chức theo từng bài tập lớn để tránh trộn lẫn tài nguyên giữa các giai đoạn làm việc.
+This repo is organized by assignment so research assets, notebooks, and reports do not bleed across phases.
 
-## Cấu trúc chính
+## Main Structure
 
-- `index.html`, `assignments/`, `assets/`: landing page chung của môn học.
-- `btl1/`: notebook, dữ liệu, artifact và report của Bài tập lớn 1.
-- `btl2/`: chỗ trống cho Bài tập lớn 2.
-- `btl3/`: chỗ trống cho Bài tập lớn 3.
-- `docs/`: tài liệu chung như đề bài.
-- `legacy/`: hướng triển khai cũ không còn dùng chính.
-- `logs/`: log cục bộ.
-- `reports/`: lớp redirect tương thích, chuyển về report thật trong `btl1/reports/`.
-- `GPT.md`: trạng thái và quy ước hiện tại của repo.
-- `tracking_progress.txt`: nhật ký mốc triển khai ở mức repo.
+- `index.html`, `assignments/`, `assets/`: shared course landing page
+- `btl1/`: notebooks, data, artifacts, reports, and demo assets for Assignment 1
+- `btl2/`: placeholder space for Assignment 2
+- `btl3/`: placeholder space for Assignment 3
+- `docs/`: shared course documents and specs
+- `legacy/`: older exploratory work that is no longer part of the main pipeline
+- `logs/`: local execution logs
+- `reports/`: compatibility wrappers that redirect to the real pages in `btl1/reports/`
+- `AGENTS.md`: stable repo-wide working rules for Codex
+- `GPT.md`: short current-state snapshot for long-running work
+- `tracking_progress.txt`: lightweight repo-level progress log
 
-## Trạng thái hiện tại
+## Current Status
 
-- Phần đã hoàn thành thực tế hiện chỉ thuộc `BTL1`.
-- `BTL2` và `BTL3` chưa có pipeline chính.
-- Hai notebook chính của `BTL1` là:
+- `BTL1` is the only assignment with active implementation.
+- `BTL2` and `BTL3` are not active pipelines yet.
+- Current primary notebooks in `BTL1`:
   - `btl1/notebooks/text_classification.ipynb`
   - `btl1/notebooks/text_image_classification.ipynb`
+  - `btl1/notebooks/image_classification.ipynb`
 
-## Quy ước giữ repo sạch
+## Repo Hygiene
 
-- Không đặt dữ liệu raw, zip dataset hay artifact ở root.
-- Mọi file thực thi của BTL1 phải nằm trong `btl1/`.
-- Nếu cần giữ đường dẫn cũ cho trình duyệt hoặc bookmark, dùng wrapper trong `reports/` thay vì nhân bản report.
-- `legacy/visual_genome/` chỉ còn là tham chiếu lịch sử, không thuộc nhánh triển khai chính.
+- Keep raw datasets, archives, and generated artifacts out of the repo root.
+- Keep assignment-specific executable work inside its assignment folder.
+- Prefer redirect wrappers in `reports/` instead of duplicating report pages.
+- Treat `legacy/` as historical reference only, not as part of the active pipeline.
