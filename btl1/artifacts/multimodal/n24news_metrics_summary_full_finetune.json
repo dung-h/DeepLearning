@@ -1,0 +1,63 @@
+{
+  "dataset": "N24News",
+  "task": "image + news text -> category classification",
+  "split_sizes": {
+    "train": 48988,
+    "val": 6123,
+    "test": 6124
+  },
+  "num_classes": 24,
+  "label_names": [
+    "Theater",
+    "Books",
+    "Health",
+    "Real Estate",
+    "Fashion & Style",
+    "Science",
+    "Technology",
+    "Dance",
+    "Television",
+    "Movies",
+    "Food",
+    "Opinion",
+    "Music",
+    "Media",
+    "Travel",
+    "Art & Design",
+    "Sports",
+    "Style",
+    "Automobiles",
+    "Economy",
+    "Your Money",
+    "Global Business",
+    "Education",
+    "Well"
+  ],
+  "models": {
+    "CLIP": {
+      "accuracy": 0.848791639451339,
+      "macro_precision": 0.854957237704757,
+      "macro_recall": 0.8099257304835836,
+      "macro_f1": 0.8063637712893706,
+      "weighted_precision": 0.847609504422477,
+      "weighted_recall": 0.848791639451339,
+      "weighted_f1": 0.8346101567155595,
+      "loss": 1.9986581727619035
+    },
+    "VisualBERT": {
+      "accuracy": 0.8752449379490529,
+      "macro_precision": 0.8653726800047785,
+      "macro_recall": 0.8636523965478554,
+      "macro_f1": 0.864149161959657,
+      "weighted_precision": 0.8746917561172777,
+      "weighted_recall": 0.8752449379490529,
+      "weighted_f1": 0.87464539811239,
+      "loss": 0.39742207846553795
+    }
+  },
+  "sources": {
+    "official_repo": "https://github.com/billywzh717/N24News",
+    "paper": "https://aclanthology.org/2022.lrec-1.729/",
+    "drive": "https://drive.google.com/file/d/1OS1fXwZ1Vsj70lEQajccyssxQRYp5X9D/view?usp=share_link"
+  }
+}

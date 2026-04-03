@@ -4,14 +4,18 @@ import json
 import os
 import re
 import warnings
+import zipfile
 from functools import lru_cache
 from pathlib import Path
 
 import gradio as gr
 import pandas as pd
+import timm
 import torch
 import torch.nn as nn
 from PIL import Image
+from torchvision import models as tv_models
+from torchvision import transforms
 from transformers import (
     AutoImageProcessor,
     AutoModelForSequenceClassification,
@@ -65,6 +69,34 @@ TEXT_EXAMPLES = [
     ["This is the dumbest thing I have ever read.", "Một mô hình", "LSTM"],
 ]
 
+WEATHER_LABEL_TITLES = {
+    "dew": "Sương đọng",
+    "fogsmog": "Sương mù",
+    "frost": "Băng giá",
+    "glaze": "Băng phủ",
+    "hail": "Mưa đá",
+    "lightning": "Sét",
+    "rain": "Mưa",
+    "rainbow": "Cầu vồng",
+    "rime": "Sương muối",
+    "sandstorm": "Bão cát",
+    "snow": "Tuyết",
+}
+
+WEATHER_LABEL_DESCRIPTIONS = {
+    "dew": "Ảnh có hiện tượng sương đọng trên bề mặt hoặc cỏ cây.",
+    "fogsmog": "Không khí bị che phủ bởi sương mù hoặc khói mù.",
+    "frost": "Xuất hiện lớp băng giá mỏng trên cảnh vật.",
+    "glaze": "Bề mặt bị phủ một lớp băng trong suốt.",
+    "hail": "Mưa đá với các viên băng rơi rõ rệt.",
+    "lightning": "Khung hình tập trung vào hiện tượng sét.",
+    "rain": "Ảnh có đặc trưng của thời tiết mưa.",
+    "rainbow": "Xuất hiện cầu vồng rõ ràng trong ảnh.",
+    "rime": "Sương muối hoặc kết tinh băng trắng trên bề mặt.",
+    "sandstorm": "Cảnh có bão cát hoặc bụi dày.",
+    "snow": "Ảnh có tuyết rơi hoặc mặt đất phủ tuyết.",
+}
+
 token_pattern = re.compile(r"[a-z']+")
 
 DEMO_CSS = """
@@ -100,6 +132,12 @@ DEMO_CSS = """
   background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(249,245,237,0.92));
   padding: 20px;
 }
+.demo-intro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
 .section-eyebrow {
   display: inline-flex;
   margin-bottom: 8px;
@@ -123,6 +161,40 @@ DEMO_CSS = """
 }
 .metric-value {font-size: 1.5rem; font-weight: 800; color: #14365f;}
 .metric-label {margin-top: 6px; font-size: 12px; color: #6b7788; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800;}
+.benchmark-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+}
+.benchmark-table th,
+.benchmark-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(19, 54, 95, 0.1);
+  text-align: left;
+  font-size: 14px;
+}
+.benchmark-table th {color: #14365f;}
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.results-table th,
+.results-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(19, 54, 95, 0.1);
+}
+.demo-note {
+  margin-top: 12px;
+  color: #516173;
+  line-height: 1.55;
+}
+.demo-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #425469;
+  line-height: 1.65;
+}
 .compare-card {
   border-radius: 20px;
   border: 1px solid rgba(19,54,95,0.12);
@@ -165,6 +237,11 @@ DEMO_CSS = """
   border-top: 0 !important;
   padding-top: 18px !important;
 }
+@media (max-width: 920px) {
+  .demo-intro-grid {grid-template-columns: 1fr;}
+  .metric-grid {grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .compare-row {grid-template-columns: 1fr;}
+}
 """
 
 
@@ -183,14 +260,122 @@ REPO_ROOT = BTL1_ROOT.parent
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 TEXT_ARTIFACT_DIR = BTL1_ROOT / "artifacts" / "text"
 MM_ARTIFACT_DIR = BTL1_ROOT / "artifacts" / "multimodal"
+IMAGE_ARTIFACT_DIR = BTL1_ROOT / "artifacts" / "image"
 N24_PROCESSED_DIR = BTL1_ROOT / "data" / "multimodal" / "n24news" / "processed"
+TEXT_DOWNLOAD_DIR = TEXT_ARTIFACT_DIR / "downloads"
+MM_DOWNLOAD_DIR = MM_ARTIFACT_DIR / "downloads"
+IMAGE_DOWNLOAD_DIR = IMAGE_ARTIFACT_DIR / "downloads"
 DEMO_PORT = int(os.getenv("DEMO_PORT", "43881"))
+
+TEXT_CHECKPOINT_BUNDLE_URL = "https://drive.google.com/file/d/1PhIMgu-1unj7Yt0dMTGkX2H9473lJycj/view?usp=sharing"
+MM_CHECKPOINT_BUNDLE_URL = "https://drive.google.com/file/d/1sZBUPxE-LtUDARN0PRzPZI7yi4ARUm22/view?usp=sharing"
+IMAGE_CHECKPOINT_BUNDLE_URL = "https://drive.google.com/file/d/1wkPuWUMKkm0K2N5l00Kk4Jij-xJKF7u8/view?usp=sharing"
+
+TEXT_BEST_CHECKPOINT_FILES = ["bert_multilabel_best.pt", "lstm_multilabel_best.pt"]
+MM_BEST_CHECKPOINT_FILES = [
+    "n24news_clip_full_finetune_best.pt",
+    "n24news_visualbert_full_finetune_best.pt",
+    "n24news_clip_deep_head_best.pt",
+    "n24news_clip_lora_best.pt",
+    "n24news_visualbert_deep_head_best.pt",
+    "n24news_visualbert_lora_best.pt",
+]
+IMAGE_BEST_CHECKPOINT_FILES = ["best_model_resnet50.pth", "best_model_vit_base.pth"]
+
+TEXT_BUNDLE_PATH = TEXT_DOWNLOAD_DIR / "text_best_checkpoints.zip"
+MM_BUNDLE_PATH = MM_DOWNLOAD_DIR / "n24news_best_checkpoints.zip"
+IMAGE_BUNDLE_PATH = IMAGE_DOWNLOAD_DIR / "image_best_checkpoints.zip"
+
+IMAGE_MEAN = [129.87 / 255.0, 132.93 / 255.0, 125.39 / 255.0]
+IMAGE_STD = [65.51 / 255.0, 62.08 / 255.0, 71.16 / 255.0]
+IMAGE_EVAL_TRANSFORM = transforms.Compose(
+    [
+        transforms.Resize((224, 224), interpolation=transforms.InterpolationMode.BILINEAR),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=IMAGE_MEAN, std=IMAGE_STD),
+    ]
+)
 
 
 def ensure_file(path: Path) -> Path:
     if not path.exists():
         raise FileNotFoundError(path)
     return path
+
+
+def ensure_checkpoint_bundle(
+    artifact_dir: Path,
+    download_dir: Path,
+    bundle_path: Path,
+    bundle_url: str,
+    expected_files: list[str],
+    required_files: list[str] | None = None,
+) -> list[Path]:
+    download_dir.mkdir(parents=True, exist_ok=True)
+    required_names = required_files or expected_files
+    target_paths = [artifact_dir / name for name in required_names]
+    missing = [path for path in target_paths if not path.exists()]
+    if not missing:
+        return target_paths
+
+    if not bundle_path.exists():
+        import gdown
+
+        print(f"Downloading checkpoint bundle: {bundle_path.name}")
+        gdown.download(url=bundle_url, output=str(bundle_path), fuzzy=True, quiet=False)
+
+    try:
+        with zipfile.ZipFile(bundle_path, "r") as zf:
+            archive_names = sorted(name for name in zf.namelist() if not name.endswith("/"))
+            expected_names = sorted(expected_files)
+            if archive_names != expected_names:
+                raise RuntimeError(
+                    f"Unexpected bundle contents in {bundle_path.name}. "
+                    f"Expected {expected_names}, found {archive_names}."
+                )
+            for member in expected_names:
+                zf.extract(member, artifact_dir)
+    except zipfile.BadZipFile as exc:
+        raise RuntimeError(f"Unreadable checkpoint bundle: {bundle_path}") from exc
+
+    unresolved = [path for path in target_paths if not path.exists()]
+    if unresolved:
+        names = ", ".join(path.name for path in unresolved)
+        raise FileNotFoundError(f"Checkpoint extraction completed but files are still missing: {names}")
+    return target_paths
+
+
+def ensure_text_checkpoints(required_files: list[str] | None = None) -> list[Path]:
+    return ensure_checkpoint_bundle(
+        artifact_dir=TEXT_ARTIFACT_DIR,
+        download_dir=TEXT_DOWNLOAD_DIR,
+        bundle_path=TEXT_BUNDLE_PATH,
+        bundle_url=TEXT_CHECKPOINT_BUNDLE_URL,
+        expected_files=TEXT_BEST_CHECKPOINT_FILES,
+        required_files=required_files,
+    )
+
+
+def ensure_multimodal_checkpoints(required_files: list[str] | None = None) -> list[Path]:
+    return ensure_checkpoint_bundle(
+        artifact_dir=MM_ARTIFACT_DIR,
+        download_dir=MM_DOWNLOAD_DIR,
+        bundle_path=MM_BUNDLE_PATH,
+        bundle_url=MM_CHECKPOINT_BUNDLE_URL,
+        expected_files=MM_BEST_CHECKPOINT_FILES,
+        required_files=required_files,
+    )
+
+
+def ensure_image_checkpoints(required_files: list[str] | None = None) -> list[Path]:
+    return ensure_checkpoint_bundle(
+        artifact_dir=IMAGE_ARTIFACT_DIR,
+        download_dir=IMAGE_DOWNLOAD_DIR,
+        bundle_path=IMAGE_BUNDLE_PATH,
+        bundle_url=IMAGE_CHECKPOINT_BUNDLE_URL,
+        expected_files=IMAGE_BEST_CHECKPOINT_FILES,
+        required_files=required_files,
+    )
 
 
 class LSTMClassifier(nn.Module):
@@ -276,6 +461,35 @@ class VisualBERTClassifier(nn.Module):
         return self.classifier(self.dropout(pooled))
 
 
+class ResNetWeatherClassifier(nn.Module):
+    def __init__(self, num_classes: int, dropout_rate: float = 0.5):
+        super().__init__()
+        self.backbone = tv_models.resnet50(weights=None)
+        in_features = self.backbone.fc.in_features
+        self.backbone.fc = nn.Sequential(
+            nn.Dropout(dropout_rate),
+            nn.Linear(in_features, num_classes),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.backbone(x)
+
+
+class ViTWeatherClassifier(nn.Module):
+    def __init__(self, num_classes: int, dropout_rate: float = 0.5):
+        super().__init__()
+        self.backbone = timm.create_model(
+            "vit_base_patch16_224",
+            pretrained=False,
+            num_classes=num_classes,
+            drop_rate=dropout_rate,
+            drop_path_rate=0.2,
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.backbone(x)
+
+
 def tokenize(text: str) -> list[str]:
     return token_pattern.findall(text.lower())
 
@@ -289,6 +503,10 @@ def load_image(image_input) -> Image.Image:
     if image_input is None or str(image_input).strip() == "":
         raise gr.Error("Vui lòng chọn một ảnh đầu vào.")
     return Image.open(image_input).convert("RGB")
+
+
+def preprocess_weather_image(image: Image.Image) -> torch.Tensor:
+    return IMAGE_EVAL_TRANSFORM(image).unsqueeze(0).to(DEVICE)
 
 
 def shorten_text(text: str, limit: int = 480) -> str:
@@ -305,11 +523,32 @@ def load_text_metrics() -> dict:
 
 @lru_cache(maxsize=1)
 def load_multimodal_metrics() -> dict:
-    return json.loads(ensure_file(MM_ARTIFACT_DIR / "n24news_metrics_summary.json").read_text(encoding="utf-8"))
+    return json.loads(
+        ensure_file(MM_ARTIFACT_DIR / "n24news_metrics_summary_full_finetune.json").read_text(encoding="utf-8")
+    )
+
+
+@lru_cache(maxsize=1)
+def load_multimodal_variant_metrics() -> list[dict]:
+    return json.loads(
+        ensure_file(MM_ARTIFACT_DIR / "n24news_metrics_summary_variants.json").read_text(encoding="utf-8")
+    )
+
+
+@lru_cache(maxsize=1)
+def load_image_metrics() -> list[dict]:
+    return json.loads(ensure_file(IMAGE_ARTIFACT_DIR / "training_summary.json").read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=1)
+def load_image_labels() -> list[str]:
+    frame = pd.read_csv(ensure_file(IMAGE_ARTIFACT_DIR / "image_per_label_metrics.csv"), usecols=["label"])
+    return sorted(frame["label"].dropna().unique().tolist())
 
 
 @lru_cache(maxsize=1)
 def load_bert_bundle():
+    ensure_text_checkpoints(["bert_multilabel_best.pt"])
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
     model = AutoModelForSequenceClassification.from_pretrained(
         "bert-base-uncased",
@@ -324,11 +563,12 @@ def load_bert_bundle():
 
 @lru_cache(maxsize=1)
 def load_lstm_bundle():
+    ensure_text_checkpoints(["lstm_multilabel_best.pt"])
     vocab = json.loads(ensure_file(TEXT_ARTIFACT_DIR / "lstm_vocab.json").read_text(encoding="utf-8"))
     model = LSTMClassifier(
         vocab_size=len(vocab),
-        embed_dim=128,
-        hidden_dim=192,
+        embed_dim=200,
+        hidden_dim=128,
         num_labels=len(TEXT_LABELS),
         dropout=0.3,
     )
@@ -340,7 +580,8 @@ def load_lstm_bundle():
 
 @lru_cache(maxsize=1)
 def load_clip_bundle():
-    checkpoint = torch.load(ensure_file(MM_ARTIFACT_DIR / "n24news_clip_best.pt"), map_location=DEVICE)
+    ensure_multimodal_checkpoints(["n24news_clip_full_finetune_best.pt"])
+    checkpoint = torch.load(ensure_file(MM_ARTIFACT_DIR / "n24news_clip_full_finetune_best.pt"), map_location=DEVICE)
     cfg = checkpoint["config"]
     labels = checkpoint["label_names"]
     processor = AutoProcessor.from_pretrained(cfg["backbone"])
@@ -352,7 +593,10 @@ def load_clip_bundle():
 
 @lru_cache(maxsize=1)
 def load_visualbert_bundle():
-    checkpoint = torch.load(ensure_file(MM_ARTIFACT_DIR / "n24news_visualbert_best.pt"), map_location=DEVICE)
+    ensure_multimodal_checkpoints(["n24news_visualbert_full_finetune_best.pt"])
+    checkpoint = torch.load(
+        ensure_file(MM_ARTIFACT_DIR / "n24news_visualbert_full_finetune_best.pt"), map_location=DEVICE
+    )
     cfg = checkpoint["config"]
     labels = checkpoint["label_names"]
     tokenizer = AutoTokenizer.from_pretrained(cfg["tokenizer_name"])
@@ -367,6 +611,30 @@ def load_visualbert_bundle():
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(DEVICE).eval()
     return tokenizer, image_processor, model, labels, cfg
+
+
+@lru_cache(maxsize=1)
+def load_resnet_bundle():
+    ensure_image_checkpoints(["best_model_resnet50.pth"])
+    labels = load_image_labels()
+    model = ResNetWeatherClassifier(num_classes=len(labels), dropout_rate=0.5)
+    checkpoint = torch.load(ensure_file(IMAGE_ARTIFACT_DIR / "best_model_resnet50.pth"), map_location=DEVICE)
+    state_dict = checkpoint["model_state_dict"] if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint else checkpoint
+    model.load_state_dict(state_dict)
+    model.to(DEVICE).eval()
+    return model, labels
+
+
+@lru_cache(maxsize=1)
+def load_vit_bundle():
+    ensure_image_checkpoints(["best_model_vit_base.pth"])
+    labels = load_image_labels()
+    model = ViTWeatherClassifier(num_classes=len(labels), dropout_rate=0.5)
+    checkpoint = torch.load(ensure_file(IMAGE_ARTIFACT_DIR / "best_model_vit_base.pth"), map_location=DEVICE)
+    state_dict = checkpoint["model_state_dict"] if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint else checkpoint
+    model.load_state_dict(state_dict)
+    model.to(DEVICE).eval()
+    return model, labels
 
 def predict_with_bert(text: str) -> dict[str, float]:
     tokenizer, model = load_bert_bundle()
@@ -438,6 +706,24 @@ def predict_with_visualbert(image: Image.Image, text: str) -> dict[str, float]:
     return dict(zip(labels, probs))
 
 
+def predict_with_resnet_weather(image: Image.Image) -> dict[str, float]:
+    model, labels = load_resnet_bundle()
+    batch = preprocess_weather_image(image)
+    with torch.no_grad():
+        logits = model(batch)[0]
+    probs = torch.softmax(logits, dim=-1).detach().cpu().tolist()
+    return dict(zip(labels, probs))
+
+
+def predict_with_vit_weather(image: Image.Image) -> dict[str, float]:
+    model, labels = load_vit_bundle()
+    batch = preprocess_weather_image(image)
+    with torch.no_grad():
+        logits = model(batch)[0]
+    probs = torch.softmax(logits, dim=-1).detach().cpu().tolist()
+    return dict(zip(labels, probs))
+
+
 def top_label(scores: dict[str, float]) -> str:
     return max(scores.items(), key=lambda item: item[1])[0]
 
@@ -466,6 +752,107 @@ def build_score_table(
     if top_n is not None:
         frame = frame.head(top_n)
     return frame.reset_index(drop=True)
+
+
+def build_benchmark_tables() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    text_metrics = load_text_metrics()
+    mm_metrics = load_multimodal_metrics()
+    mm_variant_metrics = load_multimodal_variant_metrics()
+    image_metrics = load_image_metrics()
+
+    text_table = pd.DataFrame(
+        [
+            {
+                "Task": "Text",
+                "Model": "BERT",
+                "Accuracy": round(text_metrics["bert"]["exact_match_accuracy"], 4),
+                "Macro F1": round(text_metrics["bert"]["macro_f1"], 4),
+                "Precision": round(text_metrics["bert"]["macro_precision"], 4),
+            },
+            {
+                "Task": "Text",
+                "Model": "LSTM",
+                "Accuracy": round(text_metrics["lstm"]["exact_match_accuracy"], 4),
+                "Macro F1": round(text_metrics["lstm"]["macro_f1"], 4),
+                "Precision": round(text_metrics["lstm"]["macro_precision"], 4),
+            },
+        ]
+    )
+    multimodal_table = pd.DataFrame(
+        [
+            {
+                "Task": "Multimodal",
+                "Model": name,
+                "Accuracy": round(stats["accuracy"], 4),
+                "Macro F1": round(stats["macro_f1"], 4),
+                "Precision": round(stats["macro_precision"], 4),
+            }
+            for name, stats in mm_metrics["models"].items()
+        ]
+    )
+    multimodal_variant_table = pd.DataFrame(
+        [
+            {
+                "Model": f"{row['model']} ({row['variant']})",
+                "Accuracy": round(row["accuracy"], 4),
+                "Macro F1": round(row["macro_f1"], 4),
+                "Runtime (min)": round(row["train_runtime_seconds"] / 60.0, 2),
+                "Best epoch": int(row["best_epoch"]),
+            }
+            for row in mm_variant_metrics
+        ]
+    )
+    image_table = pd.DataFrame(
+        [
+            {
+                "Task": "Image",
+                "Model": row["model"],
+                "Accuracy": round(row["test_acc"], 4),
+                "Macro/Weighted F1": round(row["test_f1"], 4),
+                "Precision": round(row["test_precision"], 4),
+                "Best epoch": int(row["best_epoch"]),
+            }
+            for row in image_metrics
+        ]
+    )
+    return text_table, multimodal_table, multimodal_variant_table, image_table
+
+
+def render_overview_html() -> str:
+    text_metrics = load_text_metrics()
+    mm_metrics = load_multimodal_metrics()
+    image_metrics = {row["model"]: row for row in load_image_metrics()}
+    best_image = max(load_image_metrics(), key=lambda row: row["test_f1"])
+    return f"""
+    <div class="demo-card">
+      <span class="section-eyebrow">Demo showcase</span>
+      <h2 style="margin-top:0; color:#14365f;">Bài tập lớn 1 · Demo checkpoint và benchmark</h2>
+      <div class="demo-intro-grid">
+        <div>
+          <p class="demo-note">
+            Demo này không chỉ cho phép suy luận thử mà còn bám sát đúng các artifact đã chốt trong repo:
+            text (`BERT` vs `LSTM`), multimodal (`CLIP` vs `VisualBERT`) và image (`ResNet50` vs `ViT-Base`).
+          </p>
+          <ul class="demo-list">
+            <li>Text: BERT macro F1 <strong>{text_metrics['bert']['macro_f1']:.4f}</strong>, vượt rõ LSTM.</li>
+            <li>Multimodal: VisualBERT full-finetune đạt accuracy <strong>{mm_metrics['models']['VisualBERT']['accuracy']:.4f}</strong>.</li>
+            <li>Image: {best_image['model']} hiện là checkpoint ảnh tốt nhất với F1 <strong>{best_image['test_f1']:.4f}</strong>.</li>
+            <li>Phần extension được demo trực tiếp qua benchmark, checkpoint reuse và so sánh PEFT/full-finetune.</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <span class="section-eyebrow">Extension focus</span>
+          <h3 style="margin-top:0;">Các phần mở rộng đang được chứng minh</h3>
+          <ul class="demo-list">
+            <li>Fine-tune strategy comparison ở nhánh multimodal.</li>
+            <li>Error analysis và per-label metrics ở cả ba nhánh.</li>
+            <li>Efficiency và runtime trade-off qua các variant.</li>
+            <li>Checkpoint bundle để tái dùng mô hình mà không cần train lại.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    """
 
 
 def render_single_text_result(model_name: str, scores: dict[str, float]) -> str:
@@ -564,6 +951,54 @@ def render_compare_multimodal_result(clip_scores: dict[str, float], visualbert_s
     """
 
 
+def render_single_image_result(model_name: str, scores: dict[str, float]) -> str:
+    label = top_label(scores)
+    title = WEATHER_LABEL_TITLES.get(label, label)
+    tags = "".join(
+        f'<span class="demo-chip">{WEATHER_LABEL_TITLES.get(name, name)}: {score:.3f}</span>'
+        for name, score in sorted(scores.items(), key=lambda item: item[1], reverse=True)[:4]
+    )
+    return f"""
+    <div class="compare-card">
+      <span class="section-eyebrow">Kết quả suy luận</span>
+      <h3>{model_name}</h3>
+      <p><strong>Nhãn dự đoán:</strong> {title}</p>
+      <p>{WEATHER_LABEL_DESCRIPTIONS.get(label, 'Mô hình dự đoán loại thời tiết nổi bật nhất trong ảnh.')}</p>
+      <div class="demo-chip-row">{tags}</div>
+    </div>
+    """
+
+
+def render_compare_image_result(resnet_scores: dict[str, float], vit_scores: dict[str, float]) -> str:
+    summary = {row["model"]: row for row in load_image_metrics()}
+    winner = "ViT-Base" if summary["vit_base"]["test_f1"] >= summary["resnet50"]["test_f1"] else "ResNet50"
+    delta_f1 = summary["vit_base"]["test_f1"] - summary["resnet50"]["test_f1"]
+    resnet_label = WEATHER_LABEL_TITLES.get(top_label(resnet_scores), top_label(resnet_scores))
+    vit_label = WEATHER_LABEL_TITLES.get(top_label(vit_scores), top_label(vit_scores))
+    return f"""
+    <div class="compare-card">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+        <div>
+          <span class="section-eyebrow">Compare mode</span>
+          <h3>ResNet50 vs ViT-Base</h3>
+          <p>So sánh trực tiếp hai checkpoint ảnh trên cùng một ảnh thời tiết đầu vào.</p>
+        </div>
+        <span class="winner-chip">{winner} dẫn đầu benchmark</span>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-tile"><div class="metric-value">{summary['vit_base']['test_f1']:.4f}</div><div class="metric-label">ViT-Base F1</div></div>
+        <div class="metric-tile"><div class="metric-value">{summary['resnet50']['test_f1']:.4f}</div><div class="metric-label">ResNet50 F1</div></div>
+        <div class="metric-tile"><div class="metric-value">{summary['vit_base']['test_acc']:.4f}</div><div class="metric-label">ViT-Base accuracy</div></div>
+        <div class="metric-tile"><div class="metric-value">{delta_f1:.4f}</div><div class="metric-label">Delta F1</div></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-model"><h4>ResNet50</h4><p>Nhãn nổi bật: <strong>{resnet_label}</strong></p></div>
+        <div class="compare-model"><h4>ViT-Base</h4><p>Nhãn nổi bật: <strong>{vit_label}</strong></p></div>
+      </div>
+    </div>
+    """
+
+
 def run_text_demo(text: str, mode: str, model_name: str) -> tuple[str, pd.DataFrame]:
     text = str(text or "").strip()
     if not text:
@@ -598,12 +1033,32 @@ def run_multimodal_demo(image_input, text: str, mode: str, model_name: str) -> t
     return render_compare_multimodal_result(clip_scores, visualbert_scores), table
 
 
+def run_image_demo(image_input, mode: str, model_name: str) -> tuple[str, pd.DataFrame]:
+    image = load_image(image_input)
+    if mode == "Một mô hình":
+        scores = predict_with_resnet_weather(image) if model_name == "ResNet50" else predict_with_vit_weather(image)
+        table = build_score_table(model_name, scores, title_map=WEATHER_LABEL_TITLES, top_n=11)
+        return render_single_image_result(model_name, scores), table
+
+    resnet_scores = predict_with_resnet_weather(image)
+    vit_scores = predict_with_vit_weather(image)
+    table = build_score_table("ResNet50", resnet_scores, "ViT-Base", vit_scores, title_map=WEATHER_LABEL_TITLES, top_n=11)
+    return render_compare_image_result(resnet_scores, vit_scores), table
+
+
 def checkpoint_status() -> str:
     items = [
-        ("BERT checkpoint", TEXT_ARTIFACT_DIR / "bert_multilabel_best.pt"),
-        ("LSTM checkpoint", TEXT_ARTIFACT_DIR / "lstm_multilabel_best.pt"),
-        ("CLIP checkpoint", MM_ARTIFACT_DIR / "n24news_clip_best.pt"),
-        ("VisualBERT checkpoint", MM_ARTIFACT_DIR / "n24news_visualbert_best.pt"),
+        ("Text · BERT", TEXT_ARTIFACT_DIR / "bert_multilabel_best.pt"),
+        ("Text · LSTM", TEXT_ARTIFACT_DIR / "lstm_multilabel_best.pt"),
+        ("Multimodal · CLIP full finetune", MM_ARTIFACT_DIR / "n24news_clip_full_finetune_best.pt"),
+        ("Multimodal · VisualBERT full finetune", MM_ARTIFACT_DIR / "n24news_visualbert_full_finetune_best.pt"),
+        ("Multimodal · CLIP LoRA", MM_ARTIFACT_DIR / "n24news_clip_lora_best.pt"),
+        ("Multimodal · VisualBERT LoRA", MM_ARTIFACT_DIR / "n24news_visualbert_lora_best.pt"),
+        ("Image · ResNet50", IMAGE_ARTIFACT_DIR / "best_model_resnet50.pth"),
+        ("Image · ViT-Base", IMAGE_ARTIFACT_DIR / "best_model_vit_base.pth"),
+        ("Bundle cache · Text", TEXT_BUNDLE_PATH),
+        ("Bundle cache · Multimodal", MM_BUNDLE_PATH),
+        ("Bundle cache · Image", IMAGE_BUNDLE_PATH),
     ]
     rows = "".join(
         f"<tr><td>{label}</td><td>{'Có' if path.exists() else 'Thiếu'}</td><td><code>{path.name}</code></td></tr>"
@@ -618,7 +1073,7 @@ def checkpoint_status() -> str:
         <tbody>{rows}</tbody>
       </table>
       <p style="margin-top:12px; color:#425469;">
-        Demo local sẽ hoạt động đầy đủ khi bốn checkpoint trên đều hiện trạng thái <strong>Có</strong>.
+        Nếu thiếu checkpoint chính, app sẽ ưu tiên khôi phục từ các bundle zip đã lưu trong thư mục <code>artifacts/*/downloads</code>.
       </p>
     </div>
     """
@@ -654,6 +1109,8 @@ def toggle_model_dropdown(mode: str):
 TEXT_METRICS = load_text_metrics()
 MM_METRICS = load_multimodal_metrics()
 MM_EXAMPLES = multimodal_examples()
+TEXT_TABLE, MM_TABLE, MM_VARIANT_TABLE, IMAGE_TABLE = build_benchmark_tables()
+OVERVIEW_HTML = render_overview_html()
 
 with gr.Blocks(title="CO3133 Demo Hub") as demo:
     gr.HTML(
@@ -662,15 +1119,16 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
           <section class="demo-hero">
             <h1>CO3133 Demo Hub</h1>
             <p>
-              Demo này load checkpoint đã huấn luyện cho <strong>Bài tập lớn 1</strong> và cho phép thử nhanh hai task:
-              <strong>text classification</strong> với Jigsaw và
-              <strong>text-image classification</strong> với N24News.
+              Demo này dùng trực tiếp các checkpoint đã huấn luyện của <strong>Bài tập lớn 1</strong> để minh họa
+              ba nhánh bài toán: văn bản, đa phương thức và ảnh. Ngoài phần suy luận thử, app còn hiển thị benchmark
+              và checkpoint provenance để chứng minh phần mở rộng của bài làm.
             </p>
             <div class="demo-chip-row">
               <span class="demo-chip">Device: {DEVICE}</span>
               <span class="demo-chip">BERT vs LSTM</span>
               <span class="demo-chip">CLIP vs VisualBERT</span>
-              <span class="demo-chip">Lazy checkpoint loading</span>
+              <span class="demo-chip">ResNet50 vs ViT-Base</span>
+              <span class="demo-chip">Bundle-backed checkpoint restore</span>
             </div>
           </section>
         </div>
@@ -681,13 +1139,62 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
         gr.HTML(checkpoint_status())
 
     with gr.Tabs(elem_classes=["demo-shell"]):
+        with gr.Tab("Tổng quan"):
+            gr.HTML(OVERVIEW_HTML)
+            with gr.Row():
+                with gr.Column(scale=1):
+                    gr.HTML(
+                        """
+                        <div class="demo-card">
+                          <span class="section-eyebrow">Benchmark</span>
+                          <h3 style="margin-top:0; color:#14365f;">Text branch</h3>
+                          <p class="demo-note">So sánh hai mô hình cho bài toán multilabel toxic comment classification.</p>
+                        </div>
+                        """
+                    )
+                    gr.Dataframe(value=TEXT_TABLE, interactive=False, label="Text benchmark")
+                with gr.Column(scale=1):
+                    gr.HTML(
+                        """
+                        <div class="demo-card">
+                          <span class="section-eyebrow">Benchmark</span>
+                          <h3 style="margin-top:0; color:#14365f;">Multimodal full finetune</h3>
+                          <p class="demo-note">Checkpoint official dùng lại trong demo live inference.</p>
+                        </div>
+                        """
+                    )
+                    gr.Dataframe(value=MM_TABLE, interactive=False, label="Multimodal benchmark")
+            with gr.Row():
+                with gr.Column(scale=1):
+                    gr.HTML(
+                        """
+                        <div class="demo-card">
+                          <span class="section-eyebrow">Extension</span>
+                          <h3 style="margin-top:0; color:#14365f;">PEFT và chiến lược huấn luyện</h3>
+                          <p class="demo-note">Đây là phần mạnh nhất của extension: deep head, LoRA và full finetune.</p>
+                        </div>
+                        """
+                    )
+                    gr.Dataframe(value=MM_VARIANT_TABLE, interactive=False, label="Multimodal strategy comparison")
+                with gr.Column(scale=1):
+                    gr.HTML(
+                        """
+                        <div class="demo-card">
+                          <span class="section-eyebrow">Benchmark</span>
+                          <h3 style="margin-top:0; color:#14365f;">Image branch</h3>
+                          <p class="demo-note">So sánh mô hình CNN với Vision Transformer trên bộ ảnh thời tiết.</p>
+                        </div>
+                        """
+                    )
+                    gr.Dataframe(value=IMAGE_TABLE, interactive=False, label="Image benchmark")
+
         with gr.Tab("Văn bản"):
             gr.HTML(
                 f"""
                 <div class="demo-card">
                   <p class="section-eyebrow">Text classification</p>
                   <h2 style="margin-top:0;">Jigsaw Toxic Comment</h2>
-                  <p>Nhập một bình luận để xem mô hình dự đoán các nhãn độc hại theo bài toán multi-label 6 nhãn. Bạn có thể chạy một mô hình riêng lẻ hoặc bật compare mode để đối chiếu BERT với LSTM trên cùng một prompt.</p>
+                  <p>Nhập một bình luận để xem mô hình dự đoán 6 nhãn toxic theo thiết lập multilabel. Tab này chứng minh trực tiếp nhánh text và cho phép đối chiếu BERT với LSTM trên cùng một đầu vào.</p>
                   <div class="metric-grid">
                     <div class="metric-tile"><div class="metric-value">{TEXT_METRICS['bert']['exact_match_accuracy']:.4f}</div><div class="metric-label">BERT exact-match</div></div>
                     <div class="metric-tile"><div class="metric-value">{TEXT_METRICS['bert']['micro_f1']:.4f}</div><div class="metric-label">BERT micro F1</div></div>
@@ -736,7 +1243,7 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
                 <div class="demo-card">
                   <p class="section-eyebrow">Text-image classification</p>
                   <h2 style="margin-top:0;">N24News</h2>
-                  <p>Nhập ảnh bài báo và văn bản bài báo để mô hình dự đoán chuyên mục tin tức. Bạn có thể chạy một mô hình riêng lẻ hoặc bật compare mode để đối chiếu CLIP với VisualBERT trên cùng một cặp đầu vào.</p>
+                  <p>Nhập ảnh bài báo và văn bản bài báo để mô hình dự đoán chuyên mục tin tức. Demo live inference dùng checkpoint <strong>full finetune</strong> official, còn benchmark PEFT được trình bày trong tab Tổng quan.</p>
                   <div class="metric-grid">
                     <div class="metric-tile"><div class="metric-value">{MM_METRICS['models']['VisualBERT']['accuracy']:.4f}</div><div class="metric-label">VisualBERT accuracy</div></div>
                     <div class="metric-tile"><div class="metric-value">{MM_METRICS['models']['VisualBERT']['macro_f1']:.4f}</div><div class="metric-label">VisualBERT macro F1</div></div>
@@ -783,6 +1290,50 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
                 fn=run_multimodal_demo,
                 inputs=[image_input, news_text_input, mm_mode_input, mm_model_input],
                 outputs=[mm_html_output, mm_table_output],
+            )
+
+        with gr.Tab("Ảnh"):
+            image_metrics = {row["model"]: row for row in load_image_metrics()}
+            gr.HTML(
+                f"""
+                <div class="demo-card">
+                  <p class="section-eyebrow">Image classification</p>
+                  <h2 style="margin-top:0;">Weather image dataset</h2>
+                  <p>Upload một ảnh thời tiết để mô hình dự đoán lớp tương ứng. Tab này minh họa nhánh ảnh theo đúng core comparison của spec: <strong>ResNet50 (CNN)</strong> vs <strong>ViT-Base</strong>.</p>
+                  <div class="metric-grid">
+                    <div class="metric-tile"><div class="metric-value">{image_metrics['vit_base']['test_acc']:.4f}</div><div class="metric-label">ViT-Base accuracy</div></div>
+                    <div class="metric-tile"><div class="metric-value">{image_metrics['vit_base']['test_f1']:.4f}</div><div class="metric-label">ViT-Base F1</div></div>
+                    <div class="metric-tile"><div class="metric-value">{image_metrics['resnet50']['test_f1']:.4f}</div><div class="metric-label">ResNet50 F1</div></div>
+                    <div class="metric-tile"><div class="metric-value">{image_metrics['vit_base']['best_epoch']}</div><div class="metric-label">Best epoch ViT</div></div>
+                  </div>
+                </div>
+                """
+            )
+            with gr.Row():
+                with gr.Column(scale=11):
+                    weather_image_input = gr.Image(label="Ảnh thời tiết", type="filepath")
+                    image_mode_input = gr.Radio(
+                        choices=["Một mô hình", "So sánh hai mô hình"],
+                        value="Một mô hình",
+                        label="Chế độ suy luận",
+                    )
+                    image_model_input = gr.Dropdown(
+                        choices=["ResNet50", "ViT-Base"],
+                        value="ViT-Base",
+                        label="Mô hình",
+                    )
+                    image_run_button = gr.Button("Chạy demo", variant="primary")
+                with gr.Column(scale=9):
+                    image_html_output = gr.HTML(
+                        "<div class='result-card'><h3>Kết quả sẽ hiển thị ở đây</h3><p>Demo sẽ trả về lớp thời tiết dự đoán và bảng xác suất trên 11 lớp. Khi bật compare mode, bảng sẽ hiển thị đồng thời ResNet50 và ViT-Base.</p></div>"
+                    )
+                    image_table_output = gr.Dataframe(label="Bảng xác suất", interactive=False)
+
+            image_mode_input.change(fn=toggle_model_dropdown, inputs=image_mode_input, outputs=image_model_input)
+            image_run_button.click(
+                fn=run_image_demo,
+                inputs=[weather_image_input, image_mode_input, image_model_input],
+                outputs=[image_html_output, image_table_output],
             )
 
 

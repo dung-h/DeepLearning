@@ -87,17 +87,54 @@
     });
   }
 
+  function flattenResourceGroups(groups) {
+    return (groups || []).flatMap((group) => group.items || []);
+  }
+
+  function findAssignmentLink(assignment, matcher) {
+    const resource = flattenResourceGroups(assignment.resourceGroups).find(matcher);
+    return resource ? resource.url : null;
+  }
+
+  function renderHeroActions(target, assignment) {
+    if (!target || !assignment) {
+      return;
+    }
+
+    target.innerHTML = "";
+
+    const detailLink = createElement("a", "button-link", "Mở bài tập lớn 1");
+    detailLink.href = `${root}/${assignment.page}`;
+    target.appendChild(detailLink);
+
+    const codeUrl =
+      findAssignmentLink(assignment, (item) => typeof item.url === "string" && /github/i.test(item.url)) ||
+      "https://github.com/dung-h/DeepLearning";
+    const codeLink = createElement("a", "button-link button-secondary", "Mở GitHub");
+    codeLink.href = codeUrl;
+    codeLink.target = "_blank";
+    codeLink.rel = "noreferrer";
+    target.appendChild(codeLink);
+  }
+
   function renderHome() {
+    const assignmentOne = data.assignments[0];
+
     document.getElementById("site-title").textContent = `${data.course.code} | ${data.course.name}`;
-    document.getElementById("site-subtitle").textContent = `${data.course.university} • ${data.course.faculty}`;
+    document.getElementById("site-subtitle").textContent = `${data.course.university} · ${data.course.faculty}`;
+    document.getElementById("hero-band-copy").textContent = `${data.course.code} · ${data.course.name}`;
+    document.getElementById("hero-group-chip").textContent = data.group.name;
+    document.getElementById("hero-term-chip").textContent = data.course.term;
     document.getElementById("course-heading").textContent = `${data.course.code} · ${data.course.name}`;
     document.getElementById("course-summary").textContent = data.course.summary;
+    document.getElementById("hero-meta-line").textContent = `${data.course.university} · ${data.course.faculty} · GV: ${data.course.instructor}`;
     document.getElementById("group-name").textContent = data.group.name;
     document.getElementById("group-summary").textContent = data.group.summary;
+    document.getElementById("team-group-name").textContent = data.group.name;
+    document.getElementById("team-group-summary").textContent = data.group.summary;
     document.getElementById("instructor-name").textContent = data.course.instructor;
     document.getElementById("home-overview-title").textContent = "Tổng quan";
     document.getElementById("overview-title").textContent = data.course.overview.title;
-    document.getElementById("overview-copy").textContent = data.course.overview.copy;
 
     renderMetaList(document.getElementById("course-meta"), [
       { label: "Trường", value: data.course.university },
@@ -105,6 +142,8 @@
       { label: "Giảng viên", value: data.course.instructor },
       { label: "Học kỳ", value: data.course.term },
     ]);
+
+    renderHeroActions(document.getElementById("hero-actions"), assignmentOne);
 
     const overviewPoints = document.getElementById("overview-points");
     overviewPoints.innerHTML = "";
@@ -116,11 +155,7 @@
     membersGrid.innerHTML = "";
     if (data.group.members.length === 0) {
       membersGrid.appendChild(
-        createElement(
-          "p",
-          "empty-state",
-          "Danh sách thành viên sẽ được cập nhật khi nhóm hoàn thiện thông tin công khai."
-        )
+        createElement("p", "empty-state", "Thông tin thành viên sẽ được cập nhật tại đây.")
       );
     } else {
       data.group.members.forEach((member) => {
@@ -133,22 +168,41 @@
     const assignmentGrid = document.getElementById("assignment-grid");
     assignmentGrid.innerHTML = "";
     data.assignments.forEach((assignment) => {
-      const card = createElement("article", "assignment-card");
-      const textWrap = createElement("div", "card-topline");
-      const headingBlock = document.createElement("div");
-      headingBlock.append(
-        createElement("p", "section-kicker", assignment.numberLabel),
-        createElement("h3", "", assignment.title)
+      const card = createElement("article", "assignment-card assignment-card-equal");
+      const metaRow = createElement("div", "assignment-card-meta");
+      metaRow.append(
+        createElement("span", "assignment-card-index", assignment.numberLabel),
+        createElement(
+          "span",
+          "assignment-card-status",
+          Array.isArray(assignment.resourceGroups) && assignment.resourceGroups.length > 0 ? "Đã công bố" : "Đang cập nhật"
+        )
       );
-      textWrap.appendChild(headingBlock);
+
+      const headingBlock = document.createElement("div");
+      headingBlock.appendChild(createElement("h3", "", assignment.title));
 
       const summary = createElement("p", "", assignment.cardSummary);
+      const overview = createElement("p", "assignment-card-overview", assignment.overview || "");
+
       const actions = createElement("div", "card-actions");
-      const detailLink = createElement("a", "button-link", "Xem chi tiết");
+      const detailLink = createElement("a", "button-link", "Mở trang");
       detailLink.href = `${root}/${assignment.page}`;
       actions.appendChild(detailLink);
 
-      card.append(textWrap, summary, actions);
+      const reportUrl = findAssignmentLink(
+        assignment,
+        (item) => typeof item.url === "string" && /report|results/i.test(item.url)
+      );
+      if (reportUrl) {
+        const reportLink = createElement("a", "button-link button-secondary", "Mở báo cáo");
+        reportLink.href = reportUrl;
+        reportLink.target = "_blank";
+        reportLink.rel = "noreferrer";
+        actions.appendChild(reportLink);
+      }
+
+      card.append(metaRow, headingBlock, summary, overview, actions);
       assignmentGrid.appendChild(card);
     });
   }

@@ -1,24 +1,46 @@
 # BTL1 Demo
 
-Demo Gradio cho Bài tập lớn số 1.
+Gradio demo cho BTL1, dùng lại các checkpoint đã huấn luyện để minh họa ba nhánh bài toán:
 
-## Thành phần hiện có
-
-- `Text Classification`
+- `Text classification`
   - dataset: Jigsaw Toxic Comment
-  - models: BERT, LSTM
-  - hỗ trợ chạy một mô hình hoặc so sánh trực tiếp hai mô hình
-
-- `Text-Image Classification`
+  - models: `BERT`, `LSTM`
+- `Multimodal classification`
   - dataset: N24News
-  - models: CLIP, VisualBERT
-  - hỗ trợ chạy một mô hình hoặc so sánh trực tiếp hai mô hình
+  - official live demo models: `CLIP full_finetune`, `VisualBERT full_finetune`
+  - benchmark extension: `deep_head`, `lora`
+- `Image classification`
+  - weather image dataset
+  - models: `ResNet50`, `ViT-Base`
+
+## Demo này chứng minh gì
+
+- chạy suy luận trực tiếp từ checkpoint thật
+- hiển thị benchmark đã chốt từ artifact
+- cho thấy so sánh chiến lược huấn luyện ở nhánh multimodal
+- hỗ trợ khôi phục checkpoint từ bundle zip nếu file local bị thiếu
 
 ## Yêu cầu local
 
-Demo này phụ thuộc vào checkpoint local trong:
+Demo ưu tiên dùng checkpoint local trong:
 
 - `btl1/artifacts/text/`
 - `btl1/artifacts/multimodal/`
+- `btl1/artifacts/image/`
 
-Vì các checkpoint `.pt` không được đẩy lên remote, demo đầy đủ chỉ chạy được trên máy có artifact local.
+Nếu thiếu checkpoint, app sẽ thử khôi phục từ các bundle zip trong:
+
+- `btl1/artifacts/text/downloads/`
+- `btl1/artifacts/multimodal/downloads/`
+- `btl1/artifacts/image/downloads/`
+
+## Chạy demo
+
+```powershell
+cd D:\DeepLearning\btl1\demo
+python app.py
+```
+
+Mặc định app mở ở:
+
+- `http://127.0.0.1:43881`

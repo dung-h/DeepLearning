@@ -1,0 +1,22 @@
+[
+  {
+    "model": "resnet50",
+    "test_f1": 0.8433879133006479,
+    "test_acc": 0.8436893203883495,
+    "test_precision": 0.8513020416248944,
+    "test_recall": 0.8436893203883495,
+    "best_epoch": 24,
+    "epochs_trained": 31,
+    "total_time_min": 44.94108665386836
+  },
+  {
+    "model": "vit_base",
+    "test_f1": 0.9047181853499061,
+    "test_acc": 0.9048543689320389,
+    "test_precision": 0.9059615685104797,
+    "test_recall": 0.9048543689320389,
+    "best_epoch": 38,
+    "epochs_trained": 48,
+    "total_time_min": 124.29294331471125
+  }
+]

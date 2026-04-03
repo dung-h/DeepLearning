@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bảng kết quả cuối | CO3133</title>
-  <meta name="description" content="Tổng hợp kết quả cuối của Bài tập lớn 1 môn CO3133 cho nhánh văn bản và đa phương thức.">
+  <meta name="description" content="Tổng hợp kết quả cuối của Bài tập lớn 1 môn CO3133 cho ba nhánh: văn bản, đa phương thức và ảnh.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,9 +18,10 @@
         <p class="eyebrow">Kết quả cuối</p>
         <h1>Bảng kết quả cuối</h1>
         <p class="lede">
-          Trang này tổng hợp hai nhánh đã hoàn tất của Bài tập lớn số 1.
-          Nhánh văn bản dùng <strong>Jigsaw Toxic Comment</strong> và nhánh đa phương thức dùng
-          <strong>N24News</strong>. Toàn bộ metric bên dưới đều được lấy từ artifact thật sau khi chạy notebook.
+          Trang này tổng hợp ba nhánh đã hoàn tất của Bài tập lớn số 1.
+          Nhánh văn bản dùng <strong>Jigsaw Toxic Comment</strong>, nhánh đa phương thức dùng
+          <strong>N24News</strong>, và nhánh ảnh dùng <strong>weather dataset</strong>.
+          Toàn bộ metric bên dưới đều được lấy từ artifact thật sau khi chạy notebook.
         </p>
       </div>
     </header>
@@ -30,10 +31,11 @@
         <div class="detail-grid">
           <div>
             <p class="section-kicker">Tổng quan</p>
-            <h2>BERT và VisualBERT là hai mô hình tốt nhất</h2>
+            <h2>BERT, VisualBERT và ViT-Base là ba mô hình tốt nhất</h2>
             <p class="body-copy">
-              Ở nhánh văn bản, BERT vượt LSTM trên exact-match accuracy, micro F1 và macro F1.
-              Ở nhánh đa phương thức, VisualBERT vượt CLIP trên N24News với khoảng cách đáng kể ở macro F1.
+              Ở nhánh văn bản, BERT vẫn vượt LSTM khá rõ trong protocol stratified hiện tại.
+              Ở nhánh đa phương thức, VisualBERT dẫn đầu trên N24News.
+              Ở nhánh ảnh, ViT-Base vượt ResNet50 trên cả accuracy và weighted F1.
             </p>
           </div>
           <div class="info-card">
@@ -65,16 +67,16 @@
             <tbody>
               <tr>
                 <td><strong>BERT</strong></td>
-                <td>0.9306</td>
-                <td>0.8030</td>
-                <td>0.6765</td>
+                <td>0.8545</td>
+                <td>0.6385</td>
+                <td>0.5787</td>
                 <td>Mô hình tốt nhất của nhánh văn bản.</td>
               </tr>
               <tr>
                 <td><strong>LSTM</strong></td>
-                <td>0.9224</td>
-                <td>0.7386</td>
-                <td>0.5489</td>
+                <td>0.7611</td>
+                <td>0.1077</td>
+                <td>0.0773</td>
                 <td>Baseline tuần tự, thấp hơn BERT trên toàn bộ chỉ số chính.</td>
               </tr>
             </tbody>
@@ -102,10 +104,10 @@
             <tbody>
               <tr>
                 <td><strong>VisualBERT</strong></td>
-                <td>0.8751</td>
-                <td>0.8575</td>
-                <td>0.8732</td>
-                <td>0.3978</td>
+                <td>0.8752</td>
+                <td>0.8641</td>
+                <td>0.8746</td>
+                <td>0.3974</td>
                 <td>Mô hình tốt nhất của nhánh đa phương thức hiện tại.</td>
               </tr>
               <tr>
@@ -123,13 +125,52 @@
 
       <section class="panel">
         <div class="section-heading">
+          <p class="section-kicker">Ảnh</p>
+          <h2>Weather Dataset</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Mô hình</th>
+                <th>Accuracy</th>
+                <th>Weighted F1</th>
+                <th>Best epoch</th>
+                <th>Tổng thời gian train</th>
+                <th>Nhận xét</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>ViT-Base</strong></td>
+                <td>0.9049</td>
+                <td>0.9047</td>
+                <td>38</td>
+                <td>124.29 phút</td>
+                <td>Mô hình tốt nhất của nhánh ảnh hiện tại.</td>
+              </tr>
+              <tr>
+                <td><strong>ResNet50</strong></td>
+                <td>0.8437</td>
+                <td>0.8434</td>
+                <td>24</td>
+                <td>44.94 phút</td>
+                <td>Baseline CNN mạnh, nhưng vẫn thấp hơn ViT-Base trên tập test.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
           <p class="section-kicker">Biểu đồ</p>
           <h2>So sánh trực quan</h2>
         </div>
         <div class="chart-canvas-grid">
           <article class="chart-card">
             <h3>Metric chính của nhánh văn bản</h3>
-            <p class="chart-copy">Biểu đồ cột dùng số liệu từ benchmark Jigsaw để so sánh BERT và LSTM.</p>
+            <p class="chart-copy">Biểu đồ cột dùng số liệu test hiện tại của Jigsaw để so sánh BERT và LSTM.</p>
             <div class="chart-shell">
               <canvas id="final-text-metrics-chart"></canvas>
             </div>
@@ -180,6 +221,68 @@
               <a class="button-link button-secondary" href="./multimodal-notebook-viewer.html">Mở trình xem notebook</a>
             </div>
           </article>
+          <article class="callout-card">
+            <h3>Nhánh ảnh</h3>
+            <p>Nhánh ảnh hiện đã có report web riêng, notebook hoàn chỉnh, artifact EDA và training summary cho cặp ResNet50 vs ViT-Base.</p>
+            <div class="branch-link-row" style="margin-top: 0.9rem;">
+              <a class="button-link" href="./image-report.html">Mở báo cáo ảnh</a>
+              <a class="button-link button-secondary" href="../notebooks/image_classification.ipynb">Mở notebook ảnh</a>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="section-heading">
+          <p class="section-kicker">PEFT</p>
+          <h2>So sánh deep_head và lora</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Mô hình</th>
+                <th>Variant</th>
+                <th>Accuracy</th>
+                <th>Macro F1</th>
+                <th>Weighted F1</th>
+                <th>Runtime</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>CLIP</strong></td>
+                <td>deep_head</td>
+                <td>0.8225</td>
+                <td>0.8075</td>
+                <td>0.8184</td>
+                <td>55.7 phút</td>
+              </tr>
+              <tr>
+                <td><strong>CLIP</strong></td>
+                <td>lora</td>
+                <td>0.8388</td>
+                <td>0.8230</td>
+                <td>0.8363</td>
+                <td>98.5 phút</td>
+              </tr>
+              <tr>
+                <td><strong>VisualBERT</strong></td>
+                <td>deep_head</td>
+                <td>0.7183</td>
+                <td>0.6777</td>
+                <td>0.7063</td>
+                <td>5.61 giờ</td>
+              </tr>
+              <tr>
+                <td><strong>VisualBERT</strong></td>
+                <td>lora</td>
+                <td>0.8023</td>
+                <td>0.7777</td>
+                <td>0.7965</td>
+                <td>3.58 giờ</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </main>

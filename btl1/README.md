@@ -1,20 +1,23 @@
 # BTL1
 
-Thư mục này chứa toàn bộ tài nguyên thực thi của Bài tập lớn 1.
+This folder contains all executable resources for Assignment 1.
 
-## Cấu trúc
+## Structure
 
-- `notebooks/`: notebook chính cho huấn luyện, đánh giá và trực quan hóa.
-- `data/`: dữ liệu source, raw và processed của BTL1.
-- `artifacts/`: checkpoint, CSV, JSON và hình kết quả sinh ra từ notebook.
-- `reports/`: các trang báo cáo web dùng cho landing page công khai.
+- `notebooks/`: training, evaluation, and EDA notebooks
+- `data/`: raw and processed Assignment 1 datasets
+- `artifacts/`: checkpoints, CSV, JSON, plots, and runtime outputs produced by notebooks
+- `reports/`: public-facing report pages
+- `demo/`: local demo assets and app files
 
-## Notebook chính
+## Main Notebooks
 
 - `notebooks/text_classification.ipynb`
 - `notebooks/text_image_classification.ipynb`
+- `notebooks/image_classification.ipynb`
 
-## Ghi chú
+## Notes
 
-- Nhật ký tiến trình chung hiện nằm ở file root: `tracking_progress.txt`
-- `legacy/visual_genome/` chỉ còn là phần tham chiếu lịch sử, không thuộc pipeline chính của BTL1.
+- Repo-level state lives in the root `GPT.md`.
+- Long-running notebook executions should leave checkpoint and resume artifacts in `artifacts/`.
+- Public reports should be synchronized only after notebook and artifact truth is confirmed.
