@@ -103,7 +103,7 @@
 
     target.innerHTML = "";
 
-    const detailLink = createElement("a", "button-link", "Xem bài tập lớn 1");
+    const detailLink = createElement("a", "button-link", "Mở bài tập lớn 1");
     detailLink.href = `${root}/${assignment.page}`;
     target.appendChild(detailLink);
 
@@ -121,13 +121,13 @@
     const assignmentOne = data.assignments[0];
 
     document.getElementById("site-title").textContent = `${data.course.code} | ${data.course.name}`;
-    document.getElementById("site-subtitle").textContent = `${data.course.university} • ${data.course.faculty}`;
-    document.getElementById("hero-band-copy").textContent = `${data.course.code} • ${data.course.name}`;
+    document.getElementById("site-subtitle").textContent = `${data.course.university} · ${data.course.faculty}`;
+    document.getElementById("hero-band-copy").textContent = `${data.course.code} · ${data.course.name}`;
     document.getElementById("hero-group-chip").textContent = data.group.name;
     document.getElementById("hero-term-chip").textContent = data.course.term;
     document.getElementById("course-heading").textContent = `${data.course.code} · ${data.course.name}`;
     document.getElementById("course-summary").textContent = data.course.summary;
-    document.getElementById("hero-meta-line").textContent = `${data.course.university} • ${data.course.faculty} • GV: ${data.course.instructor}`;
+    document.getElementById("hero-meta-line").textContent = `${data.course.university} · ${data.course.faculty} · GV: ${data.course.instructor}`;
     document.getElementById("group-name").textContent = data.group.name;
     document.getElementById("group-summary").textContent = data.group.summary;
     document.getElementById("team-group-name").textContent = data.group.name;
@@ -135,16 +135,12 @@
     document.getElementById("instructor-name").textContent = data.course.instructor;
     document.getElementById("home-overview-title").textContent = "Tổng quan";
     document.getElementById("overview-title").textContent = data.course.overview.title;
-    const overviewCopy = document.getElementById("overview-copy");
-    if (overviewCopy) {
-      overviewCopy.textContent = data.course.overview.copy;
-    }
 
     renderMetaList(document.getElementById("course-meta"), [
-      { label: "University", value: data.course.university },
-      { label: "Faculty", value: data.course.faculty },
-      { label: "Instructor", value: data.course.instructor },
-      { label: "Term", value: data.course.term },
+      { label: "Trường", value: data.course.university },
+      { label: "Khoa", value: data.course.faculty },
+      { label: "Giảng viên", value: data.course.instructor },
+      { label: "Học kỳ", value: data.course.term },
     ]);
 
     renderHeroActions(document.getElementById("hero-actions"), assignmentOne);
@@ -190,7 +186,7 @@
       const overview = createElement("p", "assignment-card-overview", assignment.overview || "");
 
       const actions = createElement("div", "card-actions");
-      const detailLink = createElement("a", "button-link", "Xem chi tiết");
+      const detailLink = createElement("a", "button-link", "Mở trang");
       detailLink.href = `${root}/${assignment.page}`;
       actions.appendChild(detailLink);
 
@@ -199,7 +195,7 @@
         (item) => typeof item.url === "string" && /report|results/i.test(item.url)
       );
       if (reportUrl) {
-        const reportLink = createElement("a", "button-link button-secondary", "Xem báo cáo");
+        const reportLink = createElement("a", "button-link button-secondary", "Mở báo cáo");
         reportLink.href = reportUrl;
         reportLink.target = "_blank";
         reportLink.rel = "noreferrer";

@@ -1,17 +1,17 @@
 :root {
-  --navy-950: #173f78;
-  --navy-900: #1f5ca8;
-  --navy-700: #57a7e3;
-  --gold-500: #6dc6ff;
-  --gold-300: #bfe8ff;
-  --gold-100: #eaf7ff;
-  --ivory: #eef6ff;
-  --paper: #e1eefc;
+  --navy-950: #1d477f;
+  --navy-900: #285c9b;
+  --navy-700: #7eaed7;
+  --gold-500: #cfaf62;
+  --gold-300: #e7d7ad;
+  --gold-100: #f7f1df;
+  --ivory: #f5f8fd;
+  --paper: #edf2f9;
   --white: #fffdfa;
-  --ink: #18314c;
-  --muted: #5b728d;
-  --line: rgba(31, 92, 168, 0.12);
-  --shadow: 0 20px 60px rgba(23, 63, 120, 0.12);
+  --ink: #20344d;
+  --muted: #60738c;
+  --line: rgba(29, 71, 127, 0.12);
+  --shadow: 0 20px 60px rgba(29, 71, 127, 0.10);
   --radius-lg: 28px;
   --radius-md: 18px;
   --page-width: 1180px;
@@ -108,7 +108,7 @@ a { color: inherit; text-decoration: none; }
   margin: 0 0 0.6rem;
   font-size: 0.79rem;
   font-weight: 700;
-  color: #dff4ff;
+  color: #7f8ea3;
 }
 
 .site-header h1, .hero-panel h2, .section-heading h2, .info-card h3, .feature-copy, #assignment-name {
@@ -1308,7 +1308,17 @@ main { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
   grid-template-columns: 1fr;
   align-items: stretch;
   gap: 1rem;
-  padding: 1.25rem;
+  padding: 1.35rem 1.45rem 1.45rem;
+  border: 1px solid rgba(29, 71, 127, 0.1);
+  background:
+    radial-gradient(circle at top right, rgba(207,175,98,0.16), transparent 28%),
+    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(241,246,252,0.94));
+  color: var(--ink);
+  box-shadow: 0 18px 42px rgba(29, 71, 127, 0.08);
+}
+
+.site-header.home-hero::after {
+  display: none;
 }
 
 .hero-band,
@@ -1324,7 +1334,7 @@ main { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255,253,250,0.14);
+  border-bottom: 1px solid rgba(29, 71, 127, 0.12);
 }
 
 .hero-band-left,
@@ -1338,7 +1348,7 @@ main { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
 
 .hero-band-copy {
   margin: 0;
-  color: rgba(255,253,250,0.78);
+  color: var(--muted);
   font-weight: 600;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -1350,37 +1360,56 @@ main { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
   min-height: 34px;
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
-  background: rgba(255,253,250,0.12);
-  color: var(--white);
+  background: rgba(40, 92, 155, 0.08);
+  color: var(--navy-950);
   font-size: 0.88rem;
   font-weight: 700;
 }
 
 .hero-chip-secondary {
-  background: rgba(182,146,71,0.22);
-  color: var(--gold-100);
+  background: rgba(207,175,98,0.18);
+  color: #7b6326;
 }
 
 .hero-main-copy {
   display: grid;
-  gap: 0.65rem;
+  gap: 0.7rem;
   align-content: start;
   min-width: 0;
-  max-width: 700px;
+  width: min(100%, 920px);
+  margin: 0 auto;
 }
 
 .hero-main-copy .crest-mark {
-  margin-bottom: 0.3rem;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 0.15rem;
+  border-color: rgba(29, 71, 127, 0.16);
+  background: linear-gradient(145deg, rgba(29, 71, 127, 0.08), rgba(255,255,255,0.7));
+  color: var(--navy-950);
 }
 
 .hero-main-copy-simplified {
-  justify-items: start;
+  justify-items: center;
+  text-align: center;
+}
+
+.home-hero h1 {
+  max-width: 12ch;
+  margin-inline: auto;
+  line-height: 1.02;
+}
+
+.home-hero .lede {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--muted);
 }
 
 .hero-summary {
   margin: 0;
-  color: rgba(255,253,250,0.9);
-  line-height: 1.8;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 .hero-actions {
@@ -1388,6 +1417,7 @@ main { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 0.4rem;
+  justify-content: center;
 }
 
 .home-hero .button-link {
@@ -1395,14 +1425,14 @@ main { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
 }
 
 .home-hero .button-secondary {
-  background: rgba(255,253,250,0.14);
-  color: var(--white);
-  border: 1px solid rgba(255,253,250,0.18);
+  background: rgba(40,92,155,0.08);
+  color: var(--navy-950);
+  border: 1px solid rgba(29,71,127,0.12);
 }
 
 .home-hero .button-secondary:hover,
 .home-hero .button-secondary:focus-visible {
-  background: rgba(255,253,250,0.2);
+  background: rgba(40,92,155,0.14);
 }
 
 .hero-side-block {
@@ -1414,21 +1444,24 @@ main { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
   margin-top: 0.2rem;
   padding: 0.85rem 1rem;
   border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(29,71,127,0.1);
+  background: rgba(255,255,255,0.72);
+  width: min(100%, 620px);
+  margin-inline: auto;
 }
 
 .hero-inline-card h2 {
   margin: 0 0 0.45rem;
-  color: var(--white);
+  color: var(--navy-950);
   font-size: clamp(1.05rem, 1.6vw, 1.25rem);
 }
 
 .hero-meta-line {
   margin: 0;
-  color: rgba(255,255,255,0.84);
+  color: var(--muted);
   line-height: 1.65;
   font-weight: 600;
+  max-width: 60ch;
 }
 
 .section-side-copy {
@@ -1525,6 +1558,12 @@ main { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
 
 .team-feature-card {
   min-height: 100%;
+}
+
+.team-feature-card .body-copy {
+  font-size: 1rem;
+  color: var(--navy-950);
+  line-height: 1.8;
 }
 
 .member-grid-home {
@@ -1894,23 +1933,39 @@ main { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
   .crest-mark { width: 88px; height: 88px; }
   .site-header h1 { font-size: 2.45rem; }
   .site-header.home-hero {
-    gap: 1rem;
+    gap: 0.9rem;
     padding: 1rem;
     border-radius: 26px;
   }
   .site-header.home-hero h1 {
-    max-width: 7ch;
-    font-size: clamp(1.8rem, 8.4vw, 2.45rem);
-    line-height: 0.95;
+    max-width: 8ch;
+    font-size: clamp(1.75rem, 8vw, 2.3rem);
+    line-height: 1.02;
+  }
+  .hero-main-copy-simplified {
+    justify-items: start;
+    text-align: left;
+  }
+  .hero-actions {
+    justify-content: stretch;
+  }
+  .hero-inline-card {
+    width: 100%;
+    margin-inline: 0;
+  }
+  .hero-meta-line,
+  .home-hero .lede,
+  .home-hero h1 {
+    margin-inline: 0;
   }
   .hero-main-copy {
     gap: 0.65rem;
   }
   .hero-main-copy .crest-mark {
-    width: 72px;
-    height: 72px;
+    width: 64px;
+    height: 64px;
     margin-bottom: 0.1rem;
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   .hero-main-copy .crest-mark span:last-child {
     font-size: 1.25rem;
