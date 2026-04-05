@@ -1,0 +1,14 @@
+{
+  "run_name": "BERT full fine-tune weighted",
+  "status": "initialized",
+  "config": {
+    "model_name": "bert-base-uncased",
+    "max_length": 192,
+    "batch_size": 192,
+    "lr": 2e-05,
+    "weight_decay": 0.01,
+    "epochs": 15,
+    "task": "text_multilabel",
+    "variant": "full_finetune_weighted"
+  }
+}

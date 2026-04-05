@@ -1,0 +1,25 @@
+{
+  "best_checkpoint": "/workspace/DeepLearning/btl1/artifacts/text/lstm_nonweighted_best.pt",
+  "history_csv": "/workspace/DeepLearning/btl1/artifacts/text/lstm_nonweighted_history.csv",
+  "backup_history_csv": "/workspace/DeepLearning/btl1/artifacts/text/run_logs/lstm_nonweighted_history_backup.csv",
+  "backup_history_json": "/workspace/DeepLearning/btl1/artifacts/text/run_logs/lstm_nonweighted_history_backup.json",
+  "console_log": "/workspace/DeepLearning/btl1/artifacts/text/run_logs/lstm_nonweighted_console.log",
+  "summary_json": "/workspace/DeepLearning/btl1/artifacts/text/run_logs/lstm_nonweighted_summary.json",
+  "resume_checkpoint": "/workspace/DeepLearning/btl1/artifacts/text/checkpoints/lstm_nonweighted/lstm_nonweighted_resume.pt",
+  "epochs_completed": 15,
+  "best_val_micro_f1": 0.7228441754916792,
+  "best_val_macro_f1": 0.5511114081978177,
+  "best_val_loss": 0.0530286307933038,
+  "final_val_tuned_micro_f1": 0.7229082836131538,
+  "final_val_tuned_macro_f1": 0.5681028092245497,
+  "threshold_tuning_enabled": true,
+  "thresholds": {
+    "toxic": 0.45,
+    "severe_toxic": 0.15,
+    "obscene": 0.45,
+    "threat": 0.1,
+    "insult": 0.35,
+    "identity_hate": 0.15
+  },
+  "test_macro_f1": 0.47352966226224297
+}

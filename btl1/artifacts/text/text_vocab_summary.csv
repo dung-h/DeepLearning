@@ -1,0 +1,5 @@
+stat,value
+Raw unique tokens in train split,174073
+Eligible unique tokens with min_freq >= 1,174073
+Configured max_vocab,full_eligible
+Effective vocab size including <pad>/<unk>,174075
