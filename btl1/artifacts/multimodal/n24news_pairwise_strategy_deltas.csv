@@ -1,0 +1,7 @@
+model_family,strategy_switch,test_accuracy_change,test_macro_f1_change,recorded_train_hours_change
+CLIP,full_finetune -> lora,-0.009960809928151515,0.016671902562233498,
+CLIP,full_finetune -> deep_head,-0.026290006531678567,0.0011093162434582249,
+CLIP,lora -> deep_head,-0.016329196603527052,-0.015562586318775273,-0.7138478788402345
+VisualBERT,full_finetune -> lora,-0.07299150881776617,-0.08640280626410668,
+VisualBERT,full_finetune -> deep_head,-0.15692357935989543,-0.1864457513723865,
+VisualBERT,lora -> deep_head,-0.08393207054212926,-0.10004294510827982,2.0317662991417764

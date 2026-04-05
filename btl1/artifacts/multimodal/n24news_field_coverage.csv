@@ -1,0 +1,13 @@
+split,field,samples,non_empty,missing,coverage_pct,missing_pct
+train,headline,48988,48988,0,100.0,0.0
+val,headline,6123,6123,0,100.0,0.0
+test,headline,6124,6124,0,100.0,0.0
+train,abstract,48988,48988,0,100.0,0.0
+val,abstract,6123,6123,0,100.0,0.0
+test,abstract,6124,6124,0,100.0,0.0
+train,body,48988,48975,13,99.97,0.03
+val,body,6123,6122,1,99.98,0.02
+test,body,6124,6123,1,99.98,0.02
+train,caption,48988,48747,241,99.51,0.49
+val,caption,6123,6096,27,99.56,0.44
+test,caption,6124,6089,35,99.43,0.57

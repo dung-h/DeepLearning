@@ -1,0 +1,4 @@
+split,samples,word_count_mean,word_count_median,word_count_p90,word_count_p95,word_count_p99,word_count_max,clip_tokens_mean,clip_tokens_median,clip_tokens_p90,clip_tokens_p95,clip_tokens_p99,clip_tokens_max,visualbert_tokens_mean,visualbert_tokens_median,visualbert_tokens_p90,visualbert_tokens_p95,visualbert_tokens_p99,visualbert_tokens_max
+train,48988,51.77090307830489,52.0,68.0,73.0,83.0,186,73.1699804033641,72.0,95.0,103.0,120.0,266,75.79441904139789,75.0,98.0,106.0,125.0,263
+val,6123,51.61538461538461,51.0,67.0,72.0,82.0,148,72.9302629430018,72.0,95.0,103.0,118.0,184,75.51037073330068,75.0,98.0,106.0,121.0,190
+test,6124,51.702971913781845,51.0,68.0,72.0,82.0,99,73.02939255388635,72.0,95.0,103.0,118.0,226,75.72713912475506,75.0,98.0,106.0,123.0,237

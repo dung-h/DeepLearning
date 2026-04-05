@@ -1,0 +1,5 @@
+tokenizer,split,unique_token_ids_only_in_split,example_split_only_tokens
+CLIP,val,470,"Ï, Ń, ¯</w>, µ</w>, Ģ</w>, congr, intere, econom, acade, great, //</w>, confir, lma, stant</w>, gni, intelli, studi, meet, count, hurric"
+CLIP,test,475,"ĵ, Ķ, £</w>, §</w>, ģ</w>, ool</w>, atul, afric, pics</w>, tv, best, hallo, sket, bt</w>, nfl</w>, wc, gni, intelli, poli</w>, intellig"
+VisualBERT,val,154,"¾, π, constituency, cavalry, honour, remainder, nhl, ibn, corresponding, 1849, anglican, cardiff, glancing, locality, alright, nationality, prussian, remarked, sociology, ecclesiastical"
+VisualBERT,test,158,"§, labour, nfl, stating, diocese, 1885, remainder, residing, 1867, 1851, 1849, mechanisms, 1834, remarked, frown, commanders, sociology, cyclone, rca, 1798"

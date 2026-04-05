@@ -1,0 +1,14 @@
+{
+  "best_checkpoint": "/workspace/DeepLearning/btl1/artifacts/multimodal/n24news_visualbert_full_finetune_best.pt",
+  "history_csv": "/workspace/DeepLearning/btl1/artifacts/multimodal/n24news_visualbert_full_finetune_history.csv",
+  "backup_history_csv": "/workspace/DeepLearning/btl1/artifacts/multimodal/run_logs/visualbert_full_finetune_history_backup.csv",
+  "backup_history_json": "/workspace/DeepLearning/btl1/artifacts/multimodal/run_logs/visualbert_full_finetune_history_backup.json",
+  "console_log": "/workspace/DeepLearning/btl1/artifacts/multimodal/run_logs/visualbert_full_finetune_console.log",
+  "summary_json": "/workspace/DeepLearning/btl1/artifacts/multimodal/run_logs/visualbert_full_finetune_summary.json",
+  "resume_checkpoint": "/workspace/DeepLearning/btl1/artifacts/multimodal/checkpoints/visualbert/full_finetune/visualbert_full_finetune_resume.pt",
+  "epochs_completed": 11,
+  "best_val_accuracy": 0.8644455332353421,
+  "best_val_macro_f1": 0.8524619552452478,
+  "best_val_loss": 0.48846907990709465,
+  "test_macro_f1": 0.8456366910628138
+}

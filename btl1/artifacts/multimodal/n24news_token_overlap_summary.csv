@@ -1,0 +1,5 @@
+tokenizer,split,unique_token_ids_in_split,unique_token_ids_also_in_train,unique_token_ids_only_in_split,overlap_pct
+CLIP,val,23588,23118,470,98.00746142106156
+CLIP,test,23583,23108,475,97.98583725565025
+VisualBERT,val,19564,19410,154,99.21283991003884
+VisualBERT,test,19616,19458,158,99.19453507340947

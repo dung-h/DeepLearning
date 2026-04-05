@@ -1,0 +1,10 @@
+policy,split,samples,clip_median,clip_p90,clip_p95,clip_trunc_pct_77,visualbert_median,visualbert_p90,visualbert_p95,visualbert_trunc_pct_256,empty_text_pct
+abstract+caption,train,48988,59.0,80.0,88.0,13.133828692741078,61.0,83.0,91.0,0.0,0.0
+abstract+caption,val,6123,59.0,80.0,88.0,12.559203005062876,61.0,82.0,90.0,0.0,0.0
+abstract+caption,test,6124,58.0,80.0,87.0,12.704114957544089,61.0,83.0,90.0,0.0,0.0
+headline+abstract+caption,train,48988,72.0,95.0,103.0,37.858251000244955,75.0,98.0,106.0,0.004082632481424022,0.0
+headline+abstract+caption,val,6123,72.0,95.0,103.0,37.20398497468561,75.0,98.0,106.0,0.0,0.0
+headline+abstract+caption,test,6124,72.0,95.0,103.0,37.47550620509471,75.0,98.0,106.0,0.0,0.0
+headline+caption,train,48988,43.0,63.0,70.0,2.365885522985221,45.0,65.0,72.0,0.0,0.0
+headline+caption,val,6123,42.0,62.0,69.0,2.4334476563775924,45.0,65.0,72.0,0.0,0.0
+headline+caption,test,6124,43.0,62.0,70.0,2.155453951665578,45.0,65.0,72.0,0.0,0.0

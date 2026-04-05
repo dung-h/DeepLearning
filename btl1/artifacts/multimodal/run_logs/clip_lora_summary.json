@@ -1,0 +1,14 @@
+{
+  "best_checkpoint": "/workspace/DeepLearning/btl1/artifacts/multimodal/n24news_clip_lora_best.pt",
+  "history_csv": "/workspace/DeepLearning/btl1/artifacts/multimodal/n24news_clip_lora_history.csv",
+  "backup_history_csv": "/workspace/DeepLearning/btl1/artifacts/multimodal/run_logs/clip_lora_history_backup.csv",
+  "backup_history_json": "/workspace/DeepLearning/btl1/artifacts/multimodal/run_logs/clip_lora_history_backup.json",
+  "console_log": "/workspace/DeepLearning/btl1/artifacts/multimodal/run_logs/clip_lora_console.log",
+  "summary_json": "/workspace/DeepLearning/btl1/artifacts/multimodal/run_logs/clip_lora_summary.json",
+  "resume_checkpoint": "/workspace/DeepLearning/btl1/artifacts/multimodal/checkpoints/clip/lora/clip_lora_resume.pt",
+  "epochs_completed": 15,
+  "best_val_accuracy": 0.8342315858239425,
+  "best_val_macro_f1": 0.7934543051844697,
+  "best_val_loss": 0.6778862478198441,
+  "test_macro_f1": 0.7929852679125164
+}

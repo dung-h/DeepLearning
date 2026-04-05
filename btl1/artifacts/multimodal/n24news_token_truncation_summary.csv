@@ -1,0 +1,7 @@
+split,model,max_text_length,truncated_samples,truncation_pct
+train,CLIP,77,18546,37.858251000244955
+val,CLIP,77,2278,37.20398497468561
+test,CLIP,77,2295,37.47550620509471
+train,VisualBERT,256,2,0.004082632481424022
+val,VisualBERT,256,0,0.0
+test,VisualBERT,256,0,0.0

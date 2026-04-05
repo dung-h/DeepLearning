@@ -3,8 +3,8 @@ train,Opinion,2437
 train,Art & Design,2431
 train,Television,2419
 train,Music,2416
-train,Travel,2413
 train,Real Estate,2413
+train,Travel,2413
 train,Books,2412
 train,Theater,2409
 train,Health,2409
@@ -30,8 +30,8 @@ val,Sports,314
 val,Media,312
 val,Fashion & Style,309
 val,Science,308
-val,Travel,301
 val,Television,301
+val,Travel,301
 val,Technology,300
 val,Music,299
 val,Real Estate,289
@@ -52,8 +52,8 @@ test,Technology,325
 test,Dance,318
 test,Art & Design,313
 test,Theater,311
-test,Fashion & Style,307
 test,Health,307
+test,Fashion & Style,307
 test,Science,306
 test,Books,305
 test,Real Estate,299
