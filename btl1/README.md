@@ -15,9 +15,3 @@ This folder contains all executable resources for Assignment 1.
 - `notebooks/text_classification.ipynb`
 - `notebooks/text_image_classification.ipynb`
 - `notebooks/image_classification.ipynb`
-
-## Notes
-
-- Repo-level state lives in the root `GPT.md`.
-- Long-running notebook executions should leave checkpoint and resume artifacts in `artifacts/`.
-- Public reports should be synchronized only after notebook and artifact truth is confirmed.

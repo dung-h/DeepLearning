@@ -31,3 +31,8 @@ btl1/artifacts/image/demo_smoke*
 
 # Local notebook runners and utility scripts
 btl1/scripts/
+
+# Local reference clones
+external_refs/
+tmp_*.py
+apply_independence.py

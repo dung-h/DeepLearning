@@ -1,0 +1,43 @@
+{
+  "records": [
+    {
+      "role": "clean_no_label",
+      "split": "test",
+      "id": "02356b57000827dc",
+      "true_labels": [],
+      "is_clean": true,
+      "comment_text": "Only The Wailers is mentioned to be the artist, yet the cover says Bob Marley & The Wailers? Is the cover wrong or what?",
+      "comment_preview_landing": "Only The Wailers is mentioned to be the artist, yet the cover says Bob Marley & The Wailers? Is the cover wrong or what?",
+      "comment_preview_slide": "Only The Wailers is mentioned to be the artist, yet the cover says Bob Marley & The Wailers? Is the cover wrong or what?"
+    },
+    {
+      "role": "common_toxic_overlap",
+      "split": "train",
+      "id": "0f36dfbe90e9b29a",
+      "true_labels": [
+        "toxic",
+        "obscene",
+        "insult"
+      ],
+      "is_clean": false,
+      "comment_text": "Fk Off== Fk off you Dragon Ball nerd. You like animey and manja. You son of a bh. You were fking mean to VegetaSaiyan, the fking nerd. Go fk off and get off Wikipedia, you fker. ==",
+      "comment_preview_landing": "Fk Off== Fk off you Dragon Ball nerd. You like animey and manja. You son of a bh. You were fking mean to VegetaSaiyan, the fking nerd. Go fk off and get off Wikipedia, you fker. ==",
+      "comment_preview_slide": "Fk Off== Fk off you Dragon Ball nerd. You like animey and manja. You son of a bh. You were fking mean to VegetaSaiyan, the fking nerd. Go fk off and get off Wikipedia, you fker. =="
+    },
+    {
+      "role": "rare_label_pattern",
+      "split": "val",
+      "id": "a5d240cc8bc87faf",
+      "true_labels": [
+        "toxic",
+        "severe toxic",
+        "threat"
+      ],
+      "is_clean": false,
+      "comment_text": "am going to shoot you in the head and laugh as your brains splatter onto the ground. am going to shoot you in the head and laugh as your brains splatter onto the ground.",
+      "comment_preview_landing": "am going to shoot you in the head and laugh as your brains splatter onto the ground. am going to shoot you in the head and laugh as your brains splatter onto the ground.",
+      "comment_preview_slide": "am going to shoot you in the head and laugh as your brains splatter onto the ground. am going to shoot you in the head and laugh as your brains splatter onto the ground."
+    }
+  ],
+  "selection_policy": "mixed splits: test clean, train common overlap, val rare-label"
+}

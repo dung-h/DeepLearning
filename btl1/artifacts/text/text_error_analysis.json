@@ -8,82 +8,167 @@
     "identity_hate"
   ],
   "bert": {
-    "exact_match_failures": 9310,
+    "exact_match_failures": 8372,
     "total_examples": 63978,
     "total_true_positive_labels": 14498,
-    "total_predicted_positive_labels": 25539,
+    "total_predicted_positive_labels": 21437,
     "per_label": [
       {
         "label": "toxic",
         "support": 6090,
-        "predicted_positive": 11138,
-        "tp": 5618,
-        "fp": 5520,
-        "fn": 472,
-        "tn": 52368,
-        "precision": 0.5043993535643743,
-        "recall": 0.922495894909688,
-        "f1": 0.652194102623636
+        "predicted_positive": 9825,
+        "tp": 5380,
+        "fp": 4445,
+        "fn": 710,
+        "tn": 53443,
+        "precision": 0.5475826972010178,
+        "recall": 0.8834154351395731,
+        "f1": 0.6760917373546969
       },
       {
         "label": "severe_toxic",
         "support": 367,
-        "predicted_positive": 1190,
-        "tp": 281,
-        "fp": 909,
-        "fn": 86,
-        "tn": 62702,
-        "precision": 0.2361344537815126,
-        "recall": 0.7656675749318801,
-        "f1": 0.36095054592164416
+        "predicted_positive": 703,
+        "tp": 203,
+        "fp": 500,
+        "fn": 164,
+        "tn": 63111,
+        "precision": 0.2887624466571835,
+        "recall": 0.553133514986376,
+        "f1": 0.37943925233644854
       },
       {
         "label": "obscene",
         "support": 3691,
-        "predicted_positive": 5926,
-        "tp": 3226,
-        "fp": 2700,
-        "fn": 465,
-        "tn": 57587,
-        "precision": 0.5443806952413095,
-        "recall": 0.8740178813329721,
-        "f1": 0.6708952895913487
+        "predicted_positive": 4773,
+        "tp": 2956,
+        "fp": 1817,
+        "fn": 735,
+        "tn": 58470,
+        "precision": 0.6193169914100146,
+        "recall": 0.8008669737198592,
+        "f1": 0.6984877126654064
       },
       {
         "label": "threat",
         "support": 211,
-        "predicted_positive": 395,
-        "tp": 160,
-        "fp": 235,
-        "fn": 51,
-        "tn": 63532,
-        "precision": 0.4050632911392405,
-        "recall": 0.7582938388625592,
-        "f1": 0.528052805280528
+        "predicted_positive": 452,
+        "tp": 172,
+        "fp": 280,
+        "fn": 39,
+        "tn": 63487,
+        "precision": 0.3805309734513274,
+        "recall": 0.8151658767772512,
+        "f1": 0.5188536953242836
       },
       {
         "label": "insult",
         "support": 3427,
-        "predicted_positive": 5892,
-        "tp": 2962,
-        "fp": 2930,
-        "fn": 465,
-        "tn": 57621,
-        "precision": 0.5027155465037338,
-        "recall": 0.864312810037934,
-        "f1": 0.6356905247344135
+        "predicted_positive": 4759,
+        "tp": 2766,
+        "fp": 1993,
+        "fn": 661,
+        "tn": 58558,
+        "precision": 0.5812145408699306,
+        "recall": 0.8071199299679019,
+        "f1": 0.675787930613242
       },
       {
         "label": "identity_hate",
         "support": 712,
-        "predicted_positive": 998,
-        "tp": 534,
-        "fp": 464,
-        "fn": 178,
-        "tn": 62802,
-        "precision": 0.5350701402805611,
-        "recall": 0.75,
-        "f1": 0.6245614035087719
+        "predicted_positive": 925,
+        "tp": 497,
+        "fp": 428,
+        "fn": 215,
+        "tn": 62838,
+        "precision": 0.5372972972972972,
+        "recall": 0.6980337078651685,
+        "f1": 0.6072083078802687
+      }
+    ],
+    "hardest_labels": [
+      "severe_toxic",
+      "threat",
+      "identity_hate"
+    ]
+  },
+  "bert_full_nonweighted": {
+    "exact_match_failures": 8863,
+    "total_examples": 63978,
+    "total_true_positive_labels": 14498,
+    "total_predicted_positive_labels": 23073,
+    "per_label": [
+      {
+        "label": "toxic",
+        "support": 6090,
+        "predicted_positive": 10548,
+        "tp": 5513,
+        "fp": 5035,
+        "fn": 577,
+        "tn": 52853,
+        "precision": 0.5226583238528631,
+        "recall": 0.9052545155993432,
+        "f1": 0.6626998437312177
+      },
+      {
+        "label": "severe_toxic",
+        "support": 367,
+        "predicted_positive": 1197,
+        "tp": 289,
+        "fp": 908,
+        "fn": 78,
+        "tn": 62703,
+        "precision": 0.24143692564745195,
+        "recall": 0.7874659400544959,
+        "f1": 0.36956521739130427
+      },
+      {
+        "label": "obscene",
+        "support": 3691,
+        "predicted_positive": 5227,
+        "tp": 3103,
+        "fp": 2124,
+        "fn": 588,
+        "tn": 58163,
+        "precision": 0.5936483642624832,
+        "recall": 0.8406935789758873,
+        "f1": 0.6958959407939
+      },
+      {
+        "label": "threat",
+        "support": 211,
+        "predicted_positive": 498,
+        "tp": 174,
+        "fp": 324,
+        "fn": 37,
+        "tn": 63443,
+        "precision": 0.3493975903614458,
+        "recall": 0.8246445497630331,
+        "f1": 0.4908321579689704
+      },
+      {
+        "label": "insult",
+        "support": 3427,
+        "predicted_positive": 4392,
+        "tp": 2699,
+        "fp": 1693,
+        "fn": 728,
+        "tn": 58858,
+        "precision": 0.6145264116575592,
+        "recall": 0.7875693025970236,
+        "f1": 0.6903696124824146
+      },
+      {
+        "label": "identity_hate",
+        "support": 712,
+        "predicted_positive": 1211,
+        "tp": 579,
+        "fp": 632,
+        "fn": 133,
+        "tn": 62634,
+        "precision": 0.47811725846407926,
+        "recall": 0.8132022471910112,
+        "f1": 0.6021840873634946
       }
     ],
     "hardest_labels": [
@@ -93,88 +178,343 @@
     ]
   },
   "lstm": {
-    "exact_match_failures": 15282,
+    "exact_match_failures": 8139,
     "total_examples": 63978,
     "total_true_positive_labels": 14498,
-    "total_predicted_positive_labels": 24714,
+    "total_predicted_positive_labels": 20452,
     "per_label": [
       {
         "label": "toxic",
         "support": 6090,
-        "predicted_positive": 10324,
-        "tp": 1165,
-        "fp": 9159,
-        "fn": 4925,
-        "tn": 48729,
-        "precision": 0.11284385896939171,
-        "recall": 0.19129720853858784,
-        "f1": 0.14195199220177898
+        "predicted_positive": 8473,
+        "tp": 4764,
+        "fp": 3709,
+        "fn": 1326,
+        "tn": 54179,
+        "precision": 0.5622565797238286,
+        "recall": 0.7822660098522167,
+        "f1": 0.654260797912518
       },
       {
         "label": "severe_toxic",
         "support": 367,
-        "predicted_positive": 743,
-        "tp": 16,
-        "fp": 727,
-        "fn": 351,
-        "tn": 62884,
-        "precision": 0.021534320323014805,
-        "recall": 0.043596730245231606,
-        "f1": 0.028828828828828826
+        "predicted_positive": 1251,
+        "tp": 264,
+        "fp": 987,
+        "fn": 103,
+        "tn": 62624,
+        "precision": 0.21103117505995203,
+        "recall": 0.7193460490463215,
+        "f1": 0.3263288009888751
       },
       {
         "label": "obscene",
         "support": 3691,
-        "predicted_positive": 6905,
-        "tp": 521,
-        "fp": 6384,
-        "fn": 3170,
-        "tn": 53903,
-        "precision": 0.07545257060101376,
-        "recall": 0.14115415876456244,
-        "f1": 0.09833899584748963
+        "predicted_positive": 4830,
+        "tp": 2820,
+        "fp": 2010,
+        "fn": 871,
+        "tn": 58277,
+        "precision": 0.5838509316770186,
+        "recall": 0.7640205906258467,
+        "f1": 0.6618941438798263
       },
       {
         "label": "threat",
         "support": 211,
-        "predicted_positive": 190,
-        "tp": 18,
-        "fp": 172,
-        "fn": 193,
-        "tn": 63595,
-        "precision": 0.09473684210526316,
-        "recall": 0.08530805687203792,
-        "f1": 0.08977556109725686
+        "predicted_positive": 357,
+        "tp": 124,
+        "fp": 233,
+        "fn": 87,
+        "tn": 63534,
+        "precision": 0.3473389355742297,
+        "recall": 0.5876777251184834,
+        "f1": 0.4366197183098592
       },
       {
         "label": "insult",
         "support": 3427,
-        "predicted_positive": 5515,
-        "tp": 372,
-        "fp": 5143,
-        "fn": 3055,
-        "tn": 55408,
-        "precision": 0.06745240253853128,
-        "recall": 0.10854975196965276,
-        "f1": 0.08320286289420713
+        "predicted_positive": 4436,
+        "tp": 2386,
+        "fp": 2050,
+        "fn": 1041,
+        "tn": 58501,
+        "precision": 0.5378719567177638,
+        "recall": 0.6962357747300846,
+        "f1": 0.6068930433676714
       },
       {
         "label": "identity_hate",
         "support": 712,
-        "predicted_positive": 1037,
-        "tp": 19,
-        "fp": 1018,
-        "fn": 693,
-        "tn": 62248,
-        "precision": 0.01832208293153327,
-        "recall": 0.026685393258426966,
-        "f1": 0.021726700971983995
+        "predicted_positive": 1105,
+        "tp": 408,
+        "fp": 697,
+        "fn": 304,
+        "tn": 62569,
+        "precision": 0.36923076923076925,
+        "recall": 0.5730337078651685,
+        "f1": 0.4490919097413319
       }
     ],
     "hardest_labels": [
-      "identity_hate",
       "severe_toxic",
-      "insult"
+      "threat",
+      "identity_hate"
+    ]
+  },
+  "lstm_nonweighted": {
+    "exact_match_failures": 8668,
+    "total_examples": 63978,
+    "total_true_positive_labels": 14498,
+    "total_predicted_positive_labels": 21372,
+    "per_label": [
+      {
+        "label": "toxic",
+        "support": 6090,
+        "predicted_positive": 9356,
+        "tp": 5040,
+        "fp": 4316,
+        "fn": 1050,
+        "tn": 53572,
+        "precision": 0.5386917486105173,
+        "recall": 0.8275862068965517,
+        "f1": 0.6525961413958307
+      },
+      {
+        "label": "severe_toxic",
+        "support": 367,
+        "predicted_positive": 1283,
+        "tp": 269,
+        "fp": 1014,
+        "fn": 98,
+        "tn": 62597,
+        "precision": 0.20966484801247076,
+        "recall": 0.7329700272479565,
+        "f1": 0.32606060606060605
+      },
+      {
+        "label": "obscene",
+        "support": 3691,
+        "predicted_positive": 4753,
+        "tp": 2830,
+        "fp": 1923,
+        "fn": 861,
+        "tn": 58364,
+        "precision": 0.5954134231011993,
+        "recall": 0.7667298835004064,
+        "f1": 0.6702984367598296
+      },
+      {
+        "label": "threat",
+        "support": 211,
+        "predicted_positive": 421,
+        "tp": 75,
+        "fp": 346,
+        "fn": 136,
+        "tn": 63421,
+        "precision": 0.17814726840855108,
+        "recall": 0.35545023696682465,
+        "f1": 0.23734177215189872
+      },
+      {
+        "label": "insult",
+        "support": 3427,
+        "predicted_positive": 4556,
+        "tp": 2401,
+        "fp": 2155,
+        "fn": 1026,
+        "tn": 58396,
+        "precision": 0.5269973661106233,
+        "recall": 0.7006127808578932,
+        "f1": 0.6015282475259927
+      },
+      {
+        "label": "identity_hate",
+        "support": 712,
+        "predicted_positive": 1003,
+        "tp": 303,
+        "fp": 700,
+        "fn": 409,
+        "tn": 62566,
+        "precision": 0.3020937188434696,
+        "recall": 0.425561797752809,
+        "f1": 0.35335276967930024
+      }
+    ],
+    "hardest_labels": [
+      "threat",
+      "severe_toxic",
+      "identity_hate"
+    ]
+  },
+  "bert_head_only_weighted": {
+    "exact_match_failures": 9159,
+    "total_examples": 63978,
+    "total_true_positive_labels": 14498,
+    "total_predicted_positive_labels": 18818,
+    "per_label": [
+      {
+        "label": "toxic",
+        "support": 6090,
+        "predicted_positive": 7847,
+        "tp": 3890,
+        "fp": 3957,
+        "fn": 2200,
+        "tn": 53931,
+        "precision": 0.4957308525551166,
+        "recall": 0.638752052545156,
+        "f1": 0.5582263040826577
+      },
+      {
+        "label": "severe_toxic",
+        "support": 367,
+        "predicted_positive": 1170,
+        "tp": 195,
+        "fp": 975,
+        "fn": 172,
+        "tn": 62636,
+        "precision": 0.16666666666666666,
+        "recall": 0.5313351498637602,
+        "f1": 0.25374105400130126
+      },
+      {
+        "label": "obscene",
+        "support": 3691,
+        "predicted_positive": 3663,
+        "tp": 1954,
+        "fp": 1709,
+        "fn": 1737,
+        "tn": 58578,
+        "precision": 0.5334425334425335,
+        "recall": 0.5293958276889732,
+        "f1": 0.5314114767473485
+      },
+      {
+        "label": "threat",
+        "support": 211,
+        "predicted_positive": 291,
+        "tp": 60,
+        "fp": 231,
+        "fn": 151,
+        "tn": 63536,
+        "precision": 0.20618556701030927,
+        "recall": 0.2843601895734597,
+        "f1": 0.2390438247011952
+      },
+      {
+        "label": "insult",
+        "support": 3427,
+        "predicted_positive": 4018,
+        "tp": 1868,
+        "fp": 2150,
+        "fn": 1559,
+        "tn": 58401,
+        "precision": 0.4649079143852663,
+        "recall": 0.5450831631164283,
+        "f1": 0.5018132975151108
+      },
+      {
+        "label": "identity_hate",
+        "support": 712,
+        "predicted_positive": 1829,
+        "tp": 317,
+        "fp": 1512,
+        "fn": 395,
+        "tn": 61754,
+        "precision": 0.17331875341716785,
+        "recall": 0.4452247191011236,
+        "f1": 0.24950806768988584
+      }
+    ],
+    "hardest_labels": [
+      "threat",
+      "identity_hate",
+      "severe_toxic"
+    ]
+  },
+  "bert_head_only_nonweighted": {
+    "exact_match_failures": 8184,
+    "total_examples": 63978,
+    "total_true_positive_labels": 14498,
+    "total_predicted_positive_labels": 16434,
+    "per_label": [
+      {
+        "label": "toxic",
+        "support": 6090,
+        "predicted_positive": 6805,
+        "tp": 3636,
+        "fp": 3169,
+        "fn": 2454,
+        "tn": 54719,
+        "precision": 0.534313005143277,
+        "recall": 0.5970443349753695,
+        "f1": 0.5639395114385419
+      },
+      {
+        "label": "severe_toxic",
+        "support": 367,
+        "predicted_positive": 778,
+        "tp": 162,
+        "fp": 616,
+        "fn": 205,
+        "tn": 62995,
+        "precision": 0.20822622107969152,
+        "recall": 0.44141689373297005,
+        "f1": 0.2829694323144105
+      },
+      {
+        "label": "obscene",
+        "support": 3691,
+        "predicted_positive": 4216,
+        "tp": 2110,
+        "fp": 2106,
+        "fn": 1581,
+        "tn": 58181,
+        "precision": 0.5004743833017078,
+        "recall": 0.5716607965321051,
+        "f1": 0.5337043126343745
+      },
+      {
+        "label": "threat",
+        "support": 211,
+        "predicted_positive": 62,
+        "tp": 16,
+        "fp": 46,
+        "fn": 195,
+        "tn": 63721,
+        "precision": 0.25806451612903225,
+        "recall": 0.07582938388625593,
+        "f1": 0.11721611721611722
+      },
+      {
+        "label": "insult",
+        "support": 3427,
+        "predicted_positive": 3912,
+        "tp": 1830,
+        "fp": 2082,
+        "fn": 1597,
+        "tn": 58469,
+        "precision": 0.4677914110429448,
+        "recall": 0.5339947475926466,
+        "f1": 0.49870554571467507
+      },
+      {
+        "label": "identity_hate",
+        "support": 712,
+        "predicted_positive": 661,
+        "tp": 169,
+        "fp": 492,
+        "fn": 543,
+        "tn": 62774,
+        "precision": 0.2556732223903177,
+        "recall": 0.23735955056179775,
+        "f1": 0.24617625637290602
+      }
+    ],
+    "hardest_labels": [
+      "threat",
+      "identity_hate",
+      "severe_toxic"
     ]
   }
 }

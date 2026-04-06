@@ -1,0 +1,41 @@
+{
+  "records": [
+    {
+      "split": "train",
+      "article_id": "460b7276-158b-525f-87cc-f39613e31617",
+      "category": "Style",
+      "headline": "Santa Claus Is Different for the Rich",
+      "abstract": "You better watch out.",
+      "body_preview_landing": "First, the residents of Sesame Street relocated to HBO Max ($180 a year). Then, the Disney princesses found an expensive new home on Disney Plus ($69.99 a year). And this holiday season, shoppers are finding that one of the more venerable fantastical characters for children --…",
+      "body_preview_slide": "First, the residents of Sesame Street relocated to HBO Max ($180 a year). Then, the Disney princesses found an expensive new home on Disney Plus ($69.99 a year). And this holiday…",
+      "caption": "Ho ho ho!",
+      "image_public_filename": "train-460b7276-158b-525f-87cc-f39613e31617.jpg",
+      "image_original_path": "btl1\\data\\multimodal\\n24news\\raw\\imgs\\460b7276-158b-525f-87cc-f39613e31617.jpg"
+    },
+    {
+      "split": "val",
+      "article_id": "e9ac010c-5880-5be1-affb-d4349671fc83",
+      "category": "Opinion",
+      "headline": "Two Deaths and My Life",
+      "abstract": "The memento mori of two friends.",
+      "body_preview_landing": "Samuel Beckett, when asked one beautiful spring morning whether such a day did not make him glad to be alive, responded, \"I wouldn't go as far as that.\" Life is a predicament, death the elephant at the horizon that looms larger as the years pass. Still, life is what we have. To…",
+      "body_preview_slide": "Samuel Beckett, when asked one beautiful spring morning whether such a day did not make him glad to be alive, responded, \"I wouldn't go as far as that.\" Life is a predicament,…",
+      "caption": "Sonny Mehta",
+      "image_public_filename": "val-e9ac010c-5880-5be1-affb-d4349671fc83.jpg",
+      "image_original_path": "btl1\\data\\multimodal\\n24news\\raw\\imgs\\e9ac010c-5880-5be1-affb-d4349671fc83.jpg"
+    },
+    {
+      "split": "test",
+      "article_id": "e35aea83-2ff6-5468-8d09-38abed806bf9",
+      "category": "Food",
+      "headline": "What to Cook This Week",
+      "abstract": "A Mother's Day cheat sheet, and recipes for the week ahead.",
+      "body_preview_landing": "Tuesday? We're thinking this recipe for fish tacos, which I developed in an attempt to match the ones served at El Siete Mares in Los Angeles, with an assist from the fish magician Dave Pasternack of Esca in New York. Do yourself a favor while you're cooking the fish. Slide a…",
+      "body_preview_slide": "Tuesday? We're thinking this recipe for fish tacos, which I developed in an attempt to match the ones served at El Siete Mares in Los Angeles, with an assist from the fish…",
+      "caption": "Dutch baby.",
+      "image_public_filename": "test-e35aea83-2ff6-5468-8d09-38abed806bf9.jpg",
+      "image_original_path": "btl1\\data\\multimodal\\n24news\\raw\\imgs\\e35aea83-2ff6-5468-8d09-38abed806bf9.jpg"
+    }
+  ],
+  "selection_policy": "mixed splits with complete fields and distinct categories"
+}

@@ -1,0 +1,9 @@
+true_label,pred_label,count,row_share_pct,pair_label
+Travel,Style,65,21.172638436482085,Travel -> Style
+Style,Travel,56,21.292775665399237,Style -> Travel
+Media,Sports,24,7.8431372549019605,Media -> Sports
+Sports,Media,17,5.537459283387622,Sports -> Media
+Dance,Music,16,4.9079754601226995,Dance -> Music
+Well,Sports,14,17.5,Well -> Sports
+Dance,Real Estate,14,4.294478527607362,Dance -> Real Estate
+Dance,Style,14,4.294478527607362,Dance -> Style

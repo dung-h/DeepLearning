@@ -12,7 +12,7 @@ window.SITE_DATA = {
       title: "Bài tập lớn số 1",
       points: [
         "Bài toán phân loại văn bản dùng Jigsaw Toxic Comment để so sánh BERT và LSTM trên bài toán đa nhãn 6 lớp.",
-        "Bài toán phân loại đa phương thức dùng N24News để so sánh CLIP, VisualBERT và các biến thể deep head, LoRA.",
+        "Bài toán phân loại đa phương thức dùng N24News dataset để so sánh CLIP zero-shot và few-shot , VisualBERT và các biến thể head, LoRA.",
         "Bài toán phân loại ảnh dùng weather dataset để so sánh ResNet50 và ViT-Base.",
       ],
     },
@@ -82,7 +82,7 @@ window.SITE_DATA = {
               type: "Bài toán phân loại đa phương thức",
               label: "Mở báo cáo",
               title: "N24News",
-              note: "EDA, CLIP, VisualBERT, PEFT variants và phân tích kết quả.",
+              note: "EDA, CLIP zero-shot và few-shot, VisualBERT, PEFT variants và phân tích kết quả.",
               url: "../btl1/reports/multimodal-report.html",
             },
             {

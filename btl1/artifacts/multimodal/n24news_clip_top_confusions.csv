@@ -1,0 +1,13 @@
+true_label,pred_label,count,row_share_pct,pair_label
+Fashion & Style,Style,65,21.172638436482085,Fashion & Style -> Style
+Style,Fashion & Style,56,21.292775665399237,Style -> Fashion & Style
+Science,Health,24,7.8431372549019605,Science -> Health
+Health,Science,17,5.537459283387622,Health -> Science
+Media,Technology,16,4.9079754601226995,Media -> Technology
+Well,Health,14,17.5,Well -> Health
+Media,Television,14,4.294478527607362,Media -> Television
+Media,Style,14,4.294478527607362,Media -> Style
+Opinion,Style,13,4.577464788732395,Opinion -> Style
+Style,Books,11,4.182509505703422,Style -> Books
+Television,Movies,9,3.202846975088968,Television -> Movies
+Opinion,Health,9,3.169014084507042,Opinion -> Health

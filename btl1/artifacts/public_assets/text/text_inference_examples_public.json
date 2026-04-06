@@ -1,0 +1,103 @@
+{
+  "records": [
+    {
+      "role": "bert_beats_lstm",
+      "split": "test",
+      "id": "3c59c68a4482fab0",
+      "headline": "BERT đúng, LSTM sai",
+      "comment_text": "Eazy E is a little punkass black motherfucker who everyone wants dead Peace nigga",
+      "comment_preview_landing": "Eazy E is a little punkass black motherfucker who everyone wants dead Peace nigga",
+      "comment_preview_slide": "Eazy E is a little punkass black motherfucker who everyone wants dead Peace nigga",
+      "true_labels": [
+        "toxic",
+        "severe toxic",
+        "obscene",
+        "insult",
+        "identity hate"
+      ],
+      "bert_pred_labels": [
+        "toxic",
+        "severe toxic",
+        "obscene",
+        "insult",
+        "identity hate"
+      ],
+      "lstm_pred_labels": [
+        "toxic",
+        "obscene",
+        "insult",
+        "identity hate"
+      ],
+      "true_labels_text": "toxic, severe toxic, obscene, insult, identity hate",
+      "bert_pred_text": "toxic, severe toxic, obscene, insult, identity hate",
+      "lstm_pred_text": "toxic, obscene, insult, identity hate",
+      "takeaway": "BERT giữ được nhãn đúng nhờ biểu diễn ngữ cảnh tốt hơn ở câu có cấu trúc chồng chéo."
+    },
+    {
+      "role": "both_wrong",
+      "split": "test",
+      "id": "c26941cbaad63533",
+      "headline": "Cả hai cùng sai",
+      "comment_text": "\"Oi, dickhead- you call Straight Edge \"\"Gay\"\" or \"\"retarded\"\" again, I'll track you down and smash your teeth in, got me, gay boy? Just because you're a fucking loser with a drug and alcohol problem doesn't mean you can take it out on us. \"",
+      "comment_preview_landing": "\"Oi, dickhead- you call Straight Edge \"\"Gay\"\" or \"\"retarded\"\" again, I'll track you down and smash your teeth in, got me, gay boy? Just because you're a fucking loser with a drug and alcohol problem doesn't mean you can take it out on us. \"",
+      "comment_preview_slide": "\"Oi, dickhead- you call Straight Edge \"\"Gay\"\" or \"\"retarded\"\" again, I'll track you down and smash your teeth in, got me, gay boy? Just because you're a fucking loser with a drug and alcohol problem doesn't mean you can take it...",
+      "true_labels": [
+        "toxic",
+        "severe toxic",
+        "obscene",
+        "threat",
+        "insult",
+        "identity hate"
+      ],
+      "bert_pred_labels": [
+        "toxic",
+        "obscene",
+        "threat",
+        "insult",
+        "identity hate"
+      ],
+      "lstm_pred_labels": [
+        "toxic",
+        "severe toxic",
+        "obscene",
+        "insult",
+        "identity hate"
+      ],
+      "true_labels_text": "toxic, severe toxic, obscene, threat, insult, identity hate",
+      "bert_pred_text": "toxic, obscene, threat, insult, identity hate",
+      "lstm_pred_text": "toxic, severe toxic, obscene, insult, identity hate",
+      "takeaway": "Đây là kiểu ca khó khi tín hiệu hiếm và biên giữa các nhãn độc hại quá hẹp ngay trong văn bản gốc."
+    },
+    {
+      "role": "rare_label_case",
+      "split": "test",
+      "id": "784b5e94eedaf081",
+      "headline": "Nhãn hiếm / overlap khó",
+      "comment_text": "t.i is the gayest raper ever. he is a girl and he has a pussy",
+      "comment_preview_landing": "t.i is the gayest raper ever. he is a girl and he has a pussy",
+      "comment_preview_slide": "t.i is the gayest raper ever. he is a girl and he has a pussy",
+      "true_labels": [
+        "toxic",
+        "obscene",
+        "insult",
+        "identity hate"
+      ],
+      "bert_pred_labels": [
+        "toxic",
+        "obscene",
+        "insult",
+        "identity hate"
+      ],
+      "lstm_pred_labels": [
+        "toxic",
+        "obscene",
+        "insult"
+      ],
+      "true_labels_text": "toxic, obscene, insult, identity hate",
+      "bert_pred_text": "toxic, obscene, insult, identity hate",
+      "lstm_pred_text": "toxic, obscene, insult",
+      "takeaway": "Nhóm severe toxic, threat và identity hate vẫn là điểm nghẽn chính; weighted loss chỉ giảm bớt chứ chưa xóa được độ khó."
+    }
+  ],
+  "selection_policy": "artifact-only checkpoint inference on test split"
+}
