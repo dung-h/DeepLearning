@@ -9,11 +9,13 @@ from functools import lru_cache
 from pathlib import Path
 
 import gradio as gr
+import numpy as np
 import pandas as pd
 import timm
 import torch
 import torch.nn as nn
 from PIL import Image
+from sklearn.linear_model import LogisticRegression
 from torchvision import models as tv_models
 from torchvision import transforms
 from transformers import (
@@ -46,12 +48,12 @@ TEXT_LABELS = [
 ]
 
 TEXT_LABEL_TITLES = {
-    "toxic": "Độc hại",
-    "severe_toxic": "Độc hại nghiêm trọng",
-    "obscene": "Tục tĩu",
-    "threat": "Đe dọa",
-    "insult": "Xúc phạm",
-    "identity_hate": "Thù ghét danh tính",
+    "toxic": "toxic",
+    "severe_toxic": "severe_toxic",
+    "obscene": "obscene",
+    "threat": "threat",
+    "insult": "insult",
+    "identity_hate": "identity_hate",
 }
 
 TEXT_LABEL_DESCRIPTIONS = {
@@ -62,12 +64,6 @@ TEXT_LABEL_DESCRIPTIONS = {
     "insult": "Lời lẽ xúc phạm trực tiếp cá nhân hoặc nhóm.",
     "identity_hate": "Ngôn từ thù ghét nhắm vào đặc điểm danh tính.",
 }
-
-TEXT_EXAMPLES = [
-    ["You are such a disgusting person and nobody wants to hear your nonsense.", "Một mô hình", "BERT"],
-    ["I will find you and make you pay for this.", "So sánh hai mô hình", "BERT"],
-    ["This is the dumbest thing I have ever read.", "Một mô hình", "LSTM"],
-]
 
 WEATHER_LABEL_TITLES = {
     "dew": "Sương đọng",
@@ -97,7 +93,35 @@ WEATHER_LABEL_DESCRIPTIONS = {
     "snow": "Ảnh có tuyết rơi hoặc mặt đất phủ tuyết.",
 }
 
-token_pattern = re.compile(r"[a-z']+")
+token_pattern = re.compile(r"[a-z\']+")
+
+TEXT_THRESHOLD_FALLBACKS = {
+    "bert": {
+        "toxic": 0.9,
+        "severe_toxic": 0.9,
+        "obscene": 0.7,
+        "threat": 0.4,
+        "insult": 0.55,
+        "identity_hate": 0.75,
+    },
+    "lstm": {
+        "toxic": 0.6,
+        "severe_toxic": 0.4,
+        "obscene": 0.5,
+        "threat": 0.5,
+        "insult": 0.5,
+        "identity_hate": 0.35,
+    },
+}
+
+CLIP_ZERO_SHOT_PROMPT_TEMPLATES = [
+    "a news photo about {}",
+    "a photo illustrating {} news",
+    "a newspaper image about {}",
+]
+
+CLIP_FEW_SHOT_DEMO_K = 16
+CLIP_FEW_SHOT_DEMO_SEED = 123
 
 DEMO_CSS = """
 .demo-shell {max-width: 1220px; margin: 0 auto;}
@@ -209,6 +233,51 @@ DEMO_CSS = """
   background: rgba(255,255,255,0.84);
 }
 .compare-model h4 {margin: 0 0 8px; color: #14365f;}
+.sample-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(19,54,95,0.10);
+  background: rgba(255,255,255,0.84);
+  height: 100%;
+}
+.sample-card h4 {margin: 0 0 8px; color: #14365f;}
+.sample-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.sample-meta span {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(29,77,136,0.08);
+  color: #14365f;
+  font-size: 12px;
+  font-weight: 700;
+}
+.sample-preview {
+  border-radius: 14px;
+  border: 1px solid rgba(19,54,95,0.08);
+  background: rgba(238,245,251,0.72);
+  padding: 12px 14px;
+  color: #18324f;
+  line-height: 1.55;
+  margin-top: 10px;
+}
+.sample-fields {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.sample-fields div {
+  border-radius: 12px;
+  background: rgba(245,247,250,0.84);
+  padding: 10px 12px;
+  border: 1px solid rgba(19,54,95,0.08);
+}
 .winner-chip {
   display:inline-flex; align-items:center; min-height:34px; padding:0 12px; border-radius:999px;
   background: rgba(182,146,71,0.18); color:#7a5a14; font-size:12px; font-weight:800;
@@ -268,7 +337,7 @@ IMAGE_DOWNLOAD_DIR = IMAGE_ARTIFACT_DIR / "downloads"
 DEMO_PORT = int(os.getenv("DEMO_PORT", "43881"))
 
 TEXT_CHECKPOINT_BUNDLE_URL = "https://drive.google.com/file/d/1PhIMgu-1unj7Yt0dMTGkX2H9473lJycj/view?usp=sharing"
-MM_CHECKPOINT_BUNDLE_URL = "https://drive.google.com/file/d/1sZBUPxE-LtUDARN0PRzPZI7yi4ARUm22/view?usp=sharing"
+MM_CHECKPOINT_BUNDLE_URL = "https://drive.google.com/file/d/1FGmMCb9ed3xdb-ztrPVtMbPBzl90FKyX/view?usp=sharing"
 IMAGE_CHECKPOINT_BUNDLE_URL = "https://drive.google.com/file/d/1wkPuWUMKkm0K2N5l00Kk4Jij-xJKF7u8/view?usp=sharing"
 
 TEXT_BEST_CHECKPOINT_FILES = ["bert_multilabel_best.pt", "lstm_multilabel_best.pt"]
@@ -502,6 +571,8 @@ def encode_text(text: str, vocab: dict[str, int], max_length: int = 300) -> list
 def load_image(image_input) -> Image.Image:
     if image_input is None or str(image_input).strip() == "":
         raise gr.Error("Vui lòng chọn một ảnh đầu vào.")
+    if isinstance(image_input, Image.Image):
+        return image_input.convert("RGB")
     return Image.open(image_input).convert("RGB")
 
 
@@ -516,6 +587,14 @@ def shorten_text(text: str, limit: int = 480) -> str:
     return text[: limit - 1].rstrip() + "…"
 
 
+def normalize_label_name(label: str) -> str:
+    return str(label or "").strip().replace(" ", "_")
+
+
+def format_score(score: float) -> str:
+    return f"{float(score):.4f}"
+
+
 @lru_cache(maxsize=1)
 def load_text_metrics() -> dict:
     return json.loads(ensure_file(TEXT_ARTIFACT_DIR / "text_metrics_summary.json").read_text(encoding="utf-8"))
@@ -523,9 +602,16 @@ def load_text_metrics() -> dict:
 
 @lru_cache(maxsize=1)
 def load_multimodal_metrics() -> dict:
-    return json.loads(
-        ensure_file(MM_ARTIFACT_DIR / "n24news_metrics_summary_full_finetune.json").read_text(encoding="utf-8")
-    )
+    primary_path = MM_ARTIFACT_DIR / "n24news_metrics_summary.json"
+    fallback_path = MM_ARTIFACT_DIR / "n24news_metrics_summary_full_finetune.json"
+    metrics_path = primary_path if primary_path.exists() else fallback_path
+    metrics = json.loads(ensure_file(metrics_path).read_text(encoding="utf-8"))
+    if "split_sizes" not in metrics and primary_path.exists():
+        primary_metrics = json.loads(primary_path.read_text(encoding="utf-8"))
+        for key in ("split_sizes", "num_classes", "label_names"):
+            if key in primary_metrics and key not in metrics:
+                metrics[key] = primary_metrics[key]
+    return metrics
 
 
 @lru_cache(maxsize=1)
@@ -533,6 +619,70 @@ def load_multimodal_variant_metrics() -> list[dict]:
     return json.loads(
         ensure_file(MM_ARTIFACT_DIR / "n24news_metrics_summary_variants.json").read_text(encoding="utf-8")
     )
+
+
+@lru_cache(maxsize=1)
+def load_zero_few_shot_summary() -> dict:
+    return json.loads(
+        ensure_file(MM_ARTIFACT_DIR / "n24news_zero_few_shot_summary.json").read_text(encoding="utf-8")
+    )
+
+
+@lru_cache(maxsize=1)
+def load_multimodal_train_frame() -> pd.DataFrame:
+    path = ensure_file(N24_PROCESSED_DIR / "train.csv")
+    frame = pd.read_csv(path)
+    label_column = "category" if "category" in frame.columns else "pip "
+    frame = frame.rename(columns={label_column: "category"})
+    return frame[["category", "image_relpath"]].dropna()
+
+
+@lru_cache(maxsize=1)
+def load_text_sample_records() -> list[dict]:
+    payload = json.loads(
+        ensure_file(BTL1_ROOT / "artifacts" / "public_assets" / "text" / "text_sample_records.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    records = payload.get("records", [])
+    for record in records:
+        record["true_labels"] = [normalize_label_name(label) for label in record.get("true_labels", [])]
+    return records
+
+
+@lru_cache(maxsize=1)
+def load_multimodal_sample_records() -> list[dict]:
+    payload = json.loads(
+        ensure_file(
+            BTL1_ROOT / "artifacts" / "public_assets" / "multimodal" / "n24news_sample_records.json"
+        ).read_text(encoding="utf-8")
+    )
+    return payload.get("records", [])
+
+
+@lru_cache(maxsize=1)
+def load_multimodal_processed_index() -> pd.DataFrame:
+    frames = []
+    for split_name in ("train", "val", "test"):
+        path = ensure_file(N24_PROCESSED_DIR / f"{split_name}.csv")
+        frame = pd.read_csv(path)
+        label_column = "category" if "category" in frame.columns else "pip "
+        frame = frame.rename(columns={label_column: "category"})
+        frame = frame[
+            [
+                "article_id",
+                "text_input",
+                "headline",
+                "abstract",
+                "body",
+                "caption",
+                "image_relpath",
+                "category",
+            ]
+        ]
+        frame["split"] = split_name
+        frames.append(frame)
+    return pd.concat(frames, ignore_index=True).drop_duplicates(subset=["article_id"]).set_index("article_id")
 
 
 @lru_cache(maxsize=1)
@@ -544,6 +694,98 @@ def load_image_metrics() -> list[dict]:
 def load_image_labels() -> list[str]:
     frame = pd.read_csv(ensure_file(IMAGE_ARTIFACT_DIR / "image_per_label_metrics.csv"), usecols=["label"])
     return sorted(frame["label"].dropna().unique().tolist())
+
+
+def read_text_thresholds(summary_name: str, fallback_key: str) -> tuple[dict[str, float], str]:
+    summary_path = TEXT_ARTIFACT_DIR / "run_logs" / summary_name
+    if summary_path.exists():
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        thresholds = summary.get("thresholds")
+        if thresholds:
+            return {label: float(thresholds[label]) for label in TEXT_LABELS}, summary_path.name
+    return TEXT_THRESHOLD_FALLBACKS[fallback_key].copy(), "notebook-output fallback"
+
+
+@lru_cache(maxsize=2)
+def load_text_thresholds(model_name: str) -> tuple[dict[str, float], str]:
+    normalized = model_name.strip().lower()
+    if normalized == "bert":
+        return read_text_thresholds("bert_summary.json", "bert")
+    if normalized == "lstm":
+        return read_text_thresholds("lstm_weighted_summary.json", "lstm")
+    raise KeyError(f"Unsupported text model for threshold lookup: {model_name}")
+
+
+def render_text_sample_card(record: dict) -> str:
+    label_html = "".join(
+        f'<span class="demo-chip">{label}</span>' for label in record["true_labels"]
+    ) or '<span class="demo-chip">clean / no toxic label</span>'
+    return f"""
+    <div class="sample-card">
+      <div class="sample-meta">
+        <span>{record['split']}</span>
+        <span>{record['role']}</span>
+        <span>{record['id']}</span>
+      </div>
+      <h4>Sample text</h4>
+      <div class="sample-preview">{record['comment_text']}</div>
+      <p class="demo-note" style="margin-bottom:6px;"><strong>True labels</strong></p>
+      <div class="demo-chip-row">{label_html}</div>
+    </div>
+    """
+
+
+def render_multimodal_sample_card(record: dict) -> str:
+    body_preview = record.get("body_preview_landing") or record.get("body_preview_slide") or "Body preview unavailable."
+    caption = record.get("caption") or "No caption"
+    return f"""
+    <div class="sample-card">
+      <div class="sample-meta">
+        <span>{record['split']}</span>
+        <span>{record['category']}</span>
+        <span>{record['article_id']}</span>
+      </div>
+      <h4>{record['headline']}</h4>
+      <div class="sample-fields">
+        <div><strong>Abstract</strong><br>{record['abstract']}</div>
+        <div><strong>Body preview</strong><br>{body_preview}</div>
+        <div><strong>Caption</strong><br>{caption}</div>
+      </div>
+    </div>
+    """
+
+
+def get_text_sample(index: int) -> str:
+    records = load_text_sample_records()
+    if not 0 <= index < len(records):
+        raise gr.Error("Không tìm thấy text sample yêu cầu.")
+    return records[index]["comment_text"]
+
+
+def get_multimodal_sample(index: int) -> tuple[str, str]:
+    records = load_multimodal_sample_records()
+    if not 0 <= index < len(records):
+        raise gr.Error("Không tìm thấy multimodal sample yêu cầu.")
+    record = records[index]
+    article_id = record["article_id"]
+    processed = load_multimodal_processed_index()
+    if article_id not in processed.index:
+        raise gr.Error(f"Thiếu record processed cho article_id={article_id}.")
+    row = processed.loc[article_id]
+    image_path = (REPO_ROOT / row["image_relpath"]).resolve()
+    if not image_path.exists():
+        raise gr.Error(f"Thiếu ảnh sample: {image_path.name}")
+    return str(image_path), str(row["text_input"])
+
+
+def get_multimodal_sample_image(index: int) -> str:
+    records = load_multimodal_sample_records()
+    if not 0 <= index < len(records):
+        raise gr.Error("Không tìm thấy multimodal sample yêu cầu.")
+    path = (REPO_ROOT / Path(records[index]["image_original_path"])).resolve()
+    if not path.exists():
+        raise gr.Error(f"Thiếu ảnh sample: {path.name}")
+    return str(path)
 
 
 @lru_cache(maxsize=1)
@@ -589,6 +831,78 @@ def load_clip_bundle():
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(DEVICE).eval()
     return processor, model, labels, cfg
+
+
+@lru_cache(maxsize=1)
+def load_clip_zero_shot_bundle():
+    metrics = load_multimodal_metrics()
+    labels = metrics["label_names"]
+    backbone = "openai/clip-vit-base-patch32"
+    processor = AutoProcessor.from_pretrained(backbone)
+    model = CLIPModel.from_pretrained(backbone)
+    model.to(DEVICE).eval()
+
+    prompts = []
+    for label in labels:
+        prompts.extend(template.format(label) for template in CLIP_ZERO_SHOT_PROMPT_TEMPLATES)
+
+    text_inputs = processor(text=prompts, padding=True, truncation=True, return_tensors="pt")
+    text_inputs = {key: value.to(DEVICE) for key, value in text_inputs.items()}
+    with torch.no_grad():
+        prompt_features = model.get_text_features(
+            input_ids=text_inputs["input_ids"],
+            attention_mask=text_inputs["attention_mask"],
+        )
+    prompt_features = nn.functional.normalize(prompt_features, dim=-1)
+    prompt_features = prompt_features.view(len(labels), len(CLIP_ZERO_SHOT_PROMPT_TEMPLATES), -1).mean(dim=1)
+    prompt_features = nn.functional.normalize(prompt_features, dim=-1)
+    return processor, model, labels, prompt_features
+
+
+def sample_few_shot_support(frame: pd.DataFrame, labels: list[str], shots_per_class: int, seed: int) -> pd.DataFrame:
+    sampled_parts = []
+    for label in labels:
+        part = frame.loc[frame["category"] == label]
+        if part.empty:
+            raise RuntimeError(f"Few-shot support sampling failed because category '{label}' is missing.")
+        sampled_parts.append(part.sample(min(len(part), shots_per_class), random_state=seed))
+    return pd.concat(sampled_parts, ignore_index=True)
+
+
+def encode_clip_image_features(processor, model, image_paths: list[Path], batch_size: int = 64) -> np.ndarray:
+    features = []
+    for start in range(0, len(image_paths), batch_size):
+        batch_paths = image_paths[start : start + batch_size]
+        images = [Image.open(path).convert("RGB") for path in batch_paths]
+        encoded = processor(images=images, return_tensors="pt")
+        encoded = {key: value.to(DEVICE) for key, value in encoded.items()}
+        with torch.no_grad():
+            batch_features = model.get_image_features(pixel_values=encoded["pixel_values"])
+        batch_features = nn.functional.normalize(batch_features, dim=-1).detach().cpu().numpy()
+        features.append(batch_features)
+    return np.concatenate(features, axis=0)
+
+
+@lru_cache(maxsize=1)
+def load_clip_few_shot_bundle():
+    processor, model, labels, _ = load_clip_zero_shot_bundle()
+    train_df = load_multimodal_train_frame()
+    support_df = sample_few_shot_support(train_df, labels, CLIP_FEW_SHOT_DEMO_K, CLIP_FEW_SHOT_DEMO_SEED)
+    support_paths = [(REPO_ROOT / relpath).resolve() for relpath in support_df["image_relpath"].tolist()]
+    missing = [str(path) for path in support_paths if not path.exists()]
+    if missing:
+        raise FileNotFoundError(f"Few-shot support images are missing: {missing[:3]}")
+    support_features = encode_clip_image_features(processor, model, support_paths)
+    label_to_index = {label: idx for idx, label in enumerate(labels)}
+    support_targets = np.array([label_to_index[label] for label in support_df["category"].tolist()], dtype=np.int64)
+    classifier = LogisticRegression(
+        max_iter=1000,
+        C=1.0,
+        solver="lbfgs",
+        random_state=CLIP_FEW_SHOT_DEMO_SEED,
+    )
+    classifier.fit(support_features, support_targets)
+    return processor, model, labels, classifier
 
 
 @lru_cache(maxsize=1)
@@ -684,6 +998,29 @@ def predict_with_clip(image: Image.Image, text: str) -> dict[str, float]:
     return dict(zip(labels, probs))
 
 
+def predict_with_clip_zero_shot(image: Image.Image) -> dict[str, float]:
+    processor, model, labels, text_features = load_clip_zero_shot_bundle()
+    image_inputs = processor(images=[image], return_tensors="pt")
+    image_inputs = {key: value.to(DEVICE) for key, value in image_inputs.items()}
+    with torch.no_grad():
+        image_features = model.get_image_features(pixel_values=image_inputs["pixel_values"])
+    image_features = nn.functional.normalize(image_features, dim=-1)
+    logits = image_features @ text_features.T
+    probs = torch.softmax(logits, dim=-1)[0].detach().cpu().tolist()
+    return dict(zip(labels, probs))
+
+
+def predict_with_clip_few_shot(image: Image.Image) -> dict[str, float]:
+    processor, model, labels, classifier = load_clip_few_shot_bundle()
+    image_inputs = processor(images=[image], return_tensors="pt")
+    image_inputs = {key: value.to(DEVICE) for key, value in image_inputs.items()}
+    with torch.no_grad():
+        image_features = model.get_image_features(pixel_values=image_inputs["pixel_values"])
+    image_features = nn.functional.normalize(image_features, dim=-1).detach().cpu().numpy()
+    probs = classifier.predict_proba(image_features)[0].tolist()
+    return dict(zip(labels, probs))
+
+
 def predict_with_visualbert(image: Image.Image, text: str) -> dict[str, float]:
     tokenizer, image_processor, model, labels, cfg = load_visualbert_bundle()
     text_inputs = tokenizer(
@@ -724,8 +1061,134 @@ def predict_with_vit_weather(image: Image.Image) -> dict[str, float]:
     return dict(zip(labels, probs))
 
 
+def normalize_cam(cam: torch.Tensor) -> np.ndarray:
+    cam = cam.detach().cpu().float().numpy()
+    cam = np.maximum(cam, 0.0)
+    max_value = float(cam.max()) if cam.size else 0.0
+    if max_value > 0:
+        cam = cam / max_value
+    return cam
+
+
+def build_heatmap(cam: np.ndarray, size: tuple[int, int]) -> Image.Image:
+    heat = Image.fromarray(np.uint8(cam * 255.0)).resize(size, Image.Resampling.BILINEAR)
+    heat_rgb = Image.merge(
+        "RGB",
+        (
+            heat,
+            Image.fromarray(np.uint8(np.clip(np.asarray(heat, dtype=np.float32) * 0.45, 0, 255))),
+            Image.fromarray(np.uint8(np.clip(255 - np.asarray(heat, dtype=np.float32) * 0.65, 0, 255))),
+        ),
+    )
+    return heat_rgb
+
+
+def overlay_heatmap(base_image: Image.Image, heatmap: Image.Image, alpha: float = 0.42) -> Image.Image:
+    base = base_image.convert("RGB")
+    overlay = Image.blend(base, heatmap, alpha)
+    return overlay
+
+
+def make_side_by_side_panel(original: Image.Image, attribution: Image.Image) -> Image.Image:
+    left = original.resize((224, 224), Image.Resampling.BILINEAR)
+    right = attribution.resize((224, 224), Image.Resampling.BILINEAR)
+    panel = Image.new("RGB", (460, 224), (248, 246, 242))
+    panel.paste(left, (0, 0))
+    panel.paste(right, (236, 0))
+    return panel
+
+
+def compute_resnet_gradcam(image: Image.Image) -> tuple[Image.Image, str]:
+    model, labels = load_resnet_bundle()
+    batch = preprocess_weather_image(image)
+    target_layer = model.backbone.layer4[-1].conv3
+    activations: list[torch.Tensor] = []
+    gradients: list[torch.Tensor] = []
+
+    def forward_hook(_, __, output):
+        activations.append(output)
+
+    def backward_hook(_, grad_input, grad_output):
+        gradients.append(grad_output[0])
+
+    handle_f = target_layer.register_forward_hook(forward_hook)
+    handle_b = target_layer.register_full_backward_hook(backward_hook)
+    try:
+        model.zero_grad(set_to_none=True)
+        logits = model(batch)
+        pred_idx = int(logits.argmax(dim=-1).item())
+        probs = torch.softmax(logits, dim=-1)[0]
+        logits[0, pred_idx].backward()
+        weights = gradients[-1].mean(dim=(2, 3), keepdim=True)
+        cam = (weights * activations[-1]).sum(dim=1).squeeze(0)
+        cam = nn.functional.interpolate(
+            cam.unsqueeze(0).unsqueeze(0),
+            size=(224, 224),
+            mode="bilinear",
+            align_corners=False,
+        ).squeeze(0).squeeze(0)
+        heatmap = build_heatmap(normalize_cam(cam), (224, 224))
+        original = image.resize((224, 224), Image.Resampling.BILINEAR).convert("RGB")
+        overlay = overlay_heatmap(original, heatmap)
+        score = float(probs[pred_idx].item())
+        label = WEATHER_LABEL_TITLES.get(labels[pred_idx], labels[pred_idx])
+        return make_side_by_side_panel(original, overlay), f"ResNet50 Grad-CAM · {label} · {score:.3f}"
+    finally:
+        handle_f.remove()
+        handle_b.remove()
+
+
+def compute_vit_gradcam(image: Image.Image) -> tuple[Image.Image, str]:
+    model, labels = load_vit_bundle()
+    batch = preprocess_weather_image(image)
+    target_layer = model.backbone.blocks[-1].norm1
+    activations: list[torch.Tensor] = []
+    gradients: list[torch.Tensor] = []
+
+    def forward_hook(_, __, output):
+        activations.append(output)
+
+    def backward_hook(_, grad_input, grad_output):
+        gradients.append(grad_output[0])
+
+    handle_f = target_layer.register_forward_hook(forward_hook)
+    handle_b = target_layer.register_full_backward_hook(backward_hook)
+    try:
+        model.zero_grad(set_to_none=True)
+        logits = model(batch)
+        pred_idx = int(logits.argmax(dim=-1).item())
+        probs = torch.softmax(logits, dim=-1)[0]
+        logits[0, pred_idx].backward()
+        token_acts = activations[-1][:, 1:, :]
+        token_grads = gradients[-1][:, 1:, :]
+        weights = token_grads.mean(dim=1, keepdim=True)
+        cam = (token_acts * weights).sum(dim=-1).squeeze(0)
+        side = int(round(cam.shape[0] ** 0.5))
+        cam = cam.reshape(side, side)
+        cam = nn.functional.interpolate(
+            cam.unsqueeze(0).unsqueeze(0),
+            size=(224, 224),
+            mode="bilinear",
+            align_corners=False,
+        ).squeeze(0).squeeze(0)
+        heatmap = build_heatmap(normalize_cam(cam), (224, 224))
+        original = image.resize((224, 224), Image.Resampling.BILINEAR).convert("RGB")
+        overlay = overlay_heatmap(original, heatmap)
+        score = float(probs[pred_idx].item())
+        label = WEATHER_LABEL_TITLES.get(labels[pred_idx], labels[pred_idx])
+        return make_side_by_side_panel(original, overlay), f"ViT-style CAM · {label} · {score:.3f}"
+    finally:
+        handle_f.remove()
+        handle_b.remove()
+
+
 def top_label(scores: dict[str, float]) -> str:
     return max(scores.items(), key=lambda item: item[1])[0]
+
+
+def is_compare_mode(mode: str) -> bool:
+    normalized = " ".join(str(mode or "").split()).lower()
+    return normalized.startswith("so")
 
 
 def build_score_table(
@@ -739,7 +1202,7 @@ def build_score_table(
     rows = []
     for label, score_a in scores_a.items():
         display = title_map.get(label, label) if title_map else label
-        row = {"Nhãn": display, model_a: round(score_a, 4)}
+        row = {"Label": display, model_a: round(score_a, 4)}
         if model_b and scores_b:
             score_b = scores_b[label]
             row[model_b] = round(score_b, 4)
@@ -821,6 +1284,7 @@ def build_benchmark_tables() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, 
 def render_overview_html() -> str:
     text_metrics = load_text_metrics()
     mm_metrics = load_multimodal_metrics()
+    zero_shot_metrics = load_zero_few_shot_summary()["zero_shot"]["metrics"]
     image_metrics = {row["model"]: row for row in load_image_metrics()}
     best_image = max(load_image_metrics(), key=lambda row: row["test_f1"])
     return f"""
@@ -836,6 +1300,7 @@ def render_overview_html() -> str:
           <ul class="demo-list">
             <li>Text: BERT macro F1 <strong>{text_metrics['bert']['macro_f1']:.4f}</strong>, vượt rõ LSTM.</li>
             <li>Multimodal: VisualBERT full-finetune đạt accuracy <strong>{mm_metrics['models']['VisualBERT']['accuracy']:.4f}</strong>.</li>
+            <li>CLIP zero-shot baseline hiện đạt macro F1 <strong>{zero_shot_metrics['macro_f1']:.4f}</strong> với prompt ensemble.</li>
             <li>Image: {best_image['model']} hiện là checkpoint ảnh tốt nhất với F1 <strong>{best_image['test_f1']:.4f}</strong>.</li>
             <li>Phần extension được demo trực tiếp qua benchmark, checkpoint reuse và so sánh PEFT/full-finetune.</li>
           </ul>
@@ -857,6 +1322,17 @@ def render_overview_html() -> str:
 
 def render_single_text_result(model_name: str, scores: dict[str, float]) -> str:
     label = top_label(scores)
+    thresholds, _ = load_text_thresholds(model_name)
+    predicted_positive = [
+        f"{TEXT_LABEL_TITLES[name]} ({scores[name]:.3f} ≥ {thresholds[name]:.2f})"
+        for name in TEXT_LABELS
+        if scores[name] >= thresholds[name]
+    ]
+    positive_html = (
+        "".join(f'<span class="demo-chip">{item}</span>' for item in predicted_positive)
+        if predicted_positive
+        else '<span class="demo-chip">Không có nhãn nào vượt ngưỡng tuned</span>'
+    )
     tags = "".join(
         f'<span class="demo-chip">{TEXT_LABEL_TITLES[name]}: {score:.3f}</span>'
         for name, score in sorted(scores.items(), key=lambda item: item[1], reverse=True)[:3]
@@ -868,6 +1344,8 @@ def render_single_text_result(model_name: str, scores: dict[str, float]) -> str:
       <p><strong>Nhãn nổi bật:</strong> {TEXT_LABEL_TITLES[label]}</p>
       <p>{TEXT_LABEL_DESCRIPTIONS[label]}</p>
       <div class="demo-chip-row">{tags}</div>
+      <p class="demo-note"><strong>Các nhãn vượt ngưỡng tuned:</strong></p>
+      <div class="demo-chip-row">{positive_html}</div>
     </div>
     """
 
@@ -878,6 +1356,10 @@ def render_compare_text_result(bert_scores: dict[str, float], lstm_scores: dict[
     bert_label = TEXT_LABEL_TITLES[top_label(bert_scores)]
     lstm_label = TEXT_LABEL_TITLES[top_label(lstm_scores)]
     delta_macro = metrics["bert"]["macro_f1"] - metrics["lstm"]["macro_f1"]
+    bert_thresholds, _ = load_text_thresholds("BERT")
+    lstm_thresholds, _ = load_text_thresholds("LSTM")
+    bert_positive = [TEXT_LABEL_TITLES[name] for name in TEXT_LABELS if bert_scores[name] >= bert_thresholds[name]]
+    lstm_positive = [TEXT_LABEL_TITLES[name] for name in TEXT_LABELS if lstm_scores[name] >= lstm_thresholds[name]]
 
     return f"""
     <div class="compare-card">
@@ -896,8 +1378,8 @@ def render_compare_text_result(bert_scores: dict[str, float], lstm_scores: dict[
         <div class="metric-tile"><div class="metric-value">{delta_macro:.4f}</div><div class="metric-label">Delta macro F1</div></div>
       </div>
       <div class="compare-row">
-        <div class="compare-model"><h4>BERT</h4><p>Nhãn nổi bật: <strong>{bert_label}</strong></p></div>
-        <div class="compare-model"><h4>LSTM</h4><p>Nhãn nổi bật: <strong>{lstm_label}</strong></p></div>
+        <div class="compare-model"><h4>BERT</h4><p>Nhãn nổi bật: <strong>{bert_label}</strong></p><p>Vượt ngưỡng: <strong>{", ".join(bert_positive) if bert_positive else "Không có"}</strong></p></div>
+        <div class="compare-model"><h4>LSTM</h4><p>Nhãn nổi bật: <strong>{lstm_label}</strong></p><p>Vượt ngưỡng: <strong>{", ".join(lstm_positive) if lstm_positive else "Không có"}</strong></p></div>
       </div>
     </div>
     """
@@ -909,13 +1391,38 @@ def render_single_multimodal_result(model_name: str, scores: dict[str, float]) -
         f'<span class="demo-chip">{name}: {score:.3f}</span>'
         for name, score in sorted(scores.items(), key=lambda item: item[1], reverse=True)[:4]
     )
+    note = "Mô hình trả về phân phối xác suất trên 24 lớp của N24News từ cùng một cặp ảnh-văn bản."
+    metric_note = ""
+    if model_name == "CLIP zero-shot":
+        zero_shot_metrics = load_zero_few_shot_summary()["zero_shot"]["metrics"]
+        note = (
+            "Baseline prompt-based của CLIP: chỉ dùng ảnh và prompt ensemble, "
+            "không dùng văn bản bài báo hay checkpoint fine-tune."
+        )
+        metric_note = (
+            f"<p class='demo-note'>Benchmark test hiện có: accuracy <strong>{zero_shot_metrics['accuracy']:.4f}</strong>, "
+            f"macro F1 <strong>{zero_shot_metrics['macro_f1']:.4f}</strong>.</p>"
+        )
+    elif model_name == "CLIP few-shot":
+        seedwise = load_zero_few_shot_summary()["few_shot_linear_probe_seedwise"][
+            f"few_shot_linear_probe_k{CLIP_FEW_SHOT_DEMO_K}_seed{CLIP_FEW_SHOT_DEMO_SEED}"
+        ]["metrics"]
+        note = (
+            "Linear probe trên frozen CLIP image features: chỉ dùng ảnh, "
+            f"support set K={CLIP_FEW_SHOT_DEMO_K} cho mỗi lớp với seed={CLIP_FEW_SHOT_DEMO_SEED}."
+        )
+        metric_note = (
+            f"<p class='demo-note'>Benchmark test của cấu hình demo: accuracy <strong>{seedwise['accuracy']:.4f}</strong>, "
+            f"macro F1 <strong>{seedwise['macro_f1']:.4f}</strong>.</p>"
+        )
     return f"""
     <div class="compare-card">
       <span class="section-eyebrow">Kết quả suy luận</span>
       <h3>{model_name}</h3>
       <p><strong>Chuyên mục dự đoán:</strong> {label}</p>
-      <p>Mô hình trả về phân phối xác suất trên 24 lớp của N24News từ cùng một cặp ảnh-văn bản.</p>
+      <p>{note}</p>
       <div class="demo-chip-row">{tags}</div>
+      {metric_note}
     </div>
     """
 
@@ -1004,7 +1511,7 @@ def run_text_demo(text: str, mode: str, model_name: str) -> tuple[str, pd.DataFr
     if not text:
         raise gr.Error("Vui lòng nhập một bình luận để chạy suy luận.")
 
-    if mode == "Một mô hình":
+    if not is_compare_mode(mode):
         scores = predict_with_bert(text) if model_name == "BERT" else predict_with_lstm(text)
         table = build_score_table(model_name, scores, title_map=TEXT_LABEL_TITLES)
         return render_single_text_result(model_name, scores), table
@@ -1017,13 +1524,24 @@ def run_text_demo(text: str, mode: str, model_name: str) -> tuple[str, pd.DataFr
 
 def run_multimodal_demo(image_input, text: str, mode: str, model_name: str) -> tuple[str, pd.DataFrame]:
     text = str(text or "").strip()
-    if not text:
+    if is_compare_mode(mode) and not text:
         raise gr.Error("Vui lòng nhập văn bản bài báo để chạy suy luận.")
 
     image = load_image(image_input)
 
-    if mode == "Một mô hình":
-        scores = predict_with_clip(image, text) if model_name == "CLIP" else predict_with_visualbert(image, text)
+    if not is_compare_mode(mode):
+        if model_name == "CLIP zero-shot":
+            scores = predict_with_clip_zero_shot(image)
+        elif model_name == "CLIP few-shot":
+            scores = predict_with_clip_few_shot(image)
+        elif model_name == "CLIP":
+            if not text:
+                raise gr.Error("CLIP full fine-tune cần văn bản bài báo đi kèm để suy luận.")
+            scores = predict_with_clip(image, text)
+        else:
+            if not text:
+                raise gr.Error("VisualBERT cần văn bản bài báo đi kèm để suy luận.")
+            scores = predict_with_visualbert(image, text)
         table = build_score_table(model_name, scores, top_n=10)
         return render_single_multimodal_result(model_name, scores), table
 
@@ -1033,23 +1551,32 @@ def run_multimodal_demo(image_input, text: str, mode: str, model_name: str) -> t
     return render_compare_multimodal_result(clip_scores, visualbert_scores), table
 
 
-def run_image_demo(image_input, mode: str, model_name: str) -> tuple[str, pd.DataFrame]:
+def run_image_demo(image_input, mode: str, model_name: str) -> tuple[str, pd.DataFrame, list[tuple[Image.Image, str]]]:
     image = load_image(image_input)
-    if mode == "Một mô hình":
+    if not is_compare_mode(mode):
         scores = predict_with_resnet_weather(image) if model_name == "ResNet50" else predict_with_vit_weather(image)
         table = build_score_table(model_name, scores, title_map=WEATHER_LABEL_TITLES, top_n=11)
-        return render_single_image_result(model_name, scores), table
+        if model_name == "ResNet50":
+            cam_panel, cam_caption = compute_resnet_gradcam(image)
+        else:
+            cam_panel, cam_caption = compute_vit_gradcam(image)
+        return render_single_image_result(model_name, scores), table, [(cam_panel, cam_caption)]
 
     resnet_scores = predict_with_resnet_weather(image)
     vit_scores = predict_with_vit_weather(image)
     table = build_score_table("ResNet50", resnet_scores, "ViT-Base", vit_scores, title_map=WEATHER_LABEL_TITLES, top_n=11)
-    return render_compare_image_result(resnet_scores, vit_scores), table
+    resnet_panel, resnet_caption = compute_resnet_gradcam(image)
+    vit_panel, vit_caption = compute_vit_gradcam(image)
+    return render_compare_image_result(resnet_scores, vit_scores), table, [
+        (resnet_panel, resnet_caption),
+        (vit_panel, vit_caption),
+    ]
 
 
 def checkpoint_status() -> str:
     items = [
-        ("Text · BERT", TEXT_ARTIFACT_DIR / "bert_multilabel_best.pt"),
-        ("Text · LSTM", TEXT_ARTIFACT_DIR / "lstm_multilabel_best.pt"),
+        ("Text · BERT full fine-tune", TEXT_ARTIFACT_DIR / "bert_multilabel_best.pt"),
+        ("Text · LSTM weighted baseline", TEXT_ARTIFACT_DIR / "lstm_multilabel_best.pt"),
         ("Multimodal · CLIP full finetune", MM_ARTIFACT_DIR / "n24news_clip_full_finetune_best.pt"),
         ("Multimodal · VisualBERT full finetune", MM_ARTIFACT_DIR / "n24news_visualbert_full_finetune_best.pt"),
         ("Multimodal · CLIP LoRA", MM_ARTIFACT_DIR / "n24news_clip_lora_best.pt"),
@@ -1079,38 +1606,14 @@ def checkpoint_status() -> str:
     """
 
 
-def multimodal_examples() -> list[list[str]]:
-    path = N24_PROCESSED_DIR / "test.csv"
-    if not path.exists():
-        return []
-    frame = pd.read_csv(path, usecols=["category", "text_input", "image_relpath"]).dropna()
-    examples = []
-    seen = set()
-    for _, row in frame.iterrows():
-        category = row["category"]
-        if category in seen:
-            continue
-        image_path = REPO_ROOT / row["image_relpath"]
-        if not image_path.exists():
-            continue
-        seen.add(category)
-        examples.append([str(image_path), shorten_text(row["text_input"], 700), "Một mô hình", "VisualBERT"])
-        if len(examples) == 2:
-            break
-    if examples:
-        examples.append([examples[0][0], examples[0][1], "So sánh hai mô hình", "VisualBERT"])
-    return examples
-
-
 def toggle_model_dropdown(mode: str):
-    return gr.update(visible=mode == "Một mô hình")
+    return gr.update(visible=not is_compare_mode(mode))
 
 
 TEXT_METRICS = load_text_metrics()
 MM_METRICS = load_multimodal_metrics()
-MM_EXAMPLES = multimodal_examples()
-TEXT_TABLE, MM_TABLE, MM_VARIANT_TABLE, IMAGE_TABLE = build_benchmark_tables()
-OVERVIEW_HTML = render_overview_html()
+TEXT_SAMPLE_RECORDS = load_text_sample_records()
+MM_SAMPLE_RECORDS = load_multimodal_sample_records()
 
 with gr.Blocks(title="CO3133 Demo Hub") as demo:
     gr.HTML(
@@ -1119,16 +1622,14 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
           <section class="demo-hero">
             <h1>CO3133 Demo Hub</h1>
             <p>
-              Demo này dùng trực tiếp các checkpoint đã huấn luyện của <strong>Bài tập lớn 1</strong> để minh họa
-              ba nhánh bài toán: văn bản, đa phương thức và ảnh. Ngoài phần suy luận thử, app còn hiển thị benchmark
-              và checkpoint provenance để chứng minh phần mở rộng của bài làm.
+              Demo này dùng trực tiếp các checkpoint đã huấn luyện của <strong>Bài tập lớn 1</strong> cho ba nhánh:
+              văn bản, đa phương thức và ảnh. Mỗi tab cho phép nạp sample thật rồi suy luận ngay trên mô hình.
             </p>
             <div class="demo-chip-row">
               <span class="demo-chip">Device: {DEVICE}</span>
               <span class="demo-chip">BERT vs LSTM</span>
               <span class="demo-chip">CLIP vs VisualBERT</span>
               <span class="demo-chip">ResNet50 vs ViT-Base</span>
-              <span class="demo-chip">Bundle-backed checkpoint restore</span>
             </div>
           </section>
         </div>
@@ -1139,62 +1640,13 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
         gr.HTML(checkpoint_status())
 
     with gr.Tabs(elem_classes=["demo-shell"]):
-        with gr.Tab("Tổng quan"):
-            gr.HTML(OVERVIEW_HTML)
-            with gr.Row():
-                with gr.Column(scale=1):
-                    gr.HTML(
-                        """
-                        <div class="demo-card">
-                          <span class="section-eyebrow">Benchmark</span>
-                          <h3 style="margin-top:0; color:#14365f;">Text branch</h3>
-                          <p class="demo-note">So sánh hai mô hình cho bài toán multilabel toxic comment classification.</p>
-                        </div>
-                        """
-                    )
-                    gr.Dataframe(value=TEXT_TABLE, interactive=False, label="Text benchmark")
-                with gr.Column(scale=1):
-                    gr.HTML(
-                        """
-                        <div class="demo-card">
-                          <span class="section-eyebrow">Benchmark</span>
-                          <h3 style="margin-top:0; color:#14365f;">Multimodal full finetune</h3>
-                          <p class="demo-note">Checkpoint official dùng lại trong demo live inference.</p>
-                        </div>
-                        """
-                    )
-                    gr.Dataframe(value=MM_TABLE, interactive=False, label="Multimodal benchmark")
-            with gr.Row():
-                with gr.Column(scale=1):
-                    gr.HTML(
-                        """
-                        <div class="demo-card">
-                          <span class="section-eyebrow">Extension</span>
-                          <h3 style="margin-top:0; color:#14365f;">PEFT và chiến lược huấn luyện</h3>
-                          <p class="demo-note">Đây là phần mạnh nhất của extension: deep head, LoRA và full finetune.</p>
-                        </div>
-                        """
-                    )
-                    gr.Dataframe(value=MM_VARIANT_TABLE, interactive=False, label="Multimodal strategy comparison")
-                with gr.Column(scale=1):
-                    gr.HTML(
-                        """
-                        <div class="demo-card">
-                          <span class="section-eyebrow">Benchmark</span>
-                          <h3 style="margin-top:0; color:#14365f;">Image branch</h3>
-                          <p class="demo-note">So sánh mô hình CNN với Vision Transformer trên bộ ảnh thời tiết.</p>
-                        </div>
-                        """
-                    )
-                    gr.Dataframe(value=IMAGE_TABLE, interactive=False, label="Image benchmark")
-
         with gr.Tab("Văn bản"):
             gr.HTML(
                 f"""
                 <div class="demo-card">
                   <p class="section-eyebrow">Text classification</p>
                   <h2 style="margin-top:0;">Jigsaw Toxic Comment</h2>
-                  <p>Nhập một bình luận để xem mô hình dự đoán 6 nhãn toxic theo thiết lập multilabel. Tab này chứng minh trực tiếp nhánh text và cho phép đối chiếu BERT với LSTM trên cùng một đầu vào.</p>
+                  <p>Nhập một bình luận để xem mô hình dự đoán 6 nhãn multilabel. BERT là checkpoint full fine-tune chính thức, còn LSTM là weighted baseline để đối chiếu.</p>
                   <div class="metric-grid">
                     <div class="metric-tile"><div class="metric-value">{TEXT_METRICS['bert']['exact_match_accuracy']:.4f}</div><div class="metric-label">BERT exact-match</div></div>
                     <div class="metric-tile"><div class="metric-value">{TEXT_METRICS['bert']['micro_f1']:.4f}</div><div class="metric-label">BERT micro F1</div></div>
@@ -1228,7 +1680,22 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
                     )
                     text_table_output = gr.Dataframe(label="Bảng xác suất", interactive=False)
 
-            gr.Examples(examples=TEXT_EXAMPLES, inputs=[text_input, text_mode_input, text_model_input], label="Ví dụ nhanh")
+            gr.HTML(
+                "<div class='demo-card'><span class='section-eyebrow'>Quick samples</span><h3 style='margin-top:0; color:#14365f;'>Mẫu thật để nạp và suy luận ngay</h3><p class='demo-note'>Bấm vào từng mẫu để nạp văn bản vào ô input hiện tại rồi chạy inference ngay theo chế độ và mô hình bạn đang chọn.</p></div>"
+            )
+            with gr.Row():
+                for sample_index, sample_record in enumerate(TEXT_SAMPLE_RECORDS):
+                    with gr.Column(scale=1):
+                        gr.HTML(render_text_sample_card(sample_record))
+                        sample_button = gr.Button(f"Nạp mẫu {sample_record['split']}", variant="secondary")
+                        sample_button.click(
+                            fn=lambda idx=sample_index: get_text_sample(idx),
+                            outputs=text_input,
+                        ).then(
+                            fn=run_text_demo,
+                            inputs=[text_input, text_mode_input, text_model_input],
+                            outputs=[text_html_output, text_table_output],
+                        )
 
             text_mode_input.change(fn=toggle_model_dropdown, inputs=text_mode_input, outputs=text_model_input)
             text_run_button.click(
@@ -1243,7 +1710,7 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
                 <div class="demo-card">
                   <p class="section-eyebrow">Text-image classification</p>
                   <h2 style="margin-top:0;">N24News</h2>
-                  <p>Nhập ảnh bài báo và văn bản bài báo để mô hình dự đoán chuyên mục tin tức. Demo live inference dùng checkpoint <strong>full finetune</strong> official, còn benchmark PEFT được trình bày trong tab Tổng quan.</p>
+                  <p>Demo này hỗ trợ CLIP zero-shot, CLIP few-shot, CLIP full fine-tune và VisualBERT full fine-tune. Sample dưới đây hiển thị đủ headline, abstract, body preview và caption.</p>
                   <div class="metric-grid">
                     <div class="metric-tile"><div class="metric-value">{MM_METRICS['models']['VisualBERT']['accuracy']:.4f}</div><div class="metric-label">VisualBERT accuracy</div></div>
                     <div class="metric-tile"><div class="metric-value">{MM_METRICS['models']['VisualBERT']['macro_f1']:.4f}</div><div class="metric-label">VisualBERT macro F1</div></div>
@@ -1267,23 +1734,39 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
                         label="Chế độ suy luận",
                     )
                     mm_model_input = gr.Dropdown(
-                        choices=["CLIP", "VisualBERT"],
+                        choices=["CLIP zero-shot", "CLIP few-shot", "CLIP", "VisualBERT"],
                         value="VisualBERT",
                         label="Mô hình",
                     )
                     mm_run_button = gr.Button("Chạy demo", variant="primary")
                 with gr.Column(scale=9):
                     mm_html_output = gr.HTML(
-                        "<div class='result-card'><h3>Kết quả sẽ hiển thị ở đây</h3><p>Demo sẽ trả về chuyên mục dự đoán và bảng xác suất trên 24 lớp của N24News. Khi bật compare mode, bảng sẽ hiển thị đồng thời CLIP và VisualBERT.</p></div>"
+                        "<div class='result-card'><h3>Kết quả sẽ hiển thị ở đây</h3><p>Single-model mode hỗ trợ CLIP zero-shot, CLIP few-shot hoặc checkpoint supervised. Compare mode chỉ so CLIP full fine-tune với VisualBERT full fine-tune.</p></div>"
                     )
                     mm_table_output = gr.Dataframe(label="Bảng xác suất", interactive=False)
 
-            if MM_EXAMPLES:
-                gr.Examples(
-                    examples=MM_EXAMPLES,
-                    inputs=[image_input, news_text_input, mm_mode_input, mm_model_input],
-                    label="Ví dụ nhanh",
-                )
+            gr.HTML(
+                "<div class='demo-card'><span class='section-eyebrow'>Quick samples</span><h3 style='margin-top:0; color:#14365f;'>Mẫu đa phương thức</h3><p class='demo-note'>Bấm vào từng mẫu để nạp ảnh và văn bản processed của bài báo vào mô hình hiện tại, không cần copy thủ công.</p></div>"
+            )
+            with gr.Row():
+                for sample_index, sample_record in enumerate(MM_SAMPLE_RECORDS):
+                    with gr.Column(scale=1):
+                        gr.Image(
+                            value=get_multimodal_sample_image(sample_index),
+                            show_label=False,
+                            interactive=False,
+                            height=180,
+                        )
+                        gr.HTML(render_multimodal_sample_card(sample_record))
+                        mm_sample_button = gr.Button(f"Nạp mẫu {sample_record['split']}", variant="secondary")
+                        mm_sample_button.click(
+                            fn=lambda idx=sample_index: get_multimodal_sample(idx),
+                            outputs=[image_input, news_text_input],
+                        ).then(
+                            fn=run_multimodal_demo,
+                            inputs=[image_input, news_text_input, mm_mode_input, mm_model_input],
+                            outputs=[mm_html_output, mm_table_output],
+                        )
 
             mm_mode_input.change(fn=toggle_model_dropdown, inputs=mm_mode_input, outputs=mm_model_input)
             mm_run_button.click(
@@ -1299,7 +1782,7 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
                 <div class="demo-card">
                   <p class="section-eyebrow">Image classification</p>
                   <h2 style="margin-top:0;">Weather image dataset</h2>
-                  <p>Upload một ảnh thời tiết để mô hình dự đoán lớp tương ứng. Tab này minh họa nhánh ảnh theo đúng core comparison của spec: <strong>ResNet50 (CNN)</strong> vs <strong>ViT-Base</strong>.</p>
+                  <p>Upload một ảnh thời tiết để mô hình dự đoán lớp tương ứng. Ngoài bảng xác suất, tab này còn hiển thị ResNet Grad-CAM và ViT-style CAM để kiểm tra vùng ảnh mô hình đang chú ý.</p>
                   <div class="metric-grid">
                     <div class="metric-tile"><div class="metric-value">{image_metrics['vit_base']['test_acc']:.4f}</div><div class="metric-label">ViT-Base accuracy</div></div>
                     <div class="metric-tile"><div class="metric-value">{image_metrics['vit_base']['test_f1']:.4f}</div><div class="metric-label">ViT-Base F1</div></div>
@@ -1325,15 +1808,16 @@ with gr.Blocks(title="CO3133 Demo Hub") as demo:
                     image_run_button = gr.Button("Chạy demo", variant="primary")
                 with gr.Column(scale=9):
                     image_html_output = gr.HTML(
-                        "<div class='result-card'><h3>Kết quả sẽ hiển thị ở đây</h3><p>Demo sẽ trả về lớp thời tiết dự đoán và bảng xác suất trên 11 lớp. Khi bật compare mode, bảng sẽ hiển thị đồng thời ResNet50 và ViT-Base.</p></div>"
+                        "<div class='result-card'><h3>Kết quả sẽ hiển thị ở đây</h3><p>Demo sẽ trả về lớp thời tiết dự đoán, bảng xác suất và panel attribution. Compare mode hiển thị cả ResNet50 Grad-CAM lẫn ViT-style CAM.</p></div>"
                     )
                     image_table_output = gr.Dataframe(label="Bảng xác suất", interactive=False)
+                    image_cam_output = gr.Gallery(label="Attribution maps", columns=2, height="auto", show_label=True)
 
             image_mode_input.change(fn=toggle_model_dropdown, inputs=image_mode_input, outputs=image_model_input)
             image_run_button.click(
                 fn=run_image_demo,
                 inputs=[weather_image_input, image_mode_input, image_model_input],
-                outputs=[image_html_output, image_table_output],
+                outputs=[image_html_output, image_table_output, image_cam_output],
             )
 
 
