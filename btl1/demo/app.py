@@ -1323,16 +1323,16 @@ def render_overview_html() -> str:
 def render_single_text_result(model_name: str, scores: dict[str, float]) -> str:
     label = top_label(scores)
     thresholds, _ = load_text_thresholds(model_name)
-    predicted_positive = [
-        f"{TEXT_LABEL_TITLES[name]} ({scores[name]:.3f} ≥ {thresholds[name]:.2f})"
-        for name in TEXT_LABELS
-        if scores[name] >= thresholds[name]
-    ]
+    predicted_positive = [name for name in TEXT_LABELS if scores[name] >= thresholds[name]]
     positive_html = (
-        "".join(f'<span class="demo-chip">{item}</span>' for item in predicted_positive)
+        "".join(
+            f'<span class="demo-chip">{name} ({scores[name]:.3f} ≥ {thresholds[name]:.2f})</span>'
+            for name in predicted_positive
+        )
         if predicted_positive
-        else '<span class="demo-chip">Không có nhãn nào vượt ngưỡng tuned</span>'
+        else '<span class="demo-chip">clean / no toxic label</span>'
     )
+    predicted_label_text = ", ".join(predicted_positive) if predicted_positive else "clean / no toxic label"
     tags = "".join(
         f'<span class="demo-chip">{TEXT_LABEL_TITLES[name]}: {score:.3f}</span>'
         for name, score in sorted(scores.items(), key=lambda item: item[1], reverse=True)[:3]
@@ -1341,10 +1341,11 @@ def render_single_text_result(model_name: str, scores: dict[str, float]) -> str:
     <div class="compare-card">
       <span class="section-eyebrow">Kết quả suy luận</span>
       <h3>{model_name}</h3>
-      <p><strong>Nhãn nổi bật:</strong> {TEXT_LABEL_TITLES[label]}</p>
+      <p><strong>Predicted labels after threshold:</strong> {predicted_label_text}</p>
+      <p><strong>Top-scoring label:</strong> {TEXT_LABEL_TITLES[label]}</p>
       <p>{TEXT_LABEL_DESCRIPTIONS[label]}</p>
       <div class="demo-chip-row">{tags}</div>
-      <p class="demo-note"><strong>Các nhãn vượt ngưỡng tuned:</strong></p>
+      <p class="demo-note"><strong>Thresholded label set:</strong></p>
       <div class="demo-chip-row">{positive_html}</div>
     </div>
     """
@@ -1358,8 +1359,8 @@ def render_compare_text_result(bert_scores: dict[str, float], lstm_scores: dict[
     delta_macro = metrics["bert"]["macro_f1"] - metrics["lstm"]["macro_f1"]
     bert_thresholds, _ = load_text_thresholds("BERT")
     lstm_thresholds, _ = load_text_thresholds("LSTM")
-    bert_positive = [TEXT_LABEL_TITLES[name] for name in TEXT_LABELS if bert_scores[name] >= bert_thresholds[name]]
-    lstm_positive = [TEXT_LABEL_TITLES[name] for name in TEXT_LABELS if lstm_scores[name] >= lstm_thresholds[name]]
+    bert_positive = [name for name in TEXT_LABELS if bert_scores[name] >= bert_thresholds[name]]
+    lstm_positive = [name for name in TEXT_LABELS if lstm_scores[name] >= lstm_thresholds[name]]
 
     return f"""
     <div class="compare-card">
@@ -1378,8 +1379,8 @@ def render_compare_text_result(bert_scores: dict[str, float], lstm_scores: dict[
         <div class="metric-tile"><div class="metric-value">{delta_macro:.4f}</div><div class="metric-label">Delta macro F1</div></div>
       </div>
       <div class="compare-row">
-        <div class="compare-model"><h4>BERT</h4><p>Nhãn nổi bật: <strong>{bert_label}</strong></p><p>Vượt ngưỡng: <strong>{", ".join(bert_positive) if bert_positive else "Không có"}</strong></p></div>
-        <div class="compare-model"><h4>LSTM</h4><p>Nhãn nổi bật: <strong>{lstm_label}</strong></p><p>Vượt ngưỡng: <strong>{", ".join(lstm_positive) if lstm_positive else "Không có"}</strong></p></div>
+        <div class="compare-model"><h4>BERT</h4><p><strong>Predicted labels:</strong> {", ".join(bert_positive) if bert_positive else "clean / no toxic label"}</p><p><strong>Top-scoring label:</strong> {bert_label}</p></div>
+        <div class="compare-model"><h4>LSTM</h4><p><strong>Predicted labels:</strong> {", ".join(lstm_positive) if lstm_positive else "clean / no toxic label"}</p><p><strong>Top-scoring label:</strong> {lstm_label}</p></div>
       </div>
     </div>
     """
