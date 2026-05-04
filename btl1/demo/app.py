@@ -484,10 +484,12 @@ class CLIPClassifier(nn.Module):
         self.classifier = nn.Linear(hidden_size * 2, num_labels)
 
     def forward(self, input_ids, attention_mask, pixel_values):
-        image_features = self.backbone.get_image_features(pixel_values=pixel_values)
-        text_features = self.backbone.get_text_features(
+        image_features = unwrap_clip_feature_output(self.backbone.get_image_features(pixel_values=pixel_values))
+        text_features = unwrap_clip_feature_output(
+            self.backbone.get_text_features(
             input_ids=input_ids,
             attention_mask=attention_mask,
+        )
         )
         image_features = nn.functional.normalize(image_features, dim=-1)
         text_features = nn.functional.normalize(text_features, dim=-1)
@@ -574,6 +576,21 @@ def load_image(image_input) -> Image.Image:
     if isinstance(image_input, Image.Image):
         return image_input.convert("RGB")
     return Image.open(image_input).convert("RGB")
+
+
+def unwrap_clip_feature_output(output):
+    if isinstance(output, torch.Tensor):
+        return output
+    for attr in ("image_embeds", "text_embeds", "pooler_output"):
+        value = getattr(output, attr, None)
+        if isinstance(value, torch.Tensor):
+            return value
+    last_hidden_state = getattr(output, "last_hidden_state", None)
+    if isinstance(last_hidden_state, torch.Tensor):
+        if last_hidden_state.ndim >= 2:
+            return last_hidden_state[:, 0]
+        return last_hidden_state
+    raise TypeError(f"Unsupported CLIP feature output type: {type(output)!r}")
 
 
 def preprocess_weather_image(image: Image.Image) -> torch.Tensor:
@@ -853,6 +870,7 @@ def load_clip_zero_shot_bundle():
             input_ids=text_inputs["input_ids"],
             attention_mask=text_inputs["attention_mask"],
         )
+    prompt_features = unwrap_clip_feature_output(prompt_features)
     prompt_features = nn.functional.normalize(prompt_features, dim=-1)
     prompt_features = prompt_features.view(len(labels), len(CLIP_ZERO_SHOT_PROMPT_TEMPLATES), -1).mean(dim=1)
     prompt_features = nn.functional.normalize(prompt_features, dim=-1)
@@ -878,6 +896,7 @@ def encode_clip_image_features(processor, model, image_paths: list[Path], batch_
         encoded = {key: value.to(DEVICE) for key, value in encoded.items()}
         with torch.no_grad():
             batch_features = model.get_image_features(pixel_values=encoded["pixel_values"])
+        batch_features = unwrap_clip_feature_output(batch_features)
         batch_features = nn.functional.normalize(batch_features, dim=-1).detach().cpu().numpy()
         features.append(batch_features)
     return np.concatenate(features, axis=0)
@@ -1004,6 +1023,7 @@ def predict_with_clip_zero_shot(image: Image.Image) -> dict[str, float]:
     image_inputs = {key: value.to(DEVICE) for key, value in image_inputs.items()}
     with torch.no_grad():
         image_features = model.get_image_features(pixel_values=image_inputs["pixel_values"])
+    image_features = unwrap_clip_feature_output(image_features)
     image_features = nn.functional.normalize(image_features, dim=-1)
     logits = image_features @ text_features.T
     probs = torch.softmax(logits, dim=-1)[0].detach().cpu().tolist()
@@ -1016,6 +1036,7 @@ def predict_with_clip_few_shot(image: Image.Image) -> dict[str, float]:
     image_inputs = {key: value.to(DEVICE) for key, value in image_inputs.items()}
     with torch.no_grad():
         image_features = model.get_image_features(pixel_values=image_inputs["pixel_values"])
+    image_features = unwrap_clip_feature_output(image_features)
     image_features = nn.functional.normalize(image_features, dim=-1).detach().cpu().numpy()
     probs = classifier.predict_proba(image_features)[0].tolist()
     return dict(zip(labels, probs))
